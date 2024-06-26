@@ -1,44 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="h-full bg-white">
 <head>
-    <meta charset="UTF-8">
-    <title>Sign Up</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.2/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100 text-gray-800">
-    <div class="container mx-auto p-6">
-        <h1 class="text-3xl font-bold mb-6">Sign Up</h1>
-        <form id="signupForm">
-            <div class="mb-6">
-                <label for="username" class="block text-gray-700 font-medium mb-2">Username:</label>
-                <input type="text" id="username" class="bg-white shadow rounded p-2 border border-gray-300 w-full">
-            </div>
-            <div class="mb-6">
-                <label for="email" class="block text-gray-700 font-medium mb-2">Email:</label>
-                <input type="email" id="email" class="bg-white shadow rounded p-2 border border-gray-300 w-full">
-            </div>
-            <div class="mb-6">
-                <label for="password" class="block text-gray-700 font-medium mb-2">Password:</label>
-                <input type="password" id="password" class="bg-white shadow rounded p-2 border border-gray-300 w-full">
-            </div>
-            <button type="button" onclick="handleSignup()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Sign Up</button>
-        </form>
+<body class="h-full">
+  <div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-sm">
+      <img class="mx-auto h-10 w-auto" src="https://tailwindui.com/img/logos/mark.svg?color=primary&shade=600" alt="Your Company">
+      <h2 class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">Sign in to your account</h2>
     </div>
-    <script>
-        function handleSignup() {
-            const username = document.getElementById('username').value;
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            axios.post('/api/signup/', { username, email, password })
-                .then(response => {
-                    alert('Signed up successfully!');
-                    window.location.href = '/login/';
-                })
-                .catch(error => {
-                    console.error('Error signing up:', error);
-                    alert('Failed to sign up. Please check your details.');
-                });
-        }
-    </script>
+
+    <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+      <form class="space-y-6" action="#" method="POST">
+        <div>
+          <label for="email" class="block text-sm font-medium leading-6 text-gray-900">Email address</label>
+          <div class="mt-2">
+            <input id="email" name="email" type="email" autocomplete="email" required class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6">
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between">
+            <label for="password" class="block text-sm font-medium leading-6 text-gray-900">Password</label>
+            <div class="text-sm">
+              <a href="#" class="font-semibold text-primary hover:text-primary-dark">Forgot password?</a>
+            </div>
+          </div>
+          <div class="mt-2">
+            <input id="password" name="password" type="password" autocomplete="current-password" required class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6">
+          </div>
+        </div>
+
+        <div>
+          <button type="submit" class="flex w-full justify-center rounded-md bg-primary px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-primary-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">Sign in</button>
+        </div>
+      </form>
+
+      <p class="mt-10 text-center text-sm text-gray-500">
+        Not a member?
+        <a href="#" class="font-semibold leading-6 text-primary hover:text-primary-dark">Start a 14 day free trial</a>
+      </p>
+    </div>
+  </div>
 </body>
 </html>
