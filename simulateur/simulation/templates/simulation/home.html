@@ -1,16 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Home</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
-</head>
+{% include 'includes/header.html' %}
 <body class="bg-gray-100 text-gray-800">
-    <div class="container mx-auto p-6">
-        <h1 class="text-3xl font-bold mb-6">Welcome to the Stock Market Simulator</h1>
-        <a href="{% url 'market_overview' %}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Market Overview</a>
-        <a href="{% url 'login' %}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Log In</a>
-        <a href="{% url 'signup' %}" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">Register</a>
-    </div>
+{% include 'includes/navigation.html' %}
 </body>
-</html>

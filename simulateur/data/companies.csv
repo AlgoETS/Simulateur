@@ -1,21 +1,21 @@
-name,backstory,max_shares,price_maximum,initial_price,current_price,pe_ratio,market_cap
-Air Munegu International,"Créée en 2017, la société de transport aérien Air Munegu International est établie à Monaco.",1000,21.87,21.87,21.87,5.7,4.26
-B&C Laser,"En 2008, à la suite de la crise économique mondiale, un jeune ingénieur en physique du nom de Christopher Beton se voit perdre son nouvel emploi.",1000,28.25,28.25,28.25,0.881,29.81
-Cambridge City Football Club,"L'équipe de soccer de Cambridge est une jeune équipe qui est admise dans la Premier League en 2025.",1000,4.83,4.83,4.83,0.675,11.54
-Coaks,"Coaks est une chaîne de magasins de vêtements fondée par les deux partenaires Paloma Zarcovich et Lisa Marouin en 2010.",1000,16.80,16.80,16.80,0.382,4.90
-Cryptokrone,"Fondée en 2010 au Danemark, Cryptokrone est une des compagnies les plus novatrices de la sphère des cryptomonnaies.",1000,3.28,3.28,3.28,2.37,37.21
-Hexium,"Hexium est un fabricant de véhicules électriques et à hydrogène fondé en 2004 par Olen Kums, un riche homme d’affaires allemand aujourd’hui devenu philanthrope.",1000,85.23,85.23,85.23,31.7,8.4
-Happy Rabbit Pharma,"Happy Rabbit Pharma est une compagnie pharmaceutique œuvrant dans la recherche de traitements contre les troubles neurocognitifs et psychotiques comme la maladie d’Alzheimer et la schizophrénie.",1000,1.56,1.56,1.56,0.126,-3.12
-Minerrain Tout Terrain,"Le 22 mai 1960 eut lieu au Chili le plus grand séisme de tous les temps, un tremblement de terre de magnitude 9,5.",1000,58.65,58.65,58.65,185,25.84
-Smith Motors,"Fondée en 1955 dans la ville de New York par Wilfrid Smith, la compagnie Smith Motors a connu un succès rapide majoritairement grâce à la construction des fameux taxis new-yorkais.",1000,104.94,104.94,104.94,75,22.89
-New Bank of Shanghai,"Fondée en 1949, la New Bank of Shanghai fut parmi les sociétés à pleinement capitaliser sur la grande ascension de la Chine.",1000,116.18,116.18,116.18,208.2,9.66
-Blue Bacon Batteries,"En 2015, une jeune entrepreneure, soucieuse des changements climatiques, décide de se lancer en affaires afin d’avoir un impact dans sa communauté.",1000,4.5,4.5,4.5,0.144,72
-Chargex Bank,"C’est en 1882, à Toronto, qu’un homme d’affaires anglais décide de créer une institution bancaire qui deviendra l’une des plus importantes du pays.",1000,100,100,100,120,15
-Costal Construction and Engineering Group,"Basée en banlieue de San Francisco, la compagnie Costal Construction and Engineering Group [CCEG] a dû déplacer ses bureaux administratifs hors de Houston suite à la séparation des États-Unis-Côtiers.",1000,55,55,55,48.4,22
-Ellis & Vincent Transportation,"Fondée dans les années 1970 à Moose Jaw en Saskatchewan par deux meilleurs amis, l’entreprise Ellis & Vincent Transportation [EVT] a connu une croissance fulgurante durant la fin des années 2000.",1000,35.25,35.25,35.25,54.6,17.6
-Industrial Forestry Inc.,"Industrial Forestier Inc. (IFY) est une compagnie de foresterie canadienne basée à Calgary.",1000,18,18,18,0.6,12
-PyraMD,"C’est en 1989 que PyraMD voit le jour à Boston.",1000,64,64,64,64,8
-RD Consulting Group,"En 2004, Vancouver vit un boom économique dans le secteur des petites entreprises suite au crash du début des années 2000.",1000,80,80,80,104,26
-SharePhase,"Basé sur des vieilles recherches de Nikola Tesla, M. Robidou a élaboré une technologie de transfert d’électricité sans fil révolutionnaire.",1000,15.625,15.625,15.625,0.25,208.33
-Solarama,"La compagnie Solarama a été fondée il y a trois ans par Oliver Martinez, un ingénieur diplômé du Massachusetts Institute of Technology.",1000,30,30,30,0.15,30
-Wang Telecommunication,"Depuis 2010, l’entreprise pékinoise Wang Télécommunication (WANG) fournit des services de télécommunication à un très grand nombre de ménages africains.",1000,25,25,25,0.9,36
+name,backstory,max_shares,price_maximum,initial_price,current_price,pe_ratio,market_cap,sector,country,industry
+Air Munegu International,"Créée en 2017, la société de transport aérien Air Munegu International est établie à Monaco.",1000,21.87,21.87,21.87,5.7,4.26,Transportation,Monaco,Aviation
+B&C Laser,"En 2008, à la suite de la crise économique mondiale, un jeune ingénieur en physique du nom de Christopher Beton se voit perdre son nouvel emploi.",1000,28.25,28.25,28.25,0.881,29.81,Technology,USA,Laser
+Cambridge City Football Club,"L'équipe de soccer de Cambridge est une jeune équipe qui est admise dans la Premier League en 2025.",1000,4.83,4.83,4.83,0.675,11.54,Sports,UK,Football
+Coaks,"Coaks est une chaîne de magasins de vêtements fondée par les deux partenaires Paloma Zarcovich et Lisa Marouin en 2010.",1000,16.80,16.80,16.80,0.382,4.90,Retail,USA,Clothing
+Cryptokrone,"Fondée en 2010 au Danemark, Cryptokrone est une des compagnies les plus novatrices de la sphère des cryptomonnaies.",1000,3.28,3.28,3.28,2.37,37.21,Finance,Denmark,Cryptocurrency
+Hexium,"Hexium est un fabricant de véhicules électriques et à hydrogène fondé en 2004 par Olen Kums, un riche homme d’affaires allemand aujourd’hui devenu philanthrope.",1000,85.23,85.23,85.23,31.7,8.4,Automotive,Germany,Electric Vehicles
+Happy Rabbit Pharma,"Happy Rabbit Pharma est une compagnie pharmaceutique œuvrant dans la recherche de traitements contre les troubles neurocognitifs et psychotiques comme la maladie d’Alzheimer et la schizophrénie.",1000,1.56,1.56,1.56,0.126,-3.12,Healthcare,USA,Pharmaceutical
+Minerrain Tout Terrain,"Le 22 mai 1960 eut lieu au Chili le plus grand séisme de tous les temps, un tremblement de terre de magnitude 9,5.",1000,58.65,58.65,58.65,185,25.84,Construction,Chile,Construction
+Smith Motors,"Fondée en 1955 dans la ville de New York par Wilfrid Smith, la compagnie Smith Motors a connu un succès rapide majoritairement grâce à la construction des fameux taxis new-yorkais.",1000,104.94,104.94,104.94,75,22.89,Automotive,USA,Automobiles
+New Bank of Shanghai,"Fondée en 1949, la New Bank of Shanghai fut parmi les sociétés à pleinement capitaliser sur la grande ascension de la Chine.",1000,116.18,116.18,116.18,208.2,9.66,Finance,China,Banking
+Blue Bacon Batteries,"En 2015, une jeune entrepreneure, soucieuse des changements climatiques, décide de se lancer en affaires afin d’avoir un impact dans sa communauté.",1000,4.5,4.5,4.5,0.144,72,Energy,USA,Batteries
+Chargex Bank,"C’est en 1882, à Toronto, qu’un homme d’affaires anglais décide de créer une institution bancaire qui deviendra l’une des plus importantes du pays.",1000,100,100,100,120,15,Finance,Canada,Banking
+Costal Construction and Engineering Group,"Basée en banlieue de San Francisco, la compagnie Costal Construction and Engineering Group [CCEG] a dû déplacer ses bureaux administratifs hors de Houston suite à la séparation des États-Unis-Côtiers.",1000,55,55,55,48.4,22,Construction,USA,Engineering
+Ellis & Vincent Transportation,"Fondée dans les années 1970 à Moose Jaw en Saskatchewan par deux meilleurs amis, l’entreprise Ellis & Vincent Transportation [EVT] a connu une croissance fulgurante durant la fin des années 2000.",1000,35.25,35.25,35.25,54.6,17.6,Transportation,Canada,Logistics
+Industrial Forestry Inc.,"Industrial Forestier Inc. (IFY) est une compagnie de foresterie canadienne basée à Calgary.",1000,18,18,18,0.6,12,Forestry,Canada,Forestry
+PyraMD,"C’est en 1989 que PyraMD voit le jour à Boston.",1000,64,64,64,64,8,Healthcare,USA,Medical Devices
+RD Consulting Group,"En 2004, Vancouver vit un boom économique dans le secteur des petites entreprises suite au crash du début des années 2000.",1000,80,80,80,104,26,Consulting,Canada,Consulting
+SharePhase,"Basé sur des vieilles recherches de Nikola Tesla, M. Robidou a élaboré une technologie de transfert d’électricité sans fil révolutionnaire.",1000,15.625,15.625,15.625,0.25,208.33,Technology,USA,Wireless Electricity
+Solarama,"La compagnie Solarama a été fondée il y a trois ans par Oliver Martinez, un ingénieur diplômé du Massachusetts Institute of Technology.",1000,30,30,30,0.15,30,Energy,USA,Solar Energy
+Wang Telecommunication,"Depuis 2010, l’entreprise pékinoise Wang Télécommunication (WANG) fournit des services de télécommunication à un très grand nombre de ménages africains.",1000,25,25,25,0.9,36,Telecommunication,China,Telecommunication

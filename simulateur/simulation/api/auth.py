@@ -1,4 +1,5 @@
 # simulation/api/auth.py
+from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from django.contrib.auth.models import User
 from rest_framework.response import Response
@@ -6,13 +7,11 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.contrib.auth import authenticate, login
 
-from simulation.models import UserProfile
-from simulation.serializers import UserSerializer, UserProfileSerializer
+from simulation.models import JoinLink, Team, UserProfile
 
 @method_decorator(csrf_exempt, name='dispatch')
 class SignupView(generics.CreateAPIView):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
 
     def post(self, request, *args, **kwargs):
         data = request.data

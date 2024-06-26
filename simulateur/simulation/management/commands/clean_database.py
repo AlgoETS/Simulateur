@@ -1,7 +1,7 @@
 # simulation/management/commands/clean_database.py
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
-from simulation.models import Company, Stock, Cryptocurrency, Team, Event, Trigger, CustomStat, SimulationSettings, Scenario, Portfolio, TransactionHistory, UserProfile
+from simulation.models import Company, Stock, Team, Event, Trigger, SimulationSettings, Scenario, Portfolio, TransactionHistory, UserProfile
 
 class Command(BaseCommand):
     help = 'Clean the database, excluding admin and staff user data'
@@ -14,11 +14,9 @@ class Command(BaseCommand):
         models_to_clean = [
             Company,
             Stock,
-            Cryptocurrency,
             Team,
             Event,
             Trigger,
-            CustomStat,
             SimulationSettings,
             Scenario,
             Portfolio,

@@ -1,4 +1,3 @@
-# simulation/forms.py
 from django import forms
 from simulation.models import (
     Company, Stock, Team, JoinLink, UserProfile, Event, Trigger, SimulationSettings,
@@ -16,6 +15,8 @@ class StockForm(forms.ModelForm):
         fields = ['company', 'ticker', 'price', 'partial_share', 'complete_share']
 
 class TeamForm(forms.ModelForm):
+    members = forms.ModelMultipleChoiceField(queryset=UserProfile.objects.all(), required=False)
+    
     class Meta:
         model = Team
         fields = ['name', 'balance', 'members']
@@ -26,6 +27,8 @@ class JoinLinkForm(forms.ModelForm):
         fields = ['team', 'key', 'expires_at']
 
 class UserProfileForm(forms.ModelForm):
+    team = forms.ModelChoiceField(queryset=Team.objects.all(), required=False)
+    
     class Meta:
         model = UserProfile
         fields = ['user', 'balance', 'team']
@@ -33,7 +36,7 @@ class UserProfileForm(forms.ModelForm):
 class EventForm(forms.ModelForm):
     class Meta:
         model = Event
-        fields = ['name', 'description', 'impact', 'event_type', 'trigger_date', 'scenario']
+        fields = ['name', 'description', 'event_type', 'trigger_date', 'scenario']
 
 class TriggerForm(forms.ModelForm):
     class Meta:
@@ -50,6 +53,13 @@ class SimulationSettingsForm(forms.ModelForm):
         ]
 
 class ScenarioForm(forms.ModelForm):
+    companies = forms.ModelMultipleChoiceField(queryset=Company.objects.all(), required=False)
+    stocks = forms.ModelMultipleChoiceField(queryset=Stock.objects.all(), required=False)
+    users = forms.ModelMultipleChoiceField(queryset=UserProfile.objects.all(), required=False)
+    teams = forms.ModelMultipleChoiceField(queryset=Team.objects.all(), required=False)
+    events = forms.ModelMultipleChoiceField(queryset=Event.objects.all(), required=False)
+    triggers = forms.ModelMultipleChoiceField(queryset=Trigger.objects.all(), required=False)
+    
     class Meta:
         model = Scenario
         fields = [
@@ -67,11 +77,6 @@ class TransactionHistoryForm(forms.ModelForm):
         model = TransactionHistory
         fields = ['portfolio', 'asset', 'transaction_type', 'amount', 'price']
 
-class SimulationDataForm(forms.ModelForm):
-    class Meta:
-        model = SimulationData
-        fields = ['scenario', 'start_time', 'end_time', 'is_active', 'price_changes', 'transactions']
-
 class OrderForm(forms.ModelForm):
     class Meta:
         model = Order
@@ -80,4 +85,4 @@ class OrderForm(forms.ModelForm):
 class NewsForm(forms.ModelForm):
     class Meta:
         model = News
-        fields = ['title', 'content', 'impact', 'event', 'scenario']
+        exclude = ['published_date']

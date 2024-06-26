@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from simulation.api.data_modification import CustomStatViewSet, SimulationDataViewSet
+from simulation.api.auth import JoinTeamView
+from simulation.api.data_modification import SimulationDataViewSet
 from simulation.api.trigger import TriggerViewSet
 
 # Importing HTML views
@@ -19,7 +20,6 @@ router.register(r'companies', CompanyViewSet)
 router.register(r'scenarios', ScenarioViewSet)
 router.register(r'events', EventViewSet)
 router.register(r'triggers', TriggerViewSet)
-router.register(r'custom_stats', CustomStatViewSet)
 router.register(r'simulation_data', SimulationDataViewSet)
 
 html_patterns = [

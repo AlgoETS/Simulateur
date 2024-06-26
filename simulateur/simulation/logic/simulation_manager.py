@@ -5,7 +5,7 @@ import numpy as np
 import noise
 from django.utils import timezone
 from channels.layers import get_channel_layer
-from simulation.models import Scenario, SimulationData, Stock, Cryptocurrency, TransactionHistory
+from simulation.models import Scenario, SimulationData, Stock, TransactionHistory
 from simulation.logic.utils import is_market_open, send_ohlc_update, TIME_UNITS
 
 # Set up logging
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class SimulationManager:
     """
-    Manages the simulation of stock and cryptocurrency prices based on various algorithms.
+    Manages the simulation of stock prices based on various algorithms.
     """
     def __init__(self, scenario_id, run_duration=100000):
         self.scenario = Scenario.objects.get(id=scenario_id)
@@ -30,7 +30,6 @@ class SimulationManager:
         self.noise_function = settings.noise_function.lower()
 
         self.stock_prices = {stock.company.name: [] for stock in Stock.objects.all()}
-        self.crypto_prices = {crypto.name: [] for crypto in Cryptocurrency.objects.all()}
 
         logger.info(f'Starting simulation for scenario {self.scenario} with time step {self.time_step} seconds')
 
@@ -81,16 +80,12 @@ class SimulationManager:
 
     def update_prices(self, current_time):
         """
-        Updates the prices of stocks and cryptocurrencies.
+        Updates the prices of stocks.
         """
         for company in self.scenario.companies.all():
             if stock := company.stock_set.first():
                 self.apply_changes(stock, current_time)
                 self.stock_prices[stock.company.name].append(stock.close_price)
-
-        for crypto in self.scenario.cryptocurrencies.all():
-            self.apply_changes(crypto, current_time)
-            self.crypto_prices[crypto.name].append(crypto.close_price)
 
         self.simulation_data.end_time = current_time
         self.simulation_data.save()
@@ -125,8 +120,6 @@ class SimulationManager:
         for company in self.scenario.companies.all():
             if stock := company.stock_set.first():
                 send_ohlc_update(self.channel_layer, stock, 'stock')
-        for crypto in self.scenario.cryptocurrencies.all():
-            send_ohlc_update(self.channel_layer, crypto, 'cryptocurrency')
 
 
 class SimulationManagerSingleton:

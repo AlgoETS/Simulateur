@@ -1,260 +1,9 @@
-<!DOCTYPE html>
-<html>
-
-<head>
-    <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
-    <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-        }
-    </style>
-</head>
+{% include 'includes/header.html' %}
 
 <body class="bg-gray-100 text-gray-800">
     <div class="container mx-auto p-6">
         <h1 class="text-3xl font-bold mb-6">Admin Dashboard</h1>
-        <nav class="bg-gray-200 p-4 rounded mb-6">
-            <ul class="flex space-x-4">
-                <li><a href="{% url 'home' %}" class="text-blue-500 hover:text-blue-700">Home</a></li>
-                <li><a href="{% url 'market_overview' %}" class="text-blue-500 hover:text-blue-700">Market Overview</a></li>
-                <li><a href="{% url 'team_dashboard' %}" class="text-blue-500 hover:text-blue-700">Team Dashboard</a></li>
-                <li><a href="{% url 'company-list' %}" class="text-blue-500 hover:text-blue-700">Companies</a></li>
-                <li><a href="{% url 'scenario-list' %}" class="text-blue-500 hover:text-blue-700">Scenarios</a></li>
-                <li><a href="{% url 'event-list' %}" class="text-blue-500 hover:text-blue-700">Events</a></li>
-                <li><a href="{% url 'simulation-graph' %}" class="text-blue-500 hover:text-blue-700">Simulation Graph</a></li>
-                <li><a href="{% url 'signup' %}" class="text-blue-500 hover:text-blue-700">Sign Up</a></li>
-                <li><a href="{% url 'login' %}" class="text-blue-500 hover:text-blue-700">Login</a></li>
-            </ul>
-        </nav>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-            <div class="bg-white shadow rounded p-4">
-                <h3 class="text-xl font-semibold mb-2">Create Event</h3>
-                <a href="{% url 'create_event' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded block text-center">Create Event</a>
-            </div>
-            <div class="bg-white shadow rounded p-4">
-                <h3 class="text-xl font-semibold mb-2">Create Trigger</h3>
-                <a href="{% url 'create_trigger' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded block text-center">Create Trigger</a>
-            </div>
-            <div class="bg-white shadow rounded p-4">
-                <h3 class="text-xl font-semibold mb-2">Create News</h3>
-                <a href="{% url 'create_news' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded block text-center">Create News</a>
-            </div>
-            <div class="bg-white shadow rounded p-4">
-                <h3 class="text-xl font-semibold mb-2">Create Company</h3>
-                <a href="{% url 'create_company' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded block text-center">Create Company</a>
-            </div>
-            <div class="bg-white shadow rounded p-4">
-                <h3 class="text-xl font-semibold mb-2">Create Stock</h3>
-                <a href="{% url 'create_stock' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded block text-center">Create Stock</a>
-            </div>
-            <div class="bg-white shadow rounded p-4">
-                <h3 class="text-xl font-semibold mb-2">Simulation Settings</h3>
-                <a href="{% url 'simulation_settings' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded block text-center">Modify Settings</a>
-            </div>
-        </div>
-
-        <div class="flex gap-4 mb-6">
-            <button onclick="startSimulation()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded">Start Simulation</button>
-            <button onclick="pauseSimulation()" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-6 rounded">Pause Simulation</button>
-            <button onclick="stopSimulation()" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-6 rounded">Stop Simulation</button>
-            <button onclick="fastForwardSimulation()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-6 rounded">Fast Forward</button>
-            <button onclick="rewindSimulation()" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded">Rewind</button>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-            <div>
-                <label for="timeStep" class="block text-gray-700 font-medium mb-2">Time Step (in milliseconds):</label>
-                <input type="number" id="timeStep" value="1000" class="bg-white shadow rounded p-2 border border-gray-300 w-full">
-            </div>
-            <div>
-                <label for="timeFormat" class="block text-gray-700 font-medium mb-2">Time Format:</label>
-                <select id="timeFormat" class="bg-white shadow rounded p-2 border border-gray-300 w-full">
-                    <option value="ll HH:mm:ss">Default (ll HH:mm:ss)</option>
-                    <option value="YYYY-MM-DD HH:mm">YYYY-MM-DD HH:mm</option>
-                    <option value="MM-DD-YYYY HH:mm">MM-DD-YYYY HH:mm</option>
-                </select>
-            </div>
-            <div class="flex items-center">
-                <label for="tooltip" class="block text-gray-700 font-medium mb-2 mr-2">Enable Tooltips:</label>
-                <input type="checkbox" id="tooltip" checked class="bg-white shadow rounded p-2 border border-gray-300">
-            </div>
-        </div>
-
-        <div id="settings" class="grid gap-4">
-            <h2 class="text-2xl font-bold mb-4">Simulation Settings</h2>
-            <div class="bg-white shadow rounded p-4">
-                <h3 class="text-xl font-semibold mb-2">Change Simulation Settings</h3>
-                <form id="settingsForm">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="maxUsers" class="block text-gray-700 font-medium mb-2">Max Users:</label>
-                            <input type="number" id="maxUsers" value="100" class="bg-white shadow rounded p-2 border border-gray-300 w-full">
-                        </div>
-                        <div>
-                            <label for="maxCompanies" class="block text-gray-700 font-medium mb-2">Max Companies:</label>
-                            <input type="number" id="maxCompanies" value="50" class="bg-white shadow rounded p-2 border border-gray-300 w-full">
-                        </div>
-                        <div>
-                            <label for="timerStep" class="block text-gray-700 font-medium mb-2">Timer Step:</label>
-                            <input type="number" id="timerStep" value="1" class="bg-white shadow rounded p-2 border border-gray-300 w-full">
-                        </div>
-                        <div>
-                            <label for="interval" class="block text-gray-700 font-medium mb-2">Interval:</label>
-                            <input type="number" id="interval" value="60" class="bg-white shadow rounded p-2 border border-gray-300 w-full">
-                        </div>
-                        <div>
-                            <label for="maxInterval" class="block text-gray-700 font-medium mb-2">Max Interval:</label>
-                            <input type="number" id="maxInterval" value="300" class="bg-white shadow rounded p-2 border border-gray-300 w-full">
-                        </div>
-                        <div>
-                            <label for="fluctuationRate" class="block text-gray-700 font-medium mb-2">Fluctuation Rate:</label>
-                            <input type="number" step="0.01" id="fluctuationRate" value="0.1" class="bg-white shadow rounded p-2 border border-gray-300 w-full">
-                        </div>
-                        <div>
-                            <label for="timeUnit" class="block text-gray-700 font-medium mb-2">Time Unit:</label>
-                            <select id="timeUnit" class="bg-white shadow rounded p-2 border border-gray-300 w-full">
-                                <option value="second">Second</option>
-                                <option value="minute">Minute</option>
-                                <option value="hour">Hour</option>
-                                <option value="day">Day</option>
-                            </select>
-                        </div>
-                        <div class="flex items-center mt-6">
-                            <label for="closeMarketAtNight" class="block text-gray-700 font-medium mb-2 mr-2">Close Market at Night:</label>
-                            <input type="checkbox" id="closeMarketAtNight" checked class="bg-white shadow rounded p-2 border border-gray-300">
-                        </div>
-                        <div>
-                            <label for="noiseFunction" class="block text-gray-700 font-medium mb-2">Noise Function:</label>
-                            <select id="noiseFunction" class="bg-white shadow rounded p-2 border border-gray-300 w-full">
-                                <option value="brownian">Brownian Motion</option>
-                                <option value="monte_carlo">Monte Carlo</option>
-                                <option value="perlin">Perlin Noise</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-                    </div>
-                    <button type="button" onclick="saveSettings()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mt-4">Save Settings</button>
-                </form>
-            </div>
-        </div>
-    </div>
-    <script>
-        function saveSettings() {
-            const settings = {
-                max_users: document.getElementById('maxUsers').value,
-                max_companies: document.getElementById('maxCompanies').value,
-                timer_step: document.getElementById('timerStep').value,
-                interval: document.getElementById('interval').value,
-                max_interval: document.getElementById('maxInterval').value,
-                fluctuation_rate: document.getElementById('fluctuationRate').value,
-                time_unit: document.getElementById('timeUnit').value,
-                close_stock_market_at_night: document.getElementById('closeMarketAtNight').checked,
-                noise_function: document.getElementById('noiseFunction').value
-            };
-
-            fetch('/api/simulation/settings/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                body: JSON.stringify(settings)
-            }).then(response => {
-                if (response.ok) {
-                    alert('Settings saved successfully');
-                } else {
-                    alert('Failed to save settings');
-                }
-            });
-        }
-
-        function startSimulation() {
-            // Implement start simulation logic
-        }
-
-        function pauseSimulation() {
-            // Implement pause simulation logic
-        }
-
-        function stopSimulation() {
-            // Implement stop simulation logic
-        }
-
-        function fastForwardSimulation() {
-            // Implement fast forward simulation logic
-        }
-
-        function rewindSimulation() {
-            // Implement rewind simulation logic
-        }
-
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-    </script>
-</body>
-
-</html>
-Explanation:
-Navigation Links: These links provide navigation to different parts of the application.
-Admin Actions: Added sections for creating events, triggers, news, companies, and stocks, and modifying simulation settings.
-Simulation Controls: Buttons to start, pause, stop, fast forward, and rewind the simulation.
-Simulation Settings: Form to modify simulation settings, with a function to save these settings via a POST request.
-This updated template ensures that all the specified actions are accessible from the admin dashboard and includes the necessary HTML structure and styles to present them clearly.
-
-create news, create event, create trigger andd modify and delete. no new page for delete and make list of each existant
-ChatGPT
-Here's the updated admin dashboard template with sections for creating, modifying, and deleting news, events, and triggers, as well as listing existing ones. Deleting will be done via a form submission within the same page.
-
-Updated Template
-html
-Copy code
-<!DOCTYPE html>
-<html>
-
-<head>
-    <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
-    <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-        }
-    </style>
-</head>
-
-<body class="bg-gray-100 text-gray-800">
-    <div class="container mx-auto p-6">
-        <h1 class="text-3xl font-bold mb-6">Admin Dashboard</h1>
-        <nav class="bg-gray-200 p-4 rounded mb-6">
-            <ul class="flex space-x-4">
-                <li><a href="{% url 'home' %}" class="text-blue-500 hover:text-blue-700">Home</a></li>
-                <li><a href="{% url 'market_overview' %}" class="text-blue-500 hover:text-blue-700">Market Overview</a></li>
-                <li><a href="{% url 'team_dashboard' %}" class="text-blue-500 hover:text-blue-700">Team Dashboard</a></li>
-                <li><a href="{% url 'company-list' %}" class="text-blue-500 hover:text-blue-700">Companies</a></li>
-                <li><a href="{% url 'scenario-list' %}" class="text-blue-500 hover:text-blue-700">Scenarios</a></li>
-                <li><a href="{% url 'event-list' %}" class="text-blue-500 hover:text-blue-700">Events</a></li>
-                <li><a href="{% url 'simulation-graph' %}" class="text-blue-500 hover:text-blue-700">Simulation Graph</a></li>
-                <li><a href="{% url 'signup' %}" class="text-blue-500 hover:text-blue-700">Sign Up</a></li>
-                <li><a href="{% url 'login' %}" class="text-blue-500 hover:text-blue-700">Login</a></li>
-            </ul>
-        </nav>
+        {% include 'includes/navigation.html' %}
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
             <!-- Create and List Events -->
@@ -322,6 +71,82 @@ Copy code
                     {% endfor %}
                 </ul>
             </div>
+
+            <!-- Create and List Companies -->
+            <div class="bg-white shadow rounded p-4">
+                <h3 class="text-xl font-semibold mb-2">Manage Companies</h3>
+                <form method="post" action="{% url 'create_company' %}">
+                    {% csrf_token %}
+                    {{ company_form.as_p }}
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Create Company</button>
+                </form>
+                <h4 class="mt-4 font-semibold">Existing Companies</h4>
+                <ul>
+                    {% for company in companies %}
+                    <li class="flex justify-between">
+                        {{ company.name }}
+                        <form method="post" action="{% url 'delete_company' company.id %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="text-red-500 hover:text-red-700">Delete</button>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Create and List Stocks -->
+            <div class="bg-white shadow rounded p-4">
+                <h3 class="text-xl font-semibold mb-2">Manage Stocks</h3>
+                <form method="post" action="{% url 'create_stock' %}">
+                    {% csrf_token %}
+                    {{ stock_form.as_p }}
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Create Stock</button>
+                </form>
+                <h4 class="mt-4 font-semibold">Existing Stocks</h4>
+                <ul>
+                    {% for stock in stocks %}
+                    <li class="flex justify-between">
+                        {{ stock.ticker }}
+                        <form method="post" action="{% url 'delete_stock' stock.id %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="text-red-500 hover:text-red-700">Delete</button>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Simulation Settings -->
+            <div class="bg-white shadow rounded p-4">
+                <h3 class="text-xl font-semibold mb-2">Simulation Settings</h3>
+                <form method="post" action="{% url 'simulation_settings' %}">
+                    {% csrf_token %}
+                    {{ settings_form.as_p }}
+                    <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Save Settings</button>
+                </form>
+            </div>
+
+            <!-- Create and List Scenarios -->
+            <div class="bg-white shadow rounded p-4">
+                <h3 class="text-xl font-semibold mb-2">Manage Scenarios</h3>
+                <form method="post" action="{% url 'create_scenario' %}">
+                    {% csrf_token %}
+                    {{ scenario_form.as_p }}
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Create Scenario</button>
+                </form>
+                <h4 class="mt-4 font-semibold">Existing Scenarios</h4>
+                <ul>
+                    {% for scenario in scenarios %}
+                    <li class="flex justify-between">
+                        {{ scenario.name }}
+                        <form method="post" action="{% url 'delete_scenario' scenario.id %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="text-red-500 hover:text-red-700">Delete</button>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
 
         <div class="flex gap-4 mb-6">
@@ -331,116 +156,8 @@ Copy code
             <button onclick="fastForwardSimulation()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-6 rounded">Fast Forward</button>
             <button onclick="rewindSimulation()" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded">Rewind</button>
         </div>
-
-        <div id="settings" class="grid gap-4">
-            <h2 class="text-2xl font-bold mb-4">Simulation Settings</h2>
-            <div class="bg-white shadow rounded p-4">
-                <h3 class="text-xl font-semibold mb-2">Change Simulation Settings</h3>
-                <form id="settingsForm" method="post" action="{% url 'simulation_settings' %}">
-                    {% csrf_token %}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="maxUsers" class="block text-gray-700 font-medium mb-2">Max Users:</label>
-                            <input type="number" id="maxUsers" name="max_users" value="{{ settings.max_users }}" class="bg-white shadow rounded p-2 border border-gray-300 w-full">
-                        </div>
-                        <div>
-                            <label for="maxCompanies" class="block text-gray-700 font-medium mb-2">Max Companies:</label>
-                            <input type="number" id="maxCompanies" name="max_companies" value="{{ settings.max_companies }}" class="bg-white shadow rounded p-2 border border-gray-300 w-full">
-                        </div>
-                        <div>
-                            <label for="timerStep" class="block text-gray-700 font-medium mb-2">Timer Step:</label>
-                            <input type="number" id="timerStep" name="timer_step" value="{{ settings.timer_step }}" class="bg-white shadow rounded p-2 border border-gray-300 w-full">
-                        </div>
-                        <div>
-                            <label for="interval" class="block text-gray-700 font-medium mb-2">Interval:</label>
-                            <input type="number" id="interval" name="interval" value="{{ settings.interval }}" class="bg-white shadow rounded p-2 border border-gray-300 w-full">
-                        </div>
-                        <div>
-                            <label for="maxInterval" class="block text-gray-700 font-medium mb-2">Max Interval:</label>
-                            <input type="number" id="maxInterval" name="max_interval" value="{{ settings.max_interval }}" class="bg-white shadow rounded p-2 border border-gray-300 w-full">
-                        </div>
-                        <div>
-                            <label for="fluctuationRate" class="block text-gray-700 font-medium mb-2">Fluctuation Rate:</label>
-                            <input type="number" step="0.01" id="fluctuationRate" name="fluctuation_rate" value="{{ settings.fluctuation_rate }}" class="bg-white shadow rounded p-2 border border-gray-300 w-full">
-                        </div>
-                        <div>
-                            <label for="timeUnit" class="block text-gray-700 font-medium mb-2">Time Unit:</label>
-                            <select id="timeUnit" name="time_unit" class="bg-white shadow rounded p-2 border border-gray-300 w-full">
-                                <option value="second" {% if settings.time_unit == 'second' %}selected{% endif %}>Second</option>
-                                <option value="minute" {% if settings.time_unit == 'minute' %}selected{% endif %}>Minute</option>
-                                <option value="hour" {% if settings.time_unit == 'hour' %}selected{% endif %}>Hour</option>
-                                <option value="day" {% if settings.time_unit == 'day' %}selected{% endif %}>Day</option>
-                            </select>
-                        </div>
-                        <div class="flex items-center mt-6">
-                            <label for="closeMarketAtNight" class="block text-gray-700 font-medium mb-2 mr-2">Close Market at Night:</label>
-                            <input type="checkbox" id="closeMarketAtNight" name="close_stock_market_at_night" {% if settings.close_stock_market_at_night %}checked{% endif %} class="bg-white shadow rounded p-2 border border-gray-300">
-                        </div>
-                        <div>
-                            <label for="noiseFunction" class="block text-gray-700 font-medium mb-2">Noise Function:</label>
-                            <select id="noiseFunction" name="noise_function" class="bg-white shadow rounded p-2 border border-gray-300 w-full">
-                                <option value="brownian" {% if settings.noise_function == 'brownian' %}selected{% endif %}>Brownian Motion</option>
-                                <option value="monte_carlo" {% if settings.noise_function == 'monte_carlo' %}selected{% endif %}>Monte Carlo</option>
-                                <option value="perlin" {% if settings.noise_function == 'perlin' %}selected{% endif %}>Perlin Noise</option>
-                                <option value="other" {% if settings.noise_function == 'other' %}selected{% endif %}>Other</option>
-                            </select>
-                        </div>
-                    </div>
-                    <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mt-4">Save Settings</button>
-                </form>
-            </div>
-        </div>
     </div>
     <script>
-        function saveSettings() {
-            const settings = {
-                max_users: document.getElementById('maxUsers').value,
-                max_companies: document.getElementById('maxCompanies').value,
-                timer_step: document.getElementById('timerStep').value,
-                interval: document.getElementById('interval').value,
-                max_interval: document.getElementById('maxInterval').value,
-                fluctuation_rate: document.getElementById('fluctuationRate').value,
-                time_unit: document.getElementById('timeUnit').value,
-                close_stock_market_at_night: document.getElementById('closeMarketAtNight').checked,
-                noise_function: document.getElementById('noiseFunction').value
-            };
-
-            fetch('/api/simulation/settings/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                body: JSON.stringify(settings)
-            }).then(response => {
-                if (response.ok) {
-                    alert('Settings saved successfully');
-                } else {
-                    alert('Failed to save settings');
-                }
-            });
-        }
-
-        function startSimulation() {
-            // Implement start simulation logic
-        }
-
-        function pauseSimulation() {
-            // Implement pause simulation logic
-        }
-
-        function stopSimulation() {
-            // Implement stop simulation logic
-        }
-
-        function fastForwardSimulation() {
-            // Implement fast forward simulation logic
-        }
-
-        function rewindSimulation() {
-            // Implement rewind simulation logic
-        }
-
         function getCookie(name) {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
@@ -455,6 +172,85 @@ Copy code
             }
             return cookieValue;
         }
+
+        function startSimulation() {
+            fetch('/api/simulation/start/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            }).then(response => {
+                if (response.ok) {
+                    alert('Simulation started successfully');
+                } else {
+                    alert('Failed to start simulation');
+                }
+            });
+        }
+
+        function pauseSimulation() {
+            fetch('/api/simulation/pause/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            }).then(response => {
+                if (response.ok) {
+                    alert('Simulation paused successfully');
+                } else {
+                    alert('Failed to pause simulation');
+                }
+            });
+        }
+
+        function stopSimulation() {
+            fetch('/api/simulation/stop/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            }).then(response => {
+                if (response.ok) {
+                    alert('Simulation stopped successfully');
+                } else {
+                    alert('Failed to stop simulation');
+                }
+            });
+        }
+
+        function fastForwardSimulation() {
+            fetch('/api/simulation/fastforward/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            }).then(response => {
+                if (response.ok) {
+                    alert('Simulation fast forwarded successfully');
+                } else {
+                    alert('Failed to fast forward simulation');
+                }
+            });
+        }
+
+        function rewindSimulation() {
+            fetch('/api/simulation/rewind/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            }).then(response => {
+                if (response.ok) {
+                    alert('Simulation rewinded successfully');
+                } else {
+                    alert('Failed to rewind simulation');
+                }
+            });
+        }
     </script>
 </body>
-</html>

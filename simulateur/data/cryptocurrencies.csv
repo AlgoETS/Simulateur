@@ -1,2 +1,0 @@
-name,price,price_maximum,partial_share,complete_share,open_price,high_price,low_price,close_price,quantity,value_change,value_history
-CryptoA,20000.0,60000.0,0.0,0,20000.0,20000.0,20000.0,20000.0,0.0,0.0,"[]"

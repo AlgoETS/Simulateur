@@ -1,5 +1,8 @@
 from rest_framework import serializers
-from .models import Company, SimulationData, Stock, Cryptocurrency, UserProfile, Event, SimulationSettings, Scenario, Team, Portfolio, TransactionHistory, Trigger, CustomStat
+from .models import (
+    Company, SimulationData, Stock, UserProfile, Event, SimulationSettings,
+    Scenario, Team, Portfolio, TransactionHistory, Trigger, News
+)
 
 class CompanySerializer(serializers.ModelSerializer):
     class Meta:
@@ -9,11 +12,6 @@ class CompanySerializer(serializers.ModelSerializer):
 class StockSerializer(serializers.ModelSerializer):
     class Meta:
         model = Stock
-        fields = '__all__'
-
-class CryptocurrencySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Cryptocurrency
         fields = '__all__'
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -51,9 +49,9 @@ class TriggerSerializer(serializers.ModelSerializer):
         model = Trigger
         fields = '__all__'
 
-class CustomStatSerializer(serializers.ModelSerializer):
+class NewsSerializer(serializers.ModelSerializer):
     class Meta:
-        model = CustomStat
+        model = News
         fields = '__all__'
 
 class ScenarioSerializer(serializers.ModelSerializer):
@@ -63,7 +61,6 @@ class ScenarioSerializer(serializers.ModelSerializer):
     teams = TeamSerializer(many=True)
     events = EventSerializer(many=True)
     triggers = TriggerSerializer(many=True)
-    custom_stats = CustomStatSerializer(many=True)
 
     class Meta:
         model = Scenario
@@ -71,10 +68,8 @@ class ScenarioSerializer(serializers.ModelSerializer):
 
 class SimulationDataSerializer(serializers.ModelSerializer):
     scenario = ScenarioSerializer()
-    user = UserProfileSerializer()
-    team = TeamSerializer()
     portfolio = PortfolioSerializer()
-    transaction_history = TransactionHistorySerializer(many=True)
+    transactions = TransactionHistorySerializer(many=True)
 
     class Meta:
         model = SimulationData

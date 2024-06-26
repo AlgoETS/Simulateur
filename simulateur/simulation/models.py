@@ -21,7 +21,10 @@ class Stock(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     ticker = models.CharField(max_length=10, default='')
     price = models.FloatField(default=0.0)
-    last_updated = models.DateTimeField(auto_now=True)
+    open_price = models.FloatField(default=0.0)
+    high_price = models.FloatField(default=0.0)
+    low_price = models.FloatField(default=0.0)
+    close_price = models.FloatField(default=0.0)
     partial_share = models.FloatField(default=0.0)
     complete_share = models.IntegerField(default=0)
 
@@ -83,7 +86,7 @@ class Event(models.Model):
     description = models.TextField(default='')
     event_type = models.CharField(max_length=100, default='')
     trigger_date = models.DateTimeField()
-    scenario = models.ForeignKey('Scenario', on_delete=models.CASCADE, related_name='events')
+    scenario = models.ForeignKey('Scenario', on_delete=models.CASCADE, related_name='scenario_events')
 
     def __str__(self):
         return self.name
@@ -96,8 +99,8 @@ class Trigger(models.Model):
     description = models.TextField(default='')
     trigger_type = models.CharField(max_length=100, default='')
     trigger_value = models.FloatField(default=0.0)
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='triggers')
-    scenario = models.ForeignKey('Scenario', on_delete=models.CASCADE, related_name='triggers')
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='event_triggers')
+    scenario = models.ForeignKey('Scenario', on_delete=models.CASCADE, related_name='scenario_triggers')
 
     def __str__(self):
         return self.name
@@ -155,12 +158,12 @@ class Scenario(models.Model):
     backstory = models.TextField(default='')
     difficulty_level = models.CharField(max_length=100, default='')
     duration = models.IntegerField(default=0)  # Duration in seconds
-    companies = models.ManyToManyField(Company)
-    stocks = models.ManyToManyField(Stock)
-    users = models.ManyToManyField(UserProfile)
-    teams = models.ManyToManyField(Team)
-    events = models.ManyToManyField(Event)
-    triggers = models.ManyToManyField(Trigger)
+    companies = models.ManyToManyField(Company, related_name='scenarios')
+    stocks = models.ManyToManyField(Stock, related_name='scenarios')
+    users = models.ManyToManyField(UserProfile, related_name='scenarios')
+    teams = models.ManyToManyField(Team, related_name='scenarios')
+    events = models.ManyToManyField(Event, related_name='scenarios')
+    triggers = models.ManyToManyField(Trigger, related_name='scenarios')
     simulation_settings = models.OneToOneField(SimulationSettings, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -240,8 +243,8 @@ class News(models.Model):
     title = models.CharField(max_length=100, default='')
     content = models.TextField(default='')
     published_date = models.DateTimeField(auto_now=True)
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='news')
-    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE, related_name='news')
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='news_items')
+    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE, related_name='news_items')
 
     def __str__(self):
         return self.title
