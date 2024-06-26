@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <div class="container mx-auto p-6">
+        <h1 class="text-3xl font-bold mb-6">Log In</h1>
+        <form id="loginForm">
+            <div class="mb-6">
+                <label for="username" class="block text-gray-700 font-medium mb-2">Username:</label>
+                <input type="text" id="username" class="bg-white shadow rounded p-2 border border-gray-300 w-full">
+            </div>
+            <div class="mb-6">
+                <label for="password" class="block text-gray-700 font-medium mb-2">Password:</label>
+                <input type="password" id="password" class="bg-white shadow rounded p-2 border border-gray-300 w-full">
+            </div>
+            <button type="button" onclick="handleLogin()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Log In</button>
+        </form>
+    </div>
+    <script>
+        function handleLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            axios.post('/api/login/', { username, password })
+                .then(response => {
+                    alert('Logged in successfully!');
+                    window.location.href = '/dashboard/';
+                })
+                .catch(error => {
+                    console.error('Error logging in:', error);
+                    alert('Failed to log in. Please check your credentials.');
+                });
+        }
+    </script>
+</body>
+</html>
