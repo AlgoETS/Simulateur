@@ -1,9 +1,22 @@
+# simulation/views.py
 from django.views import View
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib import messages
+from django.contrib.auth.mixins import UserPassesTestMixin
 
-from simulation.models import SimulationSettings, UserProfile, Stock, Cryptocurrency, Event, Portfolio, TransactionHistory
+from simulation.models import (
+    SimulationSettings, UserProfile, Stock, Cryptocurrency, Event, Portfolio, TransactionHistory,
+    Trigger, News, Company, Team, JoinLink, Scenario, SimulationData, Order
+)
+from simulation.forms import (
+    EventForm, TriggerForm, NewsForm, CompanyForm, StockForm, TeamForm, JoinLinkForm, UserProfileForm,
+    SimulationSettingsForm, ScenarioForm, PortfolioForm, TransactionHistoryForm, SimulationDataForm, OrderForm
+)
+
+class AdminOnlyMixin(UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.is_staff
 
 class HomeView(View):
     def get(self, request):
@@ -14,9 +27,8 @@ class UserDashboardView(View):
         try:
             user_profile = UserProfile.objects.get(user=request.user)
         except UserProfile.DoesNotExist:
-            # Handle the case where UserProfile does not exist
             messages.error(request, "User profile does not exist. Please create your profile.")
-            return redirect(reverse('create_user_profile'))  # Redirect to a profile creation page or another appropriate view
+            return redirect(reverse('create_user_profile'))
 
         transactions = TransactionHistory.objects.filter(portfolio=user_profile.portfolio)
         stocks = Stock.objects.all()
@@ -29,7 +41,7 @@ class UserDashboardView(View):
         }
         return render(request, 'simulation/user_dashboard.html', context)
 
-class AdminDashboardView(View):
+class AdminDashboardView(AdminOnlyMixin, View):
     def get(self, request):
         portfolios = Portfolio.objects.all()
         settings = SimulationSettings.objects.first()
@@ -70,3 +82,95 @@ class BuySellView(View):
         }
         return render(request, 'simulation/buy_sell.html', context)
 
+class CreateEventView(AdminOnlyMixin, View):
+    def get(self, request):
+        form = EventForm()
+        return render(request, 'simulation/create_event.html', {'form': form})
+
+    def post(self, request):
+        form = EventForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Event created successfully.')
+            return redirect('admin_dashboard')
+        return render(request, 'simulation/create_event.html', {'form': form})
+
+class CreateTriggerView(AdminOnlyMixin, View):
+    def get(self, request):
+        form = TriggerForm()
+        return render(request, 'simulation/create_trigger.html', {'form': form})
+
+    def post(self, request):
+        form = TriggerForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Trigger created successfully.')
+            return redirect('admin_dashboard')
+        return render(request, 'simulation/create_trigger.html', {'form': form})
+
+class CreateNewsView(AdminOnlyMixin, View):
+    def get(self, request):
+        form = NewsForm()
+        return render(request, 'simulation/create_news.html', {'form': form})
+
+    def post(self, request):
+        form = NewsForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'News created successfully.')
+            return redirect('admin_dashboard')
+        return render(request, 'simulation/create_news.html', {'form': form})
+
+class CreateCompanyView(AdminOnlyMixin, View):
+    def get(self, request):
+        form = CompanyForm()
+        return render(request, 'simulation/create_company.html', {'form': form})
+
+    def post(self, request):
+        form = CompanyForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Company created successfully.')
+            return redirect('admin_dashboard')
+        return render(request, 'simulation/create_company.html', {'form': form})
+
+class CreateStockView(AdminOnlyMixin, View):
+    def get(self, request):
+        form = StockForm()
+        return render(request, 'simulation/create_stock.html', {'form': form})
+
+    def post(self, request):
+        form = StockForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Stock created successfully.')
+            return redirect('admin_dashboard')
+        return render(request, 'simulation/create_stock.html', {'form': form})
+
+class SimulationSettingsView(AdminOnlyMixin, View):
+    def get(self, request):
+        settings = SimulationSettings.objects.first()
+        form = SimulationSettingsForm(instance=settings)
+        return render(request, 'simulation/settings.html', {'form': form})
+
+    def post(self, request):
+        settings = SimulationSettings.objects.first()
+        form = SimulationSettingsForm(request.POST, instance=settings)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Settings updated successfully.')
+            return redirect('admin_dashboard')
+        return render(request, 'simulation/settings.html', {'form': form})
+
+class CreateScenarioView(AdminOnlyMixin, View):
+    def get(self, request):
+        form = ScenarioForm()
+        return render(request, 'simulation/create_scenario.html', {'form': form})
+
+    def post(self, request):
+        form = ScenarioForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Scenario created successfully.')
+            return redirect('admin_dashboard')
+        return render(request, 'simulation/create_scenario.html', {'form': form})
