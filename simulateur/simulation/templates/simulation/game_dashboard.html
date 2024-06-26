@@ -14,21 +14,68 @@
       0% { transform: translateX(100%); }
       100% { transform: translateX(-100%); }
     }
+
+    .transaction {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .transaction .ticker {
+      font-weight: bold;
+    }
+
+    .transaction .amount {
+      font-weight: bold;
+    }
+
+    .transaction .player {
+      font-style: italic;
+    }
   </style>
 </head>
 <body class="h-screen flex flex-col bg-gray-100">
   <!-- Main Container -->
-  <div class="flex flex-1 overflow-hidden">
+  <div class="flex flex-1 overflow-hidden mb-16">
     <!-- Left Sidebar -->
-    <div class="w-1/4 bg-white p-4 border-r border-gray-200">
-      <h2 class="text-xl font-semibold mb-4">Transaction Orders</h2>
-      <!-- Transaction Orders List -->
-      <ul>
-        <li class="mb-2 p-2 bg-gray-50 border border-gray-200 rounded">Order 1</li>
-        <li class="mb-2 p-2 bg-gray-50 border border-gray-200 rounded">Order 2</li>
-        <li class="mb-2 p-2 bg-gray-50 border border-gray-200 rounded">Order 3</li>
-        <!-- Add more orders as needed -->
-      </ul>
+    <div class="hidden md:flex md:flex-shrink-0 md:w-1/5 bg-white p-4 border-r border-gray-200">
+      <div class="w-full">
+        <h2 class="text-xl font-semibold mb-4">Transaction Orders</h2>
+        <!-- Transaction Orders List -->
+        <ul>
+          <li class="mb-[-0.5rem] p-2 transaction">
+            <span class="ticker">AAPL</span>
+            <span class="amount text-green-500">+$1000</span>
+            <span class="player">Player1</span>
+          </li>
+          <li class="mb-[-0.5rem] p-2 transaction">
+            <span class="ticker">GOOGL</span>
+            <span class="amount text-red-500">-$500</span>
+            <span class="player">Player2</span>
+          </li>
+          <li class="mb-[-0.5rem] p-2 transaction">
+            <span class="ticker">TSLA</span>
+            <span class="amount text-green-500">+$2000</span>
+            <span class="player">Player3</span>
+          </li>
+          <li class="mb-[-0.5rem] p-2 transaction">
+            <span class="ticker">AAPL</span>
+            <span class="amount text-green-500">+$1000</span>
+            <span class="player">Player1</span>
+          </li>
+          <li class="mb-[-0.5rem] p-2 transaction">
+            <span class="ticker">GOOGL</span>
+            <span class="amount text-red-500">-$500</span>
+            <span class="player">Player2</span>
+          </li>
+          <li class="mb-[-0.5rem] p-2 transaction">
+            <span class="ticker">TSLA</span>
+            <span class="amount text-green-500">+$2000</span>
+            <span class="player">Player3</span>
+          </li>
+          <!-- Add more orders as needed -->
+        </ul>
+      </div>
     </div>
     <!-- Main Content Area -->
     <div class="flex-1 flex flex-wrap p-4 overflow-auto">
@@ -72,9 +119,9 @@
     </div>
   </div>
   <!-- Bottom News Ticker -->
-  <div class="w-full bg-gray-800 text-white p-2 fixed bottom-0">
-    <div class="overflow-hidden relative whitespace-nowrap">
-      <div class="scrolling-news absolute whitespace-nowrap">
+  <div class="w-full bg-gray-800 text-white p-4 fixed bottom-0">
+    <div class="overflow-hidden relative">
+      <div class="scrolling-news whitespace-nowrap">
         <span class="mx-4">Breaking News: Market is up by 5%</span>
         <span class="mx-4">Stock XYZ hits a new high</span>
         <span class="mx-4">Earnings season starts next week</span>
