@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
@@ -12,7 +11,6 @@
         }
     </style>
 </head>
-
 <body class="bg-gray-100 text-gray-800">
     <div class="container mx-auto p-6">
         <h1 class="text-3xl font-bold mb-6">Admin Dashboard</h1>
@@ -29,6 +27,34 @@
                 <li><a href="{% url 'login' %}" class="text-blue-500 hover:text-blue-700">Login</a></li>
             </ul>
         </nav>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+            <div class="bg-white shadow rounded p-4">
+                <h3 class="text-xl font-semibold mb-2">Create Event</h3>
+                <a href="{% url 'create_event' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded block text-center">Create Event</a>
+            </div>
+            <div class="bg-white shadow rounded p-4">
+                <h3 class="text-xl font-semibold mb-2">Create Trigger</h3>
+                <a href="{% url 'create_trigger' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded block text-center">Create Trigger</a>
+            </div>
+            <div class="bg-white shadow rounded p-4">
+                <h3 class="text-xl font-semibold mb-2">Create News</h3>
+                <a href="{% url 'create_news' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded block text-center">Create News</a>
+            </div>
+            <div class="bg-white shadow rounded p-4">
+                <h3 class="text-xl font-semibold mb-2">Create Company</h3>
+                <a href="{% url 'create_company' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded block text-center">Create Company</a>
+            </div>
+            <div class="bg-white shadow rounded p-4">
+                <h3 class="text-xl font-semibold mb-2">Create Stock</h3>
+                <a href="{% url 'create_stock' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded block text-center">Create Stock</a>
+            </div>
+            <div class="bg-white shadow rounded p-4">
+                <h3 class="text-xl font-semibold mb-2">Simulation Settings</h3>
+                <a href="{% url 'simulation_settings' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded block text-center">Modify Settings</a>
+            </div>
+        </div>
+
         <div class="flex gap-4 mb-6">
             <button onclick="startSimulation()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded">Start Simulation</button>
             <button onclick="pauseSimulation()" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-6 rounded">Pause Simulation</button>
@@ -36,6 +62,7 @@
             <button onclick="fastForwardSimulation()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-6 rounded">Fast Forward</button>
             <button onclick="rewindSimulation()" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded">Rewind</button>
         </div>
+
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
             <div>
                 <label for="timeStep" class="block text-gray-700 font-medium mb-2">Time Step (in milliseconds):</label>
@@ -54,6 +81,7 @@
                 <input type="checkbox" id="tooltip" checked class="bg-white shadow rounded p-2 border border-gray-300">
             </div>
         </div>
+
         <div id="settings" class="grid gap-4">
             <h2 class="text-2xl font-bold mb-4">Simulation Settings</h2>
             <div class="bg-white shadow rounded p-4">
@@ -178,5 +206,4 @@
         }
     </script>
 </body>
-
 </html>
