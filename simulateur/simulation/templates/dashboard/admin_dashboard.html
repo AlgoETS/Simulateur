@@ -1,9 +1,10 @@
-{% include 'includes/header.html' %}
+{% extends 'includes/header.html' %}
+
+{% block content %}
 
 <body class="bg-gray-100 text-gray-800">
     <div class="container mx-auto p-6">
         <h1 class="text-3xl font-bold mb-6">Admin Dashboard</h1>
-        {% include 'includes/navigation.html' %}
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
             <!-- Create and List Events -->
@@ -12,7 +13,9 @@
                 <form method="post" action="{% url 'create_event' %}">
                     {% csrf_token %}
                     {{ event_form.as_p }}
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Create Event</button>
+                    <button type="submit"
+                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Create
+                        Event</button>
                 </form>
                 <h4 class="mt-4 font-semibold">Existing Events</h4>
                 <ul>
@@ -34,7 +37,9 @@
                 <form method="post" action="{% url 'create_trigger' %}">
                     {% csrf_token %}
                     {{ trigger_form.as_p }}
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Create Trigger</button>
+                    <button type="submit"
+                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Create
+                        Trigger</button>
                 </form>
                 <h4 class="mt-4 font-semibold">Existing Triggers</h4>
                 <ul>
@@ -56,7 +61,9 @@
                 <form method="post" action="{% url 'create_news' %}">
                     {% csrf_token %}
                     {{ news_form.as_p }}
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Create News</button>
+                    <button type="submit"
+                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Create
+                        News</button>
                 </form>
                 <h4 class="mt-4 font-semibold">Existing News</h4>
                 <ul>
@@ -78,7 +85,9 @@
                 <form method="post" action="{% url 'create_company' %}">
                     {% csrf_token %}
                     {{ company_form.as_p }}
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Create Company</button>
+                    <button type="submit"
+                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Create
+                        Company</button>
                 </form>
                 <h4 class="mt-4 font-semibold">Existing Companies</h4>
                 <ul>
@@ -100,7 +109,9 @@
                 <form method="post" action="{% url 'create_stock' %}">
                     {% csrf_token %}
                     {{ stock_form.as_p }}
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Create Stock</button>
+                    <button type="submit"
+                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Create
+                        Stock</button>
                 </form>
                 <h4 class="mt-4 font-semibold">Existing Stocks</h4>
                 <ul>
@@ -122,7 +133,9 @@
                 <form method="post" action="{% url 'simulation_settings' %}">
                     {% csrf_token %}
                     {{ settings_form.as_p }}
-                    <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Save Settings</button>
+                    <button type="submit"
+                        class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Save
+                        Settings</button>
                 </form>
             </div>
 
@@ -132,7 +145,9 @@
                 <form method="post" action="{% url 'create_scenario' %}">
                     {% csrf_token %}
                     {{ scenario_form.as_p }}
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Create Scenario</button>
+                    <button type="submit"
+                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Create
+                        Scenario</button>
                 </form>
                 <h4 class="mt-4 font-semibold">Existing Scenarios</h4>
                 <ul>
@@ -150,11 +165,17 @@
         </div>
 
         <div class="flex gap-4 mb-6">
-            <button onclick="startSimulation()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded">Start Simulation</button>
-            <button onclick="pauseSimulation()" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-6 rounded">Pause Simulation</button>
-            <button onclick="stopSimulation()" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-6 rounded">Stop Simulation</button>
-            <button onclick="fastForwardSimulation()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-6 rounded">Fast Forward</button>
-            <button onclick="rewindSimulation()" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded">Rewind</button>
+            <button onclick="startSimulation()"
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded">Start Simulation</button>
+            <button onclick="pauseSimulation()"
+                class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-6 rounded">Pause
+                Simulation</button>
+            <button onclick="stopSimulation()"
+                class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-6 rounded">Stop Simulation</button>
+            <button onclick="fastForwardSimulation()"
+                class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-6 rounded">Fast Forward</button>
+            <button onclick="rewindSimulation()"
+                class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded">Rewind</button>
         </div>
     </div>
     <script>
@@ -282,4 +303,4 @@
             });
         }
     </script>
-</body>
+    {% endblock %}

@@ -1,6 +1,5 @@
-{% include 'includes/head.html' %}
-<body class="bg-gray-100 text-gray-800">
-    {% include 'includes/nav.html' %}
+{%  extends 'includes/base_generic.html' %}
+{% block content %}
     <div class="container mx-auto p-6">
         <h1 class="text-3xl font-bold mb-6">WebSocket Simulation Test</h1>
         <div class="mb-6 flex gap-4">
@@ -286,4 +285,4 @@
             }
         };
     </script>
-</body>
+{% endblock %}
