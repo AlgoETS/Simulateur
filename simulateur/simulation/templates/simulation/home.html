@@ -1,4 +1,13 @@
-{% include 'includes/header.html' %}
-<body class="bg-gray-100 text-gray-800">
-{% include 'includes/navigation.html' %}
-</body>
+{% extends "includes/base_generic.html" %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-screen bg-gray-100 text-gray-800">
+    <div class="text-center">
+        <h1 class="text-4xl font-bold mb-4">Welcome to Simulation</h1>
+        <p class="mb-6">Experience the thrill of stock trading in a simulated environment. Compete with others, create strategies, and see how well you can perform in the stock market!</p>
+        <a href="{% url 'signup' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            Get Started
+        </a>
+    </div>
+</div>
+{% endblock %}

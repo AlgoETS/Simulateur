@@ -5,8 +5,8 @@ from simulation.api.data_modification import SimulationDataViewSet
 from simulation.api.trigger import TriggerViewSet
 
 # Importing HTML views
-from simulation.views.dashboard import HomeView, UserDashboardView, AdminDashboardView, TeamDashboardView, MarketOverviewView, BuySellView
-from simulation.views.auth import SignupView, LoginView
+from simulation.views.dashboard import GameDashboardView, HomeView, UserDashboardView, AdminDashboardView, TeamDashboardView, MarketOverviewView, BuySellView
+from simulation.views.auth import LogoutView, ProfileView, SettingsView, SignupView, LoginView
 from simulation.views.simulation import SimulationGraphView
 # Importing API views
 from simulation.api.company import CompanyViewSet
@@ -26,11 +26,15 @@ html_patterns = [
     path('', HomeView.as_view(), name='home'),
     path('dashboard/', UserDashboardView.as_view(), name='user_dashboard'),
     path('admin/dashboard/', AdminDashboardView.as_view(), name='admin_dashboard'),
-        path('team/dashboard/', TeamDashboardView.as_view(), name='team_dashboard'),
+    path('team/dashboard/', TeamDashboardView.as_view(), name='team_dashboard'),
+    path('game/dashboard/', GameDashboardView.as_view(), name='game_dashboard'),
     path('market/overview/', MarketOverviewView.as_view(), name='market_overview'),
     path('buy_sell/<int:stock_id>/', BuySellView.as_view(), name='buy_sell'),
     path('signup/', SignupView.as_view(), name='signup'),
     path('login/', LoginView.as_view(), name='login'),
+    path('logout/', LogoutView.as_view(), name='logout'),
+    path('profile/', ProfileView.as_view(), name='profile'),
+    path('settings/', SettingsView.as_view(), name='settings'),
 ]
 
 api_patterns = [

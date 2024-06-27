@@ -24,21 +24,21 @@ class HomeView(View):
 
 class UserDashboardView(View):
     def get(self, request):
-        try:
-            user_profile = UserProfile.objects.get(user=request.user)
-        except UserProfile.DoesNotExist:
-            messages.error(request, "User profile does not exist. Please create your profile.")
-            return redirect(reverse('create_user_profile'))
+        # try:
+            # user_profile = UserProfile.objects.get(user=request.user)
+        # except UserProfile.DoesNotExist:
+            # messages.error(request, "User profile does not exist. Please create your profile.")
+            # return redirect(reverse('create_user_profile'))
 
-        transactions = TransactionHistory.objects.filter(portfolio=user_profile.portfolio)
-        stocks = Stock.objects.all()
+        # transactions = TransactionHistory.objects.filter(portfolio=user_profile.portfolio)
+        # stocks = Stock.objects.all()
         context = {
             'title': 'User Dashboard',
-            'portfolio': user_profile.portfolio,
-            'transactions': transactions,
-            'stocks': stocks,
+            # 'portfolio': user_profile.portfolio,
+            # 'transactions': transactions,
+            # 'stocks': stocks,
         }
-        return render(request, 'simulation/user_dashboard.html', context)
+        return render(request, 'dashboard/user_dashboard.html', context)
 
 class AdminDashboardView(AdminOnlyMixin, View):
     def get(self, request):
@@ -49,7 +49,7 @@ class AdminDashboardView(AdminOnlyMixin, View):
             'portfolios': portfolios,
             'settings': settings
         }
-        return render(request, 'simulation/admin_dashboard.html', context)
+        return render(request, 'dashboard/admin_dashboard.html', context)
 
 class TeamDashboardView(View):
     def get(self, request):
@@ -61,7 +61,19 @@ class TeamDashboardView(View):
             'team': team,
             'portfolios': portfolios
         }
-        return render(request, 'simulation/team_dashboard.html', context)
+        return render(request, 'dashboard/team_dashboard.html', context)
+
+class GameDashboardView(View):
+    def get(self, request):
+        # user_profile = UserProfile.objects.get(user=request.user)
+        # team = user_profile.team
+        # portfolios = Portfolio.objects.filter(team=team)
+        context = {
+            'title': 'Game Dashboard',
+            # 'team': team,
+            # 'portfolios': portfolios
+        }
+        return render(request, 'dashboard/game_dashboard.html', context)
 
 class MarketOverviewView(View):
     def get(self, request):

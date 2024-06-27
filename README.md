@@ -59,27 +59,7 @@ Simulateur is a stock market simulation platform built using Django for the back
 4. **Run the Server**:
 
     ```bash
-    python manage.py runserver
-    ```
-
-### Frontend (React with Vite)
-
-1. **Install Dependencies**:
-
-    ```bash
-    npm install
-    ```
-
-2. **Run Development Server**:
-
-    ```bash
-    npm run dev
-    ```
-
-3. **Build for Production**:
-
-    ```bash
-    npm run build
+    daphne simulateur.asgi:application
     ```
 
 ## Usage
