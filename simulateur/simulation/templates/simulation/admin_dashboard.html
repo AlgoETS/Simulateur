@@ -158,6 +158,35 @@
         </div>
     </div>
     <script>
+        function saveSettings() {
+            const settings = {
+                max_users: document.getElementById('maxUsers').value,
+                max_companies: document.getElementById('maxCompanies').value,
+                timer_step: document.getElementById('timerStep').value,
+                interval: document.getElementById('interval').value,
+                max_interval: document.getElementById('maxInterval').value,
+                fluctuation_rate: document.getElementById('fluctuationRate').value,
+                time_unit: document.getElementById('timeUnit').value,
+                close_stock_market_at_night: document.getElementById('closeMarketAtNight').checked,
+                noise_function: document.getElementById('noiseFunction').value
+            };
+
+            fetch('/api/simulation/settings/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(settings)
+            }).then(response => {
+                if (response.ok) {
+                    alert('Settings saved successfully');
+                } else {
+                    alert('Failed to save settings');
+                }
+            });
+        }
+
         function getCookie(name) {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
