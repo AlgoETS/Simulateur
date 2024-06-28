@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% include 'includes/head.html' %}
+
+<body>
+    {% include 'includes/nav.html' %}
+
+    <main class="container mx-auto mt-6">
+        {% block content %}{% endblock %}
+    </main>
+
+    {% include 'includes/footer.html' %}
+
+    <script>
+        document.getElementById('nav-toggle').addEventListener('click', function () {
+            document.getElementById('nav-menu').classList.toggle('hidden');
+        });
+
+        document.getElementById('dark-mode-toggle').addEventListener('click', function () {
+            document.documentElement.classList.toggle('dark');
+        });
+    </script>
+</body>
+
+</html>

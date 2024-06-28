@@ -1,20 +1,13 @@
 import logging
 import time
-import random
-import numpy as np
-import noise
 from django.utils import timezone
 from channels.layers import get_channel_layer
-from simulation.models import Scenario, SimulationData, Stock, Cryptocurrency, TransactionHistory
-from simulation.logic.utils import is_market_open, send_ohlc_update, TIME_UNITS
+from simulation.models import Scenario, SimulationData, Stock, StockPriceHistory
+from simulation.logic.utils import generate_brownian_motion_candle, is_market_open, send_ohlc_update, TIME_UNITS, generate_perlin_noise_candle, generate_random_walk_candle, generate_fbm_candles, generate_random_candle
 
-# Set up logging
 logger = logging.getLogger(__name__)
 
 class SimulationManager:
-    """
-    Manages the simulation of stock and cryptocurrency prices based on various algorithms.
-    """
     def __init__(self, scenario_id, run_duration=100000):
         self.scenario = Scenario.objects.get(id=scenario_id)
         self.channel_layer = get_channel_layer()
@@ -29,15 +22,9 @@ class SimulationManager:
         self.fluctuation_rate = settings.fluctuation_rate
         self.noise_function = settings.noise_function.lower()
 
-        self.stock_prices = {stock.company.name: [] for stock in Stock.objects.all()}
-        self.crypto_prices = {crypto.name: [] for crypto in Cryptocurrency.objects.all()}
-
         logger.info(f'Starting simulation for scenario {self.scenario} with time step {self.time_step} seconds')
 
     def start_simulation(self):
-        """
-        Starts the simulation.
-        """
         self.running = True
         self.simulation_data = SimulationData.objects.create(scenario=self.scenario)
         start_time = timezone.now()
@@ -54,7 +41,9 @@ class SimulationManager:
                     logger.info('Stock market is closed')
                 else:
                     self.update_prices(current_time)
+                    logger.info(f'Simulation time: {current_time}, elapsed time: {elapsed_time}')
                 self.broadcast_updates()
+                logger.info(f'Sleeping for {self.time_step} seconds')
                 time.sleep(self.time_step)
         except KeyboardInterrupt:
             logger.info('Simulation stopped by user')
@@ -64,47 +53,36 @@ class SimulationManager:
             self.stop_simulation()
 
     def pause_simulation(self):
-        """
-        Pauses the simulation.
-        """
         self.running = False
         logger.info('Simulation paused')
 
     def stop_simulation(self):
-        """
-        Stops the simulation and updates the simulation data.
-        """
         if self.simulation_data:
             self.simulation_data.stop_simulation()
         self.running = False
         logger.info('Simulation stopped')
 
     def update_prices(self, current_time):
-        """
-        Updates the prices of stocks and cryptocurrencies.
-        """
+        price_changes = []
         for company in self.scenario.companies.all():
             if stock := company.stock_set.first():
-                self.apply_changes(stock, current_time)
-                self.stock_prices[stock.company.name].append(stock.close_price)
+                change = self.apply_changes(stock, current_time)
+                price_changes.append(change)
+                StockPriceHistory.objects.create(stock=stock, price=stock.price, timestamp=current_time)
 
-        for crypto in self.scenario.cryptocurrencies.all():
-            self.apply_changes(crypto, current_time)
-            self.crypto_prices[crypto.name].append(crypto.close_price)
-
+        self.simulation_data.price_changes = price_changes
         self.simulation_data.end_time = current_time
         self.simulation_data.save()
 
     def apply_changes(self, asset, current_time):
-        """
-        Applies changes to the asset prices using the chosen noise function.
-        """
         if self.noise_function == 'brownian':
             change = generate_brownian_motion_candle(asset.price, self.fluctuation_rate)
         elif self.noise_function == 'perlin':
-            change = generate_perlin_noise_candle(asset.price, len(asset.value_history), self.fluctuation_rate)
+            change = generate_perlin_noise_candle(asset.price, len(asset.price_history.all()), self.fluctuation_rate)
         elif self.noise_function == 'random_walk':
             change = generate_random_walk_candle(asset.price, self.fluctuation_rate)
+        elif self.noise_function == 'fbm':
+            change = generate_fbm_candles(asset.price, self.fluctuation_rate)
         else:
             change = generate_random_candle(asset.price, self.fluctuation_rate)
 
@@ -113,26 +91,23 @@ class SimulationManager:
         asset.low_price = change['Low']
         asset.close_price = change['Close']
         asset.price = change['Close']
-
-        asset.value_history.append(asset.price)
         asset.save()
 
+        return {
+            'ticker': asset.ticker,
+            'open': asset.open_price,
+            'high': asset.high_price,
+            'low': asset.low_price,
+            'close': asset.close_price,
+            'time': current_time.isoformat()
+        }
 
     def broadcast_updates(self):
-        """
-        Broadcasts the latest price updates to the front-end.
-        """
         for company in self.scenario.companies.all():
             if stock := company.stock_set.first():
                 send_ohlc_update(self.channel_layer, stock, 'stock')
-        for crypto in self.scenario.cryptocurrencies.all():
-            send_ohlc_update(self.channel_layer, crypto, 'cryptocurrency')
-
 
 class SimulationManagerSingleton:
-    """
-    Singleton class for managing simulation instances.
-    """
     _instances = {}
 
     @classmethod
@@ -145,74 +120,3 @@ class SimulationManagerSingleton:
     def remove_instance(cls, scenario_id):
         if scenario_id in cls._instances:
             del cls._instances[scenario_id]
-
-
-def generate_brownian_motion_candle(price, fluctuation_rate):
-    """
-    Generates a single Brownian motion candle.
-    """
-    open_price = price
-    change = np.random.normal(loc=0, scale=fluctuation_rate)
-    close_price = open_price + change
-    high_price = max(open_price, close_price) + np.random.uniform(0, fluctuation_rate * 2)
-    low_price = min(open_price, close_price) - np.random.uniform(0, fluctuation_rate * 2)
-    return {'Open': open_price, 'High': high_price, 'Low': low_price, 'Close': close_price}
-
-def generate_perlin_noise_candle(price, i, fluctuation_rate):
-    """
-    Generates a single Perlin noise candle.
-    """
-    open_price = price
-    change = noise.pnoise1(i * 0.1) * fluctuation_rate * 10
-    close_price = open_price + change
-    high_price = max(open_price, close_price) + np.random.uniform(0, fluctuation_rate * 2)
-    low_price = min(open_price, close_price) - np.random.uniform(0, fluctuation_rate * 2)
-    return {'Open': open_price, 'High': high_price, 'Low': low_price, 'Close': close_price}
-
-def generate_random_walk_candle(price, fluctuation_rate):
-    """
-    Generates a single random walk candle.
-    """
-    open_price = price
-    change = np.random.choice([-1, 1]) * np.random.uniform(0, fluctuation_rate * 5)
-    close_price = open_price + change
-    high_price = max(open_price, close_price)
-    low_price = min(open_price, close_price)
-    return {'Open': open_price, 'High': high_price, 'Low': low_price, 'Close': close_price}
-
-def generate_random_candle(price, fluctuation_rate):
-    """
-    Generates a single random candle.
-    """
-    open_price = price
-    high_price = open_price + np.random.uniform(0, fluctuation_rate * 5)
-    low_price = open_price - np.random.uniform(0, fluctuation_rate * 5)
-    close_price = low_price + np.random.uniform(0, (high_price - low_price))
-    return {'Open': open_price, 'High': high_price, 'Low': low_price, 'Close': close_price}
-
-
-def update_ohlc(asset):
-    """
-    Updates the OHLC (Open, High, Low, Close) values for the asset.
-    """
-    if not asset.open_price:
-        asset.open_price = asset.price
-    if not asset.high_price or asset.price > asset.high_price:
-        asset.high_price = asset.price
-    if not asset.low_price or asset.price < asset.low_price:
-        asset.low_price = asset.price
-    asset.close_price = asset.price
-    asset.save()
-
-def log_transactions(transactions):
-    """
-    Logs the transactions to the database.
-    """
-    for transaction in transactions:
-        TransactionHistory.objects.create(
-            portfolio=transaction['portfolio'],
-            asset=transaction['asset'],
-            transaction_type=transaction['transaction_type'],
-            amount=transaction['amount'],
-            price=transaction['price']
-        )

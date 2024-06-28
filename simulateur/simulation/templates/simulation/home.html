@@ -1,16 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Home</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
-</head>
-<body class="bg-gray-100 text-gray-800">
-    <div class="container mx-auto p-6">
-        <h1 class="text-3xl font-bold mb-6">Welcome to the Stock Market Simulator</h1>
-        <a href="{% url 'market_overview' %}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Market Overview</a>
-        <a href="{% url 'login' %}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Log In</a>
-        <a href="{% url 'signup' %}" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">Register</a>
+{% extends "includes/base_generic.html" %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-screen bg-gray-100 text-gray-800">
+    <div class="text-center">
+        <h1 class="text-4xl font-bold mb-4">Welcome to Simulation</h1>
+        <p class="mb-6">Experience the thrill of stock trading in a simulated environment. Compete with others, create strategies, and see how well you can perform in the stock market!</p>
+        <a href="{% url 'signup' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            Get Started
+        </a>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}

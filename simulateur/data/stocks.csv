@@ -1,21 +1,21 @@
-company,price,partial_share,complete_share,open_price,high_price,low_price,close_price,quantity,value_change,value_history
-Air Munegu International,21.87,0.0,0,21.87,21.87,21.87,21.87,0,0.0,"[]"
-B&C Laser,28.25,0.0,0,28.25,28.25,28.25,28.25,0,0.0,"[]"
-Cambridge City Football Club,4.83,0.0,0,4.83,4.83,4.83,4.83,0,0.0,"[]"
-Coaks,16.80,0.0,0,16.80,16.80,16.80,16.80,0,0.0,"[]"
-Cryptokrone,3.28,0.0,0,3.28,3.28,3.28,3.28,0,0.0,"[]"
-Hexium,85.23,0.0,0,85.23,85.23,85.23,85.23,0,0.0,"[]"
-Happy Rabbit Pharma,1.56,0.0,0,1.56,1.56,1.56,1.56,0,0.0,"[]"
-Minerrain Tout Terrain,58.65,0.0,0,58.65,58.65,58.65,58.65,0,0.0,"[]"
-Smith Motors,104.94,0.0,0,104.94,104.94,104.94,104.94,0,0.0,"[]"
-New Bank of Shanghai,116.18,0.0,0,116.18,116.18,116.18,116.18,0,0.0,"[]"
-Blue Bacon Batteries,4.5,0.0,0,4.5,4.5,4.5,4.5,0,0.0,"[]"
-Chargex Bank,100,0.0,0,100,100,100,100,0,0.0,"[]"
-Costal Construction and Engineering Group,55,0.0,0,55,55,55,55,0,0.0,"[]"
-Ellis & Vincent Transportation,35.25,0.0,0,35.25,35.25,35.25,35.25,0,0.0,"[]"
-Industrial Forestry Inc.,18,0.0,0,18,18,18,18,0,0.0,"[]"
-PyraMD,64,0.0,0,64,64,64,64,0,0.0,"[]"
-RD Consulting Group,80,0.0,0,80,80,80,80,0,0.0,"[]"
-SharePhase,15.625,0.0,0,15.625,15.625,15.625,15.625,0,0.0,"[]"
-Solarama,30,0.0,0,30,30,30,30,0,0.0,"[]"
-Wang Telecommunication,25,0.0,0,25,25,25,25,0,0.0,"[]"
+company,price,partial_share,complete_share,open_price,high_price,low_price,close_price,quantity,value_change,value_history,ticker
+Air Munegu International,21.87,0.0,0,21.87,21.87,21.87,21.87,0,0.0,"[]",AMI
+B&C Laser,28.25,0.0,0,28.25,28.25,28.25,28.25,0,0.0,"[]",BCL
+Cambridge City Football Club,4.83,0.0,0,4.83,4.83,4.83,4.83,0,0.0,"[]",CCFC
+Coaks,16.80,0.0,0,16.80,16.80,16.80,16.80,0,0.0,"[]",COAK
+Cryptokrone,3.28,0.0,0,3.28,3.28,3.28,3.28,0,0.0,"[]",CRYPTO
+Hexium,85.23,0.0,0,85.23,85.23,85.23,85.23,0,0.0,"[]",HEX
+Happy Rabbit Pharma,1.56,0.0,0,1.56,1.56,1.56,1.56,0,0.0,"[]",HRP
+Minerrain Tout Terrain,58.65,0.0,0,58.65,58.65,58.65,58.65,0,0.0,"[]",MINET
+Smith Motors,104.94,0.0,0,104.94,104.94,104.94,104.94,0,0.0,"[]",SMITH
+New Bank of Shanghai,116.18,0.0,0,116.18,116.18,116.18,116.18,0,0.0,"[]",NBOS
+Blue Bacon Batteries,4.5,0.0,0,4.5,4.5,4.5,4.5,0,0.0,"[]",BBB
+Chargex Bank,100,0.0,0,100,100,100,100,0,0.0,"[]",CHARGEX
+Costal Construction and Engineering Group,55,0.0,0,55,55,55,55,0,0.0,"[]",CCEG
+Ellis & Vincent Transportation,35.25,0.0,0,35.25,35.25,35.25,35.25,0,0.0,"[]",EVT
+Industrial Forestry Inc.,18,0.0,0,18,18,18,18,0,0.0,"[]",IND
+PyraMD,64,0.0,0,64,64,64,64,0,0.0,"[]",PYRA
+RD Consulting Group,80,0.0,0,80,80,80,80,0,0.0,"[]",RD
+SharePhase,15.625,0.0,0,15.625,15.625,15.625,15.625,0,0.0,"[]",SPHASE
+Solarama,30,0.0,0,30,30,30,30,0,0.0,"[]",SOLAR
+Wang Telecommunication,25,0.0,0,25,25,25,25,0,0.0,"[]",WANG

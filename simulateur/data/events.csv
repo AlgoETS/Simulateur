@@ -1,2 +1,2 @@
-name,description,impact,event_type,trigger_date
-EventA,Description for Event A,5.0,TypeA,2024-06-17 12:00:00
+name,description,impact,type,date,scenario
+EventA,Description for Event A,5.0,TypeA,2024-06-17 12:00:00, ScenarioA

@@ -1,0 +1,79 @@
+{% extends 'includes/base_generic.html' %}
+
+{% block content %}
+<div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-md">
+        <img class="mx-auto h-16 w-auto" src="https://s39373.pcdn.co/wp-content/uploads/2021/11/cropped-cropped-IMG_0577-150x150.png" alt="Your Company">
+        <h2 class="mt-10 text-center text-4xl font-extrabold leading-9 tracking-tight text-gray-900">Register your account</h2>
+    </div>
+    <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-md">
+        <form class="space-y-6" id="signupForm">
+            {% csrf_token %}
+            <div>
+                <label for="username" class="block text-sm font-medium leading-6 text-gray-900">Username</label>
+                <div class="mt-2">
+                    <input id="username" name="username" type="text" autocomplete="username" required class="block w-full rounded-md border-0 py-2 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                </div>
+            </div>
+            <div>
+                <label for="email" class="block text-sm font-medium leading-6 text-gray-900">Email address</label>
+                <div class="mt-2">
+                    <input id="email" name="email" type="email" autocomplete="email" required class="block w-full rounded-md border-0 py-2 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                </div>
+            </div>
+            <div>
+                <label for="password" class="block text-sm font-medium leading-6 text-gray-900">Password</label>
+                <div class="mt-2">
+                    <input id="password" name="password" type="password" autocomplete="new-password" required class="block w-full rounded-md border-0 py-2 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                </div>
+            </div>
+            <div>
+                <button type="button" onclick="handleSignup()" class="flex w-full justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Register</button>
+            </div>
+        </form>
+        <p class="mt-10 text-center text-sm text-gray-500">
+            Already a member?
+            <a href="{% url 'login' %}" class="font-semibold leading-6 text-indigo-600 hover:text-indigo-800">Sign in</a>
+        </p>
+    </div>
+</div>
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function handleSignup() {
+        const username = document.getElementById('username').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const csrfToken = getCookie('csrftoken');
+
+        axios.post('/api/signup/', { username, email, password }, {
+            headers: {
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(response => {
+            if (response.data.status === 'success') {
+                window.location.href = '{% url "login" %}';
+            } else {
+                alert(response.data.message);
+            }
+        })
+        .catch(error => {
+            alert('Failed to register. Please try again.');
+        });
+    }
+</script>
+{% endblock %}

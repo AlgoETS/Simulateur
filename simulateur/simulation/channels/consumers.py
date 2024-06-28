@@ -1,5 +1,3 @@
-# simulation/consumers.py
-
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 import logging
@@ -35,6 +33,6 @@ class SimulationConsumer(AsyncWebsocketConsumer):
         }))
 
     async def simulation_update(self, event):
-        data = event['data']
+        data = event['message']
         await self.send(text_data=json.dumps(data))
         logger.debug(f"Sent simulation update in room {self.room_group_name}: {data}")
