@@ -99,7 +99,7 @@ class GameDashboardView(View):
             companies_data.append({
                 'id': company.id,
                 'name': company.name,
-                'ticker': stock.get(company=company).ticker,
+                'ticker': stock.filter(company=company).first().ticker,
                 'stock_prices': list(stock_prices)
             })
 
