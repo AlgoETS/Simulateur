@@ -1,0 +1,33 @@
+{% extends 'includes/base_generic.html' %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-8">
+    <h1 class="text-4xl font-extrabold text-gray-900 mb-8">Profile</h1>
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+        <div class="px-4 py-5 sm:px-6 bg-gradient-to-r from-indigo-500 to-blue-500 text-white">
+            <h3 class="text-xl leading-6 font-semibold">User Information</h3>
+            <p class="mt-1 max-w-2xl text-sm">Personal details and application.</p>
+        </div>
+        <div class="border-t border-gray-200">
+            <dl>
+                <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Username</dt>
+                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ user.username }}</dd>
+                </div>
+                <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Email</dt>
+                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ user.email }}</dd>
+                </div>
+                <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Balance</dt>
+                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">${{ user_profile.balance }}</dd>
+                </div>
+                <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Team</dt>
+                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ user_profile.team.name }}</dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+</div>
+{% endblock %}

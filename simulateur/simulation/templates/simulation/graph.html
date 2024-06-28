@@ -1,4 +1,4 @@
-{%  extends 'includes/base_generic.html' %}
+{% extends 'includes/base_generic.html' %}
 {% block content %}
     <div class="container mx-auto p-6">
         <h1 class="text-3xl font-bold mb-6">WebSocket Simulation Test</h1>
@@ -25,7 +25,7 @@
                 <input type="checkbox" id="tooltip" checked class="bg-white shadow rounded p-2 border border-gray-300">
             </div>
         </div>
-        <div id="charts" class="grid gap-4"></div>
+        <div id="charts" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         <div id="messages" class="mt-6 space-y-4"></div>
     </div>
     <script>
@@ -60,11 +60,11 @@
         function createCanvasForCompany(companyName) {
             const chartsDiv = document.getElementById('charts');
             const container = document.createElement('div');
-            container.className = 'chart-container';
+            container.className = 'chart-container bg-white shadow rounded-lg p-4 relative';
             const canvas = document.createElement('canvas');
             canvas.id = companyName.replace(/\s+/g, '-') + '-chart';
             const resizeHandle = document.createElement('div');
-            resizeHandle.className = 'resize-handle';
+            resizeHandle.className = 'resize-handle absolute bottom-0 right-0 w-4 h-4 bg-blue-500 cursor-se-resize';
             container.appendChild(canvas);
             container.appendChild(resizeHandle);
             chartsDiv.appendChild(container);
@@ -150,6 +150,8 @@
         }
 
         async function startSimulation() {
+            const roomName = "stock"; // Change this to dynamically fetch the room name if needed
+
             if (socket) {
                 socket.close();
             }
@@ -157,18 +159,17 @@
 
             const timeStep = parseInt(document.getElementById('timeStep').value);
 
-            socket = new WebSocket('ws://' + window.location.host + '/ws/simulation/stock/');
+            socket = new WebSocket(`ws://${window.location.host}/ws/simulation/${roomName}/`);
 
             socket.onopen = function (e) {
                 console.log("WebSocket connection established");
-                document.getElementById('messages').innerHTML += "<p class='bg-green-100 text-green-800 p-2 rounded'>WebSocket connection established</p>";
+                addMessage("WebSocket connection established", "green");
             };
 
             socket.onmessage = function (e) {
                 console.log("Message received: " + e.data);
                 const messageData = JSON.parse(e.data);
                 if (messageData.name && messageData.timestamp) {
-                    addMessage(messageData);
                     updateChart(messageData);
                 } else {
                     console.warn("Received malformed message:", messageData);
@@ -177,12 +178,12 @@
 
             socket.onclose = function (e) {
                 console.log("WebSocket connection closed");
-                document.getElementById('messages').innerHTML += "<p class='bg-red-100 text-red-800 p-2 rounded'>WebSocket connection closed</p>";
+                addMessage("WebSocket connection closed", "red");
             };
 
             socket.onerror = function (e) {
                 console.log("WebSocket error: " + e.data);
-                document.getElementById('messages').innerHTML += "<p class='bg-red-100 text-red-800 p-2 rounded'>WebSocket error: " + e.data + "</p>";
+                addMessage("WebSocket error: " + e.data, "red");
             };
 
             // Simulate periodic data fetching
@@ -204,7 +205,7 @@
             }).then(response => {
                 if (response.ok) {
                     console.log('Simulation paused');
-                    document.getElementById('messages').innerHTML += "<p class='bg-yellow-100 text-yellow-800 p-2 rounded'>Simulation paused</p>";
+                    addMessage("Simulation paused", "yellow");
                 }
             });
         }
@@ -220,7 +221,7 @@
             }).then(response => {
                 if (response.ok) {
                     console.log('Simulation stopped');
-                    document.getElementById('messages').innerHTML += "<p class='bg-red-100 text-red-800 p-2 rounded'>Simulation stopped</p>";
+                    addMessage("Simulation stopped", "red");
                     if (socket) {
                         socket.close();
                     }
@@ -248,15 +249,10 @@
             }
         }
 
-        function addMessage(messageData) {
+        function addMessage(message, color) {
             const messageContainer = document.createElement('div');
-            messageContainer.className = 'bg-white shadow rounded p-2 cursor-pointer';
-            messageContainer.innerHTML = `
-                <details>
-                    <summary class="text-gray-700">${new Date(messageData.timestamp).toLocaleString()}</summary>
-                    <pre class="text-xs mt-2">${JSON.stringify(messageData, null, 2)}</pre>
-                </details>
-            `;
+            messageContainer.className = `bg-${color}-100 text-${color}-800 p-2 rounded shadow`;
+            messageContainer.innerHTML = message;
             document.getElementById('messages').appendChild(messageContainer);
         }
 

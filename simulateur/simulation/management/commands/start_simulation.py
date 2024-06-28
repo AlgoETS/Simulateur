@@ -1,4 +1,3 @@
-# simulation/management/commands/start_simulation.py
 from django.core.management.base import BaseCommand
 from simulation.models import Scenario
 from simulation.logic.simulation_manager import SimulationManager

@@ -1,4 +1,3 @@
-# simulation/api/auth.py
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from django.contrib.auth.models import User
@@ -15,7 +14,12 @@ class SignupView(generics.CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         data = request.data
-        user = User.objects.create_user(username=data['username'], email=data['email'], password=data['password'])
+        username = data.get('username')
+        email = data.get('email')
+        password = data.get('password')
+        if not username or not email or not password:
+            return Response({'status': 'error', 'message': 'Invalid data'}, status=400)
+        user = User.objects.create_user(username=username, email=email, password=password)
         UserProfile.objects.create(user=user)
         return Response({'status': 'success'})
 
@@ -23,7 +27,11 @@ class SignupView(generics.CreateAPIView):
 class LoginView(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         data = request.data
-        user = authenticate(request, username=data['username'], password=data['password'])
+        username = data.get('username')
+        password = data.get('password')
+        if not username or not password:
+            return Response({'status': 'error', 'message': 'Invalid data'}, status=400)
+        user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
             return Response({'status': 'success'})

@@ -7,7 +7,6 @@ from django.views import View
 
 from simulation.models import UserProfile
 
-
 class SignupView(View):
     def get(self, request):
         return render(request, "registration/signup.html")
@@ -18,18 +17,13 @@ class SignupView(View):
             username = data["username"]
             email = data["email"]
             password = data["password"]
-            user = User.objects.create_user(
-                username=username, email=email, password=password
-            )
+            user = User.objects.create_user(username=username, email=email, password=password)
             UserProfile.objects.create(user=user)
             return JsonResponse({"status": "success"})
         except json.JSONDecodeError:
-            return JsonResponse(
-                {"status": "error", "message": "Invalid JSON data"}, status=400
-            )
+            return JsonResponse({"status": "error", "message": "Invalid JSON data"}, status=400)
         except Exception as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=400)
-
 
 class LoginView(View):
     def get(self, request):
@@ -45,20 +39,17 @@ class LoginView(View):
                 login(request, user)
                 return JsonResponse({"status": "success"})
             else:
-                return JsonResponse(
-                    {"status": "error", "message": "Invalid credentials"}, status=400
-                )
+                return JsonResponse({"status": "error", "message": "Invalid credentials"}, status=400)
         except json.JSONDecodeError:
-            return JsonResponse(
-                {"status": "error", "message": "Invalid JSON data"}, status=400
-            )
-
+            return JsonResponse({"status": "error", "message": "Invalid JSON data"}, status=400)
 
 class LogoutView(View):
+    def get(self, request):
+        logout(request)
+        return redirect("login")
     def post(self, request):
         logout(request)
         return JsonResponse({"status": "success"})
-
 
 class ProfileView(View):
     def get(self, request):
@@ -69,7 +60,6 @@ class ProfileView(View):
             "user_profile": user_profile,
         }
         return render(request, "registration/profile.html", context)
-
 
 class SettingsView(View):
     def get(self, request):
@@ -94,8 +84,6 @@ class SettingsView(View):
 
             return JsonResponse({"status": "success"})
         except json.JSONDecodeError:
-            return JsonResponse(
-                {"status": "error", "message": "Invalid JSON data"}, status=400
-            )
+            return JsonResponse({"status": "error", "message": "Invalid JSON data"}, status=400)
         except Exception as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=400)

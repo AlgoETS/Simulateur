@@ -48,6 +48,7 @@ Simulateur is a stock market simulation platform built using Django for the back
     ```bash
     python manage.py makemigrations
     python manage.py migrate
+    python manage.py seed_database
     ```
 
 3. **Create a Superuser**:

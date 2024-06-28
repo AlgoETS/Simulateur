@@ -36,3 +36,4 @@ def send_ohlc_update(channel_layer, asset, room_name):
             }
         }
     )
+
