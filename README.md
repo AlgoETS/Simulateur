@@ -128,7 +128,7 @@ Here is a brief overview of the project file structure:
 ├── Dockerfile
 ├── data
 ├── db.sqlite3 # db
-├── docker-compose.yml 
+├── docker-compose.yml
 ├── manage.py
 ├── requirements.txt # packages
 ├── simulateur
@@ -136,7 +136,7 @@ Here is a brief overview of the project file structure:
 │   ├── settings.py
 │   ├── urls.py
 ├── simulation
-│   ├── admin.py 
+│   ├── admin.py
 │   ├── apps.py
 │   ├── channels # websocket
 │   ├── logic # simulation logic

@@ -1,6 +1,7 @@
 import csv
 import json
 from datetime import datetime
+import logging
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from django.db import transaction
@@ -44,10 +45,11 @@ class Command(BaseCommand):
                             'password': row['password']
                         }
                     )
-                    UserProfile.objects.create(
+                    UserProfile.objects.get_or_create(
                         user=user,
-                        balance=float(row['balance'])
+                        defaults={'balance': float(row['balance'])}
                     )
+            self.stdout.write(self.style.SUCCESS('Seeded users'))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Error seeding users: {e}'))
 
@@ -56,13 +58,16 @@ class Command(BaseCommand):
             with open('data/companies.csv', newline='') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
-                    Company.objects.create(
+                    Company.objects.get_or_create(
                         name=row['name'],
-                        backstory=row['backstory'],
-                        sector=row['sector'],
-                        country=row['country'],
-                        industry=row['industry']
+                        defaults={
+                            'backstory': row['backstory'],
+                            'sector': row['sector'],
+                            'country': row['country'],
+                            'industry': row['industry']
+                        }
                     )
+            self.stdout.write(self.style.SUCCESS('Seeded companies'))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Error seeding companies: {e}'))
 
@@ -72,13 +77,20 @@ class Command(BaseCommand):
                 reader = csv.DictReader(csvfile)
                 for row in reader:
                     company = Company.objects.get(name=row['company'])
-                    Stock.objects.create(
+                    Stock.objects.get_or_create(
                         company=company,
                         ticker=row['ticker'],
-                        price=float(row['price']),
-                        partial_share=float(row['partial_share']),
-                        complete_share=int(row['complete_share'])
+                        open_price=float(row['open_price']),
+                        high_price=float(row['high_price']),
+                        low_price=float(row['low_price']),
+                        close_price=float(row['close_price']),
+                        defaults={
+                            'price': float(row['price']),
+                            'partial_share': float(row['partial_share']),
+                            'complete_share': int(row['complete_share'])
+                        }
                     )
+            self.stdout.write(self.style.SUCCESS('Seeded stocks'))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Error seeding stocks: {e}'))
 
@@ -87,12 +99,14 @@ class Command(BaseCommand):
             with open('data/teams.csv', newline='') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
-                    team = Team.objects.create(
+                    team, created = Team.objects.get_or_create(
                         name=row['name'],
-                        balance=float(row['balance'])
+                        defaults={'balance': float(row['balance'])}
                     )
-                    members = UserProfile.objects.filter(user__username__in=row['members'].split(';'))
-                    team.members.set(members)
+                    if created:
+                        members = UserProfile.objects.filter(user__username__in=row['members'].split(';'))
+                        team.members.set(members)
+            self.stdout.write(self.style.SUCCESS('Seeded teams'))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Error seeding teams: {e}'))
 
@@ -101,14 +115,15 @@ class Command(BaseCommand):
             with open('data/events.csv', newline='') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
-                    scenario = Scenario.objects.get(name=row['scenario'])
-                    Event.objects.create(
+                    Event.objects.get_or_create(
                         name=row['name'],
-                        description=row['description'],
-                        event_type=row['event_type'],
-                        trigger_date=datetime.strptime(row['trigger_date'], '%Y-%m-%d %H:%M:%S'),
-                        scenario=scenario
+                        defaults={
+                            'description': row['description'],
+                            'type': row['type'],
+                            'date': datetime.strptime(row['date'], '%Y-%m-%d %H:%M:%S')
+                        }
                     )
+            self.stdout.write(self.style.SUCCESS('Seeded events'))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Error seeding events: {e}'))
 
@@ -117,16 +132,21 @@ class Command(BaseCommand):
             with open('data/triggers.csv', newline='') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
-                    event = Event.objects.get(name=row['event'])
-                    scenario = Scenario.objects.get(name=row['scenario'])
-                    Trigger.objects.create(
+                    event_names = row['events'].split(';') if row['events'] else []
+                    events = Event.objects.filter(name__in=event_names) if event_names else []
+                    trigger, created = Trigger.objects.get_or_create(
                         name=row['name'],
-                        description=row['description'],
-                        trigger_type=row['trigger_type'],
-                        trigger_value=float(row['trigger_value']),
-                        event=event,
-                        scenario=scenario
+                        defaults={
+                            'description': row['description'],
+                            'type': row['trigger_type'],
+                            'value': float(row['trigger_value'])
+                        }
                     )
+
+                    if created:
+                        trigger.events.set(events)
+                        trigger.save()
+            self.stdout.write(self.style.SUCCESS('Seeded triggers'))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Error seeding triggers: {e}'))
 
@@ -135,19 +155,21 @@ class Command(BaseCommand):
             with open('data/simulation_settings.csv', newline='') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
-                    SimulationSettings.objects.create(
+                    SimulationSettings.objects.get_or_create(
                         max_users=int(row['max_users']),
                         max_companies=int(row['max_companies']),
                         timer_step=int(row['timer_step']),
                         timer_step_unit=row['timer_step_unit'],
                         interval=int(row['interval']),
                         interval_unit=row['interval_unit'],
-                        max_interval=int(row['max_interval']),
-                        fluctuation_rate=float(row['fluctuation_rate']),
-                        time_unit=row['time_unit'],
-                        close_stock_market_at_night=row['close_stock_market_at_night'].lower() == 'true',
-                        noise_function=row['noise_function']
+                        defaults={
+                            'max_interval': int(row['max_interval']),
+                            'fluctuation_rate': float(row['fluctuation_rate']),
+                            'close_stock_market_at_night': row['close_stock_market_at_night'].lower() == 'true',
+                            'noise_function': row['noise_function']
+                        }
                     )
+            self.stdout.write(self.style.SUCCESS('Seeded simulation settings'))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Error seeding simulation settings: {e}'))
 
@@ -156,27 +178,30 @@ class Command(BaseCommand):
             with open('data/scenarios.csv', newline='') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
-                    simulation_settings = SimulationSettings.objects.first()  # Get the first SimulationSettings instance
-                    scenario = Scenario.objects.create(
+                    simulation_settings = SimulationSettings.objects.first()
+                    scenario, created = Scenario.objects.get_or_create(
                         name=row['name'],
-                        description=row['description'],
-                        backstory=row['backstory'],
-                        difficulty_level=row['difficulty_level'],
-                        duration=int(row['duration']),
-                        simulation_settings=simulation_settings
+                        defaults={
+                            'description': row['description'],
+                            'backstory': row['backstory'],
+                            'duration': int(row['duration']),
+                            'simulation_settings': simulation_settings
+                        }
                     )
-                    companies = Company.objects.filter(name__in=row['companies'].split(';'))
-                    stocks = Stock.objects.filter(company__name__in=row['stocks'].split(';'))
-                    users = UserProfile.objects.filter(user__username__in=row['users'].split(';'))
-                    teams = Team.objects.filter(name__in=row['teams'].split(';'))
-                    events = Event.objects.filter(name__in=row['events'].split(';'))
-                    triggers = Trigger.objects.filter(name__in=row['triggers'].split(';'))
-                    scenario.companies.set(companies)
-                    scenario.stocks.set(stocks)
-                    scenario.users.set(users)
-                    scenario.teams.set(teams)
-                    scenario.events.set(events)
-                    scenario.triggers.set(triggers)
+                    if created:
+                        companies = Company.objects.filter(name__in=row['companies'].split(';'))
+                        stocks = Stock.objects.filter(ticker__in=row['stocks'].split(';'))
+                        users = UserProfile.objects.filter(user__username__in=row['users'].split(';'))
+                        teams = Team.objects.filter(name__in=row['teams'].split(';'))
+                        events = Event.objects.filter(name__in=row['events'].split(';'))
+                        triggers = Trigger.objects.filter(name__in=row['triggers'].split(';'))
+                        scenario.companies.set(companies)
+                        scenario.stocks.set(stocks)
+                        scenario.users.set(users)
+                        scenario.teams.set(teams)
+                        scenario.events.set(events)
+                        scenario.triggers.set(triggers)
+            self.stdout.write(self.style.SUCCESS('Seeded scenarios'))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Error seeding scenarios: {e}'))
 
@@ -187,12 +212,14 @@ class Command(BaseCommand):
                 for row in reader:
                     owner = UserProfile.objects.get(user__username=row['owner']) if row['owner'] else None
                     team = Team.objects.get(name=row['team']) if row['team'] else None
-                    portfolio = Portfolio.objects.create(
+                    portfolio, created = Portfolio.objects.get_or_create(
                         owner=owner,
                         team=team
                     )
-                    stocks = Stock.objects.filter(company__name__in=row['stocks'].split(';'))
-                    portfolio.stocks.set(stocks)
+                    if created:
+                        stocks = Stock.objects.filter(ticker__in=row['stocks'].split(';'))
+                        portfolio.stocks.set(stocks)
+            self.stdout.write(self.style.SUCCESS('Seeded portfolios'))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Error seeding portfolios: {e}'))
 
@@ -210,5 +237,6 @@ class Command(BaseCommand):
                         price=float(row['price']),
                         date=datetime.strptime(row['date'], '%Y-%m-%d %H:%M:%S')
                     )
+            self.stdout.write(self.style.SUCCESS('Seeded transaction history'))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Error seeding transaction history: {e}'))

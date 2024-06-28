@@ -1,12 +1,9 @@
 import logging
 import time
-import random
-import numpy as np
-import noise
 from django.utils import timezone
 from channels.layers import get_channel_layer
-from simulation.models import Scenario, SimulationData, Stock, TransactionHistory
-from simulation.logic.utils import is_market_open, send_ohlc_update, TIME_UNITS
+from simulation.models import Scenario, SimulationData, Stock, StockPriceHistory
+from simulation.logic.utils import generate_brownian_motion_candle, is_market_open, send_ohlc_update, TIME_UNITS, generate_perlin_noise_candle, generate_random_walk_candle, generate_fbm_candles, generate_random_candle
 
 logger = logging.getLogger(__name__)
 
@@ -24,8 +21,6 @@ class SimulationManager:
         self.close_stock_market_at_night = settings.close_stock_market_at_night
         self.fluctuation_rate = settings.fluctuation_rate
         self.noise_function = settings.noise_function.lower()
-
-        self.stock_prices = {stock.company.name: [] for stock in Stock.objects.all()}
 
         logger.info(f'Starting simulation for scenario {self.scenario} with time step {self.time_step} seconds')
 
@@ -68,22 +63,22 @@ class SimulationManager:
         logger.info('Simulation stopped')
 
     def update_prices(self, current_time):
+        price_changes = []
         for company in self.scenario.companies.all():
             if stock := company.stock_set.first():
-                self.apply_changes(stock, current_time)
-                self.stock_prices[stock.company.name].append(stock.close_price)
+                change = self.apply_changes(stock, current_time)
+                price_changes.append(change)
+                StockPriceHistory.objects.create(stock=stock, price=stock.price, timestamp=current_time)
 
+        self.simulation_data.price_changes = price_changes
         self.simulation_data.end_time = current_time
         self.simulation_data.save()
 
     def apply_changes(self, asset, current_time):
-        """
-        Applies changes to the asset prices using the chosen noise function.
-        """
         if self.noise_function == 'brownian':
             change = generate_brownian_motion_candle(asset.price, self.fluctuation_rate)
         elif self.noise_function == 'perlin':
-            change = generate_perlin_noise_candle(asset.price, len(asset.value_history), self.fluctuation_rate)
+            change = generate_perlin_noise_candle(asset.price, len(asset.price_history.all()), self.fluctuation_rate)
         elif self.noise_function == 'random_walk':
             change = generate_random_walk_candle(asset.price, self.fluctuation_rate)
         elif self.noise_function == 'fbm':
@@ -96,9 +91,16 @@ class SimulationManager:
         asset.low_price = change['Low']
         asset.close_price = change['Close']
         asset.price = change['Close']
-
-        asset.value_history.append(asset.price)
         asset.save()
+
+        return {
+            'ticker': asset.ticker,
+            'open': asset.open_price,
+            'high': asset.high_price,
+            'low': asset.low_price,
+            'close': asset.close_price,
+            'time': current_time.isoformat()
+        }
 
     def broadcast_updates(self):
         for company in self.scenario.companies.all():
@@ -118,43 +120,3 @@ class SimulationManagerSingleton:
     def remove_instance(cls, scenario_id):
         if scenario_id in cls._instances:
             del cls._instances[scenario_id]
-
-def generate_brownian_motion_candle(price, fluctuation_rate):
-    open_price = price
-    change = np.random.normal(loc=0, scale=fluctuation_rate)
-    close_price = open_price + change
-    high_price = max(open_price, close_price) + np.random.uniform(0, fluctuation_rate * 2)
-    low_price = min(open_price, close_price) - np.random.uniform(0, fluctuation_rate * 2)
-    return {'Open': open_price, 'High': high_price, 'Low': low_price, 'Close': close_price}
-
-def generate_perlin_noise_candle(price, i, fluctuation_rate):
-    open_price = price
-    change = noise.pnoise1(i * 0.1) * fluctuation_rate * 10
-    close_price = open_price + change
-    high_price = max(open_price, close_price) + np.random.uniform(0, fluctuation_rate * 2)
-    low_price = min(open_price, close_price) - np.random.uniform(0, fluctuation_rate * 2)
-    return {'Open': open_price, 'High': high_price, 'Low': low_price, 'Close': close_price}
-
-def generate_random_walk_candle(price, fluctuation_rate):
-    open_price = price
-    change = np.random.choice([-1, 1]) * np.random.uniform(0, fluctuation_rate * 5)
-    close_price = open_price + change
-    high_price = max(open_price, close_price)
-    low_price = min(open_price, close_price)
-    return {'Open': open_price, 'High': high_price, 'Low': low_price, 'Close': close_price}
-
-def generate_random_candle(price, fluctuation_rate):
-    open_price = price
-    high_price = open_price + np.random.uniform(0, fluctuation_rate * 5)
-    low_price = open_price - np.random.uniform(0, fluctuation_rate * 5)
-    close_price = low_price + np.random.uniform(0, (high_price - low_price))
-    return {'Open': open_price, 'High': high_price, 'Low': low_price, 'Close': close_price}
-
-def generate_fbm_candles(price, fluctuation_rate):
-    open_price = price
-    high_price = open_price + np.random.uniform(0, fluctuation_rate * 5)
-    low_price = open_price - np.random.uniform(0, fluctuation_rate * 5)
-    close_price = low_price + np.random.uniform(0, (high_price - low_price))
-    return {'Open': open_price, 'High': high_price, 'Low': low_price, 'Close': close_price}
-
-

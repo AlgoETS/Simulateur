@@ -1,7 +1,11 @@
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.utils import timezone
-from simulation.models import Stock
+import logging
+import noise
+import numpy as np
+
+logger = logging.getLogger(__name__)
 
 TIME_UNITS = {
     'second': 1,
@@ -13,27 +17,70 @@ TIME_UNITS = {
 }
 
 def is_market_open(current_time):
+    # check timezone
+    if current_time.hour < 9 or current_time.hour >= 16:
+        return False
+    # check if it's a weekend
+    if current_time.weekday() >= 5:
+        return False
     open_time = current_time.replace(hour=9, minute=0, second=0, microsecond=0)
     close_time = current_time.replace(hour=16, minute=0, second=0, microsecond=0)
     return open_time <= current_time <= close_time
 
-def send_ohlc_update(channel_layer, asset, room_name):
-    group_name = f'simulation_{room_name}'
+def send_ohlc_update(channel_layer, stock, stock_type):
+    data = {
+        'id': stock.id,
+        'name': stock.company.name,
+        'type': stock_type,
+        'open': stock.open_price,
+        'high': stock.high_price,
+        'low': stock.low_price,
+        'close': stock.close_price,
+        'current': stock.price,
+        'timestamp': timezone.now().isoformat()
+    }
     async_to_sync(channel_layer.group_send)(
-        group_name,
+        f'simulation_{stock_type}',
         {
             'type': 'simulation_update',
-            'data': {
-                'id': asset.id,
-                'name': asset.company.name if isinstance(asset, Stock) else asset.name,
-                'type': 'Stock' if isinstance(asset, Stock) else 'Cryptocurrency',
-                'open': asset.open_price,
-                'high': asset.high_price,
-                'low': asset.low_price,
-                'close': asset.close_price,
-                'current': asset.price,
-                'timestamp': timezone.now().isoformat()
-            }
+            'message': data
         }
     )
 
+def generate_brownian_motion_candle(price, fluctuation_rate):
+    open_price = price
+    change = np.random.normal(loc=0, scale=fluctuation_rate)
+    close_price = open_price + change
+    high_price = max(open_price, close_price) + np.random.uniform(0, fluctuation_rate * 2)
+    low_price = min(open_price, close_price) - np.random.uniform(0, fluctuation_rate * 2)
+    return {'Open': open_price, 'High': high_price, 'Low': low_price, 'Close': close_price}
+
+def generate_perlin_noise_candle(price, i, fluctuation_rate):
+    open_price = price
+    change = noise.pnoise1(i * 0.1) * fluctuation_rate * 10
+    close_price = open_price + change
+    high_price = max(open_price, close_price) + np.random.uniform(0, fluctuation_rate * 2)
+    low_price = min(open_price, close_price) - np.random.uniform(0, fluctuation_rate * 2)
+    return {'Open': open_price, 'High': high_price, 'Low': low_price, 'Close': close_price}
+
+def generate_random_walk_candle(price, fluctuation_rate):
+    open_price = price
+    change = np.random.choice([-1, 1]) * np.random.uniform(0, fluctuation_rate * 5)
+    close_price = open_price + change
+    high_price = max(open_price, close_price)
+    low_price = min(open_price, close_price)
+    return {'Open': open_price, 'High': high_price, 'Low': low_price, 'Close': close_price}
+
+def generate_random_candle(price, fluctuation_rate):
+    open_price = price
+    high_price = open_price + np.random.uniform(0, fluctuation_rate * 5)
+    low_price = open_price - np.random.uniform(0, fluctuation_rate * 5)
+    close_price = low_price + np.random.uniform(0, (high_price - low_price))
+    return {'Open': open_price, 'High': high_price, 'Low': low_price, 'Close': close_price}
+
+def generate_fbm_candles(price, fluctuation_rate):
+    open_price = price
+    high_price = open_price + np.random.uniform(0, fluctuation_rate * 5)
+    low_price = open_price - np.random.uniform(0, fluctuation_rate * 5)
+    close_price = low_price + np.random.uniform(0, (high_price - low_price))
+    return {'Open': open_price, 'High': high_price, 'Low': low_price, 'Close': close_price}

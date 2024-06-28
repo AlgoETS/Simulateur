@@ -1,2 +1,2 @@
-name,description,trigger_type,trigger_value
-TriggerA,Description for Trigger A,TypeA,1.5
+name,description,type,value,event
+TriggerA,Description for Trigger A,TypeA,1.5,EventA;
