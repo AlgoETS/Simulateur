@@ -1,11 +1,41 @@
 {% extends 'includes/base_generic.html' %}
 {% block content %}
+<<<<<<< HEAD
 <div class="container mx-auto p-6">
     <h1 class="text-3xl font-bold mb-6">WebSocket Simulation Test</h1>
     <div class="mb-6 flex gap-4">
         <button id="startBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded">Start Simulation</button>
         <button id="pauseBtn" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-6 rounded">Pause Simulation</button>
         <button id="stopBtn" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-6 rounded">Stop Simulation</button>
+=======
+    <div class="container mx-auto p-6">
+        <h1 class="text-3xl font-bold mb-6">WebSocket Simulation Test</h1>
+        <div class="mb-6 flex gap-4">
+            <button onclick="startSimulation()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded">Start Simulation</button>
+            <button onclick="pauseSimulation()" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-6 rounded">Pause Simulation</button>
+            <button onclick="stopSimulation()" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-6 rounded">Stop Simulation</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+            <div>
+                <label for="timeStep" class="block text-gray-700 font-medium mb-2">Time Step (in milliseconds):</label>
+                <input type="number" id="timeStep" value="1000" class="bg-white shadow rounded p-2 border border-gray-300 w-full">
+            </div>
+            <div>
+                <label for="timeFormat" class="block text-gray-700 font-medium mb-2">Time Format:</label>
+                <select id="timeFormat" class="bg-white shadow rounded p-2 border border-gray-300 w-full">
+                    <option value="ll HH:mm:ss">Default (ll HH:mm:ss)</option>
+                    <option value="YYYY-MM-DD HH:mm">YYYY-MM-DD HH:mm</option>
+                    <option value="MM-DD-YYYY HH:mm">MM-DD-YYYY HH:mm</option>
+                </select>
+            </div>
+            <div class="flex items-center">
+                <label for="tooltip" class="block text-gray-700 font-medium mb-2 mr-2">Enable Tooltips:</label>
+                <input type="checkbox" id="tooltip" checked class="bg-white shadow rounded p-2 border border-gray-300">
+            </div>
+        </div>
+        <div id="charts" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        <div id="messages" class="mt-6 space-y-4"></div>
+>>>>>>> origin/main
     </div>
     <div class="mb-6">
         <label for="scenarioSelect" class="block text-gray-700 font-medium mb-2">Select Scenario:</label>
@@ -61,6 +91,7 @@
         });
     }
 
+<<<<<<< HEAD
     function createCanvasForStock(stockTicker) {
         const chartsDiv = document.getElementById('charts');
         const container = document.createElement('div');
@@ -70,6 +101,19 @@
         container.appendChild(canvas);
         chartsDiv.appendChild(container);
     }
+=======
+        function createCanvasForCompany(companyName) {
+            const chartsDiv = document.getElementById('charts');
+            const container = document.createElement('div');
+            container.className = 'chart-container bg-white shadow rounded-lg p-4 relative';
+            const canvas = document.createElement('canvas');
+            canvas.id = companyName.replace(/\s+/g, '-') + '-chart';
+            const resizeHandle = document.createElement('div');
+            resizeHandle.className = 'resize-handle absolute bottom-0 right-0 w-4 h-4 bg-blue-500 cursor-se-resize';
+            container.appendChild(canvas);
+            container.appendChild(resizeHandle);
+            chartsDiv.appendChild(container);
+>>>>>>> origin/main
 
     function initializeChart(stockTicker) {
         const ctx = document.getElementById(stockTicker.replace(/\s+/g, '-') + '-chart').getContext('2d');
@@ -108,19 +152,147 @@
         return color;
     }
 
+<<<<<<< HEAD
     async function startSimulation() {
         const roomName = "stock"; // Change this to dynamically fetch the room name if needed
 
         if (socket) {
             socket.close();
+=======
+        async function startSimulation() {
+            const roomName = "stock"; // Change this to dynamically fetch the room name if needed
+
+            if (socket) {
+                socket.close();
+            }
+            await fetchCompanies();
+
+            const timeStep = parseInt(document.getElementById('timeStep').value);
+
+            socket = new WebSocket(`ws://${window.location.host}/ws/simulation/${roomName}/`);
+
+            socket.onopen = function (e) {
+                console.log("WebSocket connection established");
+                addMessage("WebSocket connection established", "green");
+            };
+
+            socket.onmessage = function (e) {
+                console.log("Message received: " + e.data);
+                const messageData = JSON.parse(e.data);
+                if (messageData.name && messageData.timestamp) {
+                    updateChart(messageData);
+                } else {
+                    console.warn("Received malformed message:", messageData);
+                }
+            };
+
+            socket.onclose = function (e) {
+                console.log("WebSocket connection closed");
+                addMessage("WebSocket connection closed", "red");
+            };
+
+            socket.onerror = function (e) {
+                console.log("WebSocket error: " + e.data);
+                addMessage("WebSocket error: " + e.data, "red");
+            };
+
+            // Simulate periodic data fetching
+            setInterval(() => {
+                if (socket.readyState === WebSocket.OPEN) {
+                    socket.send(JSON.stringify({ action: 'fetch_data' }));
+                }
+            }, timeStep);
+>>>>>>> origin/main
         }
         await fetchStocksForScenario();
 
+<<<<<<< HEAD
         socket = new WebSocket(`ws://${window.location.host}/ws/simulation/${roomName}/`);
 
         socket.onopen = function (e) {
             console.log("WebSocket connection established");
             addMessage("WebSocket connection established", "green");
+=======
+        function pauseSimulation() {
+            fetch('/api/simulation/pause/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({})
+            }).then(response => {
+                if (response.ok) {
+                    console.log('Simulation paused');
+                    addMessage("Simulation paused", "yellow");
+                }
+            });
+        }
+
+        function stopSimulation() {
+            fetch('/api/simulation/stop/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({})
+            }).then(response => {
+                if (response.ok) {
+                    console.log('Simulation stopped');
+                    addMessage("Simulation stopped", "red");
+                    if (socket) {
+                        socket.close();
+                    }
+                }
+            });
+        }
+
+        function updateChart(message) {
+            const companyName = message.name;
+            if (!data[companyName] || !data[companyName].datasets) {
+                console.warn(`Chart data for ${companyName} is not initialized correctly.`);
+                return;
+            }
+            const ohlcData = {
+                x: new Date(message.timestamp),
+                o: message.open,
+                h: message.high,
+                l: message.low,
+                c: message.close
+            };
+            data[companyName].datasets[0].data.push(ohlcData);
+
+            if (charts[companyName]) {
+                charts[companyName].update();
+            }
+        }
+
+        function addMessage(message, color) {
+            const messageContainer = document.createElement('div');
+            messageContainer.className = `bg-${color}-100 text-${color}-800 p-2 rounded shadow`;
+            messageContainer.innerHTML = message;
+            document.getElementById('messages').appendChild(messageContainer);
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        window.onload = function () {
+            fetchCompanies();
+>>>>>>> origin/main
         };
 
         socket.onmessage = function (e) {
@@ -132,6 +304,7 @@
                 console.warn("Received malformed message:", messageData);
             }
         };
+<<<<<<< HEAD
 
         socket.onclose = function (e) {
             console.log("WebSocket connection closed");
@@ -251,4 +424,7 @@
         }
     };
 </script>
+=======
+    </script>
+>>>>>>> origin/main
 {% endblock %}

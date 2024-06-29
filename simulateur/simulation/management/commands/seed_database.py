@@ -100,6 +100,10 @@ class Command(BaseCommand):
                 for row in reader:
                     team, created = Team.objects.get_or_create(
                         name=row['name'],
+<<<<<<< HEAD
+=======
+                        defaults={'balance': float(row['balance'])}
+>>>>>>> origin/main
                     )
                     if created:
                         members = UserProfile.objects.filter(user__username__in=row['members'].split(';'))
@@ -136,8 +140,13 @@ class Command(BaseCommand):
                         name=row['name'],
                         defaults={
                             'description': row['description'],
+<<<<<<< HEAD
                             'type': row['type'],
                             'value': float(row['value'])
+=======
+                            'type': row['trigger_type'],
+                            'value': float(row['trigger_value'])
+>>>>>>> origin/main
                         }
                     )
 
@@ -187,11 +196,19 @@ class Command(BaseCommand):
                         }
                     )
                     if created:
+<<<<<<< HEAD
+=======
+                        companies = Company.objects.filter(name__in=row['companies'].split(';'))
+>>>>>>> origin/main
                         stocks = Stock.objects.filter(ticker__in=row['stocks'].split(';'))
                         users = UserProfile.objects.filter(user__username__in=row['users'].split(';'))
                         teams = Team.objects.filter(name__in=row['teams'].split(';'))
                         events = Event.objects.filter(name__in=row['events'].split(';'))
                         triggers = Trigger.objects.filter(name__in=row['triggers'].split(';'))
+<<<<<<< HEAD
+=======
+                        scenario.companies.set(companies)
+>>>>>>> origin/main
                         scenario.stocks.set(stocks)
                         scenario.users.set(users)
                         scenario.teams.set(teams)
@@ -207,6 +224,7 @@ class Command(BaseCommand):
                 reader = csv.DictReader(csvfile)
                 for row in reader:
                     owner = UserProfile.objects.get(user__username=row['owner']) if row['owner'] else None
+<<<<<<< HEAD
                     team_names = row['team'].split(';') if row['team'] else []
                     teams = Team.objects.filter(name__in=team_names)
                     portfolio, created = Portfolio.objects.get_or_create(
@@ -221,3 +239,34 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS('Seeded portfolios'))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Error seeding portfolios: {e}'))
+=======
+                    team = Team.objects.get(name=row['team']) if row['team'] else None
+                    portfolio, created = Portfolio.objects.get_or_create(
+                        owner=owner,
+                        team=team
+                    )
+                    if created:
+                        stocks = Stock.objects.filter(ticker__in=row['stocks'].split(';'))
+                        portfolio.stocks.set(stocks)
+            self.stdout.write(self.style.SUCCESS('Seeded portfolios'))
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f'Error seeding portfolios: {e}'))
+
+    def seed_transaction_history(self):
+        try:
+            with open('data/transaction_history.csv', newline='') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    portfolio = Portfolio.objects.get(owner__user__username=row['portfolio_owner'])
+                    TransactionHistory.objects.create(
+                        portfolio=portfolio,
+                        asset=row['asset'],
+                        transaction_type=row['transaction_type'],
+                        amount=float(row['amount']),
+                        price=float(row['price']),
+                        date=datetime.strptime(row['date'], '%Y-%m-%d %H:%M:%S')
+                    )
+            self.stdout.write(self.style.SUCCESS('Seeded transaction history'))
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f'Error seeding transaction history: {e}'))
+>>>>>>> origin/main

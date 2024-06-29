@@ -1,7 +1,11 @@
 from rest_framework import serializers
 from .models import (
     Company, SimulationData, Stock, UserProfile, Event, SimulationSettings,
+<<<<<<< HEAD
     Scenario, Team, Portfolio, TransactionHistory, Trigger, News, StockPriceHistory
+=======
+    Scenario, Team, Portfolio, TransactionHistory, Trigger, News
+>>>>>>> origin/main
 )
 
 class CompanySerializer(serializers.ModelSerializer):
@@ -21,11 +25,14 @@ class StockSerializer(serializers.ModelSerializer):
         model = Stock
         fields = ['id', 'company', 'ticker', 'price', 'open_price', 'high_price', 'low_price', 'close_price', 'price_history']
 
+<<<<<<< HEAD
     def create(self, validated_data):
         company_data = validated_data.pop('company')
         company, created = Company.objects.get_or_create(**company_data)
         return Stock.objects.create(company=company, **validated_data)
 
+=======
+>>>>>>> origin/main
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
@@ -64,15 +71,22 @@ class TriggerSerializer(serializers.ModelSerializer):
 class NewsSerializer(serializers.ModelSerializer):
     class Meta:
         model = News
+<<<<<<< HEAD
         fields = ['title', 'content', 'published_date']
+=======
+        fields = '__all__'
+>>>>>>> origin/main
 
 class ScenarioSerializer(serializers.ModelSerializer):
     events = EventSerializer(many=True)
     triggers = TriggerSerializer(many=True)
+<<<<<<< HEAD
     news = NewsSerializer(many=True)
     teams = TeamSerializer(many=True)
     stocks = StockSerializer(many=True)
     simulation_settings = SimulationSettingsSerializer()
+=======
+>>>>>>> origin/main
 
     class Meta:
         model = Scenario

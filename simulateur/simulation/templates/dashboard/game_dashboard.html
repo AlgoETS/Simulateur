@@ -1,14 +1,21 @@
 {% extends 'includes/base_no_nav.html' %}
 
 {% block content %}
+<<<<<<< HEAD
 <div class="flex flex-1 overflow-hidden mb-16 bg-gray-100">
     <!-- Left Sidebar - Transaction Orders -->
     <div class="hidden md:flex md:flex-shrink-0 md:w-1/4 bg-white p-4 border-r border-gray-200">
+=======
+<div class="flex flex-1 overflow-hidden mb-16">
+    <!-- Left Sidebar -->
+    <div class="hidden md:flex md:flex-shrink-0 md:w-1/5 bg-white p-4 border-r border-gray-200">
+>>>>>>> origin/main
         <div class="w-full">
             <h2 class="text-xl font-semibold mb-4">Transaction Orders</h2>
             <!-- Transaction Orders List -->
             <ul class="divide-y divide-gray-200">
                 {% for transaction in transactions %}
+<<<<<<< HEAD
                 {% if transaction.orders.count == 0 %}
                 <li class="p-2 text-gray-500">No orders</li>
                 {% endif %}
@@ -29,6 +36,24 @@
             <div class="bg-white p-4 rounded-lg shadow-lg h-full">
                 <h3 class="text-lg font-semibold mb-4">{{ stock.name }} ({{ stock.ticker }})</h3>
                 <canvas id="chart-{{ stock.id }}" class="w-full h-64"></canvas>
+=======
+                <li class="p-2 transaction">
+                    <span class="ticker font-bold">{{ transaction.asset }}</span>
+                    <span class="amount {% if transaction.amount > 0 %}text-green-500{% else %}text-red-500{% endif %}">{{ transaction.amount }}</span>
+                    <span class="player text-gray-500">{{ transaction.portfolio.owner.user.username }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-wrap p-4 overflow-auto">
+        {% for company in companies %}
+        <div class="w-full md:w-1/2 lg:w-1/3 p-2">
+            <div class="bg-white p-4 rounded-lg shadow-lg h-full">
+                <h3 class="text-lg font-semibold mb-4">{{ company.name }} ({{ company.ticker }})</h3>
+                <canvas id="chart-{{ company.id }}" class="w-full h-64"></canvas>
+>>>>>>> origin/main
             </div>
         </div>
         {% endfor %}
@@ -50,6 +75,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+<<<<<<< HEAD
     const stocks = {{ stocks|safe }};
     let charts = {};
     let data = {};
@@ -75,6 +101,32 @@ document.addEventListener('DOMContentLoaded', () => {
         charts[stock.name] = new Chart(ctx, {
             type: 'candlestick',
             data: data[stock.name],
+=======
+    const companies = {{ companies|safe }};
+    let charts = {};
+    let data = {};
+
+    companies.forEach(company => {
+        const ctx = document.getElementById(`chart-${company.id}`).getContext('2d');
+        charts[company.name] = new Chart(ctx, {
+            type: 'candlestick',
+            data: {
+                labels: company.stock_prices.map(price => new Date(price.timestamp)),
+                datasets: [{
+                    label: `${company.name} Stock Prices`,
+                    data: company.stock_prices.map(price => ({
+                        t: new Date(price.timestamp),
+                        o: price.open,
+                        h: price.high,
+                        l: price.low,
+                        c: price.close
+                    })),
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    fill: false,
+                }]
+            },
+>>>>>>> origin/main
             options: {
                 scales: {
                     x: {
@@ -96,6 +148,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
+<<<<<<< HEAD
+=======
+
+        data[company.name] = {
+            labels: company.stock_prices.map(price => new Date(price.timestamp)),
+            datasets: [{
+                label: `${company.name} Stock Prices`,
+                data: company.stock_prices.map(price => ({
+                    t: new Date(price.timestamp),
+                    o: price.open,
+                    h: price.high,
+                    l: price.low,
+                    c: price.close
+                })),
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                fill: false,
+            }]
+        };
+>>>>>>> origin/main
     });
 
     let socket = new WebSocket('ws://' + window.location.host + '/ws/simulation/stock/');
@@ -126,6 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     function updateChart(message) {
+<<<<<<< HEAD
         const stockName = message.name;
         if (!data[stockName] || !data[stockName].datasets) {
             console.warn(`Chart data for ${stockName} is not initialized correctly.`);
@@ -140,6 +213,22 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         data[stockName].datasets[0].data.push(ohlcData);
         charts[stockName].update();
+=======
+        const companyName = message.name;
+        if (!data[companyName] || !data[companyName].datasets) {
+            console.warn(`Chart data for ${companyName} is not initialized correctly.`);
+            return;
+        }
+        const ohlcData = {
+            t: new Date(message.timestamp),
+            o: message.open,
+            h: message.high,
+            l: message.low,
+            c: message.close
+        };
+        data[companyName].datasets[0].data.push(ohlcData);
+        charts[companyName].update();
+>>>>>>> origin/main
     }
 
     function addMessage(message, color) {

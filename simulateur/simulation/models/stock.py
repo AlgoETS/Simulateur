@@ -1,7 +1,11 @@
 from django.db import models
 
 class Stock(models.Model):
+<<<<<<< HEAD
     company = models.ForeignKey('Company', on_delete=models.CASCADE, related_name='stocks')
+=======
+    company = models.ForeignKey('Company', on_delete=models.CASCADE)
+>>>>>>> origin/main
     ticker = models.CharField(max_length=10, default='')
     price = models.FloatField(default=0.0)
     open_price = models.FloatField(default=0.0)
@@ -18,6 +22,7 @@ class Stock(models.Model):
     class Meta:
         verbose_name_plural = "Stocks"
         ordering = ['timestamp']
+<<<<<<< HEAD
 
 class StockPriceHistory(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='price_history')
@@ -33,3 +38,5 @@ class StockPriceHistory(models.Model):
     class Meta:
         verbose_name_plural = "Stock Price Histories"
         ordering = ['timestamp']
+=======
+>>>>>>> origin/main

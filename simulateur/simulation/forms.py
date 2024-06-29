@@ -28,7 +28,11 @@ class JoinLinkForm(forms.ModelForm):
 
 class UserProfileForm(forms.ModelForm):
     team = forms.ModelChoiceField(queryset=Team.objects.all(), required=False)
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> origin/main
     class Meta:
         model = UserProfile
         fields = ['user', 'balance', 'team']

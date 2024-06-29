@@ -1,4 +1,5 @@
 from django.contrib import admin
+<<<<<<< HEAD
 
 from .models import (
     Company,
@@ -19,6 +20,9 @@ from .models import (
     StockPriceHistory
 )
 
+=======
+from .models import Company, Stock, UserProfile, Event, Team, SimulationSettings, Scenario, Portfolio, TransactionHistory, Trigger, SimulationData
+>>>>>>> origin/main
 from django import forms
 from django_json_widget.widgets import JSONEditorWidget
 

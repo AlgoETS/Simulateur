@@ -26,7 +26,11 @@ traitlets
 urllib3
 noise
 daphne
+<<<<<<< HEAD
 whitenoise
 social-auth-app-django
 djangorestframework
 django-cors-headers
+=======
+whitenoise
+>>>>>>> origin/main
