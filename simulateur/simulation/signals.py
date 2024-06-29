@@ -1,14 +1,9 @@
-<<<<<<< HEAD
 from django.db.models.signals import post_save, post_delete
-=======
-from django.db.models.signals import post_save
->>>>>>> origin/main
 from django.dispatch import receiver
 from django.contrib.auth.models import User
 from simulation.models import UserProfile
 
 @receiver(post_save, sender=User)
-<<<<<<< HEAD
 def create_or_update_user_profile(sender, instance, created, **kwargs):
     if created:
         UserProfile.objects.get_or_create(user=instance)
@@ -21,8 +16,3 @@ def delete_user_profile(sender, instance, **kwargs):
         instance.userprofile.delete()
     except UserProfile.DoesNotExist:
         pass
-=======
-def create_user_profile(sender, instance, created, **kwargs):
-    if created:
-        UserProfile.objects.create(user=instance)
->>>>>>> origin/main

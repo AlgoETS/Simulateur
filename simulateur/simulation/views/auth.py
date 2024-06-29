@@ -1,12 +1,8 @@
-<<<<<<< HEAD
 from base64 import urlsafe_b64decode
-=======
->>>>>>> origin/main
 import json
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.http import JsonResponse
-<<<<<<< HEAD
 from django.shortcuts import get_object_or_404, render, redirect
 from django.views import View
 from django.db import transaction
@@ -18,10 +14,6 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.contrib.auth.tokens import default_token_generator
 from simulation.models.team import JoinLink, Team
-=======
-from django.shortcuts import render, redirect
-from django.views import View
->>>>>>> origin/main
 
 from simulation.models import UserProfile
 
@@ -29,7 +21,6 @@ from simulation.models import UserProfile
 class SignupView(View):
     def get(self, request):
         return render(request, "registration/signup.html")
-<<<<<<< HEAD
 
     def post(self, request):
         try:
@@ -63,30 +54,6 @@ class LoginView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-=======
-
-    def post(self, request):
-        try:
-            data = json.loads(request.body)
-            username = data["username"]
-            email = data["email"]
-            password = data["password"]
-            user = User.objects.create_user(username=username, email=email, password=password)
-            UserProfile.objects.create(user=user)
-            return JsonResponse({"status": "success"})
-        except json.JSONDecodeError:
-            return JsonResponse({"status": "error", "message": "Invalid JSON data"}, status=400)
-        except Exception as e:
-            return JsonResponse({"status": "error", "message": str(e)}, status=400)
-
-class LoginView(View):
-    def get(self, request):
-        return render(request, "registration/login.html")
-
-    def post(self, request):
-        try:
-            data = json.loads(request.body)
->>>>>>> origin/main
             username = data["username"]
             password = data["password"]
             user = authenticate(request, username=username, password=password)
@@ -105,8 +72,6 @@ class LogoutView(View):
     def post(self, request):
         logout(request)
         return JsonResponse({"status": "success"})
-
-<<<<<<< HEAD
 class PublicProfileView(View):
     def get(self, request, user_id):
         user_profile = get_object_or_404(UserProfile, user__id=user_id)
@@ -125,21 +90,6 @@ class PrivateProfileView(View):
 
 class SettingsView(View):
     def get(self, request):
-=======
-class ProfileView(View):
-    def get(self, request):
-        # Assuming user is authenticated
-        user_profile = UserProfile.objects.get(user=request.user)
-        context = {
-            "user": request.user,
-            "user_profile": user_profile,
-        }
-        return render(request, "registration/profile.html", context)
-
-class SettingsView(View):
-    def get(self, request):
-        # Assuming user is authenticated
->>>>>>> origin/main
         user_profile = UserProfile.objects.get(user=request.user)
         context = {
             "user": request.user,
@@ -163,7 +113,6 @@ class SettingsView(View):
             return JsonResponse({"status": "error", "message": "Invalid JSON data"}, status=400)
         except Exception as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=400)
-<<<<<<< HEAD
 
 class ForgotPasswordView(View):
     def get(self, request):
@@ -244,6 +193,3 @@ class JoinTeamView(View):
         user_profile.save()
         team.members.add(user_profile)
         return JsonResponse({'status': 'success', 'message': f'Joined team {team.name}'})
-
-=======
->>>>>>> origin/main

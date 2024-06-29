@@ -1,6 +1,2 @@
-<<<<<<< HEAD
 name,description,type,value,events
-=======
-name,description,type,value,event
->>>>>>> origin/main
 TriggerA,Description for Trigger A,TypeA,1.5,EventA;

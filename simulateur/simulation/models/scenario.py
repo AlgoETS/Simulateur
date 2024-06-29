@@ -5,7 +5,6 @@ class Scenario(models.Model):
     description = models.TextField(default='')
     backstory = models.TextField(default='')
     duration = models.IntegerField(default=0)
-<<<<<<< HEAD
     stocks = models.ManyToManyField('Stock', related_name='scenarios_stocks')
     users = models.ManyToManyField('UserProfile', related_name='scenarios_users')
     teams = models.ManyToManyField('Team', related_name='scenarios_teams')
@@ -15,16 +14,6 @@ class Scenario(models.Model):
     simulation_settings = models.OneToOneField('SimulationSettings', on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
     published_date = models.DateTimeField(auto_now=True)
-=======
-    companies = models.ManyToManyField('Company', related_name='scenarios')
-    stocks = models.ManyToManyField('Stock', related_name='scenarios')
-    users = models.ManyToManyField('UserProfile', related_name='scenarios')
-    teams = models.ManyToManyField('Team', related_name='scenarios')
-    events = models.ManyToManyField('Event', related_name='scenarios')
-    triggers = models.ManyToManyField('Trigger', related_name='scenarios')
-    simulation_settings = models.OneToOneField('SimulationSettings', on_delete=models.CASCADE)
-    timestamp = models.DateTimeField(auto_now_add=True)
->>>>>>> origin/main
 
     def __str__(self):
         return self.name
