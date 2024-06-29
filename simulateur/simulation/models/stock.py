@@ -10,6 +10,7 @@ class Stock(models.Model):
     close_price = models.FloatField(default=0.0)
     partial_share = models.FloatField(default=0.0)
     complete_share = models.IntegerField(default=0)
+    stock_price_history = models.ForeignKey('StockPriceHistory', on_delete=models.CASCADE, null=True, blank=True, related_name='stocks_history')  # Provide a unique related_name
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -17,4 +18,16 @@ class Stock(models.Model):
 
     class Meta:
         verbose_name_plural = "Stocks"
+        ordering = ['timestamp']
+
+class StockPriceHistory(models.Model):
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='price_history')  # Provide a unique related_name
+    price = models.FloatField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.stock.company.name} Price at {self.timestamp}'
+
+    class Meta:
+        verbose_name_plural = "Stock Price Histories"
         ordering = ['timestamp']

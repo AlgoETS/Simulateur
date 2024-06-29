@@ -5,6 +5,8 @@ import logging
 import noise
 import numpy as np
 
+from simulation.models.stock import StockPriceHistory
+
 logger = logging.getLogger(__name__)
 
 TIME_UNITS = {
@@ -45,6 +47,14 @@ def send_ohlc_update(channel_layer, stock, stock_type):
             'type': 'simulation_update',
             'message': data
         }
+    )
+    StockPriceHistory.objects.create(
+        stock=stock,
+        open_price=stock.open_price,
+        high_price=stock.high_price,
+        low_price=stock.low_price,
+        close_price=stock.close_price,
+        current_price=stock.price
     )
 
 def generate_brownian_motion_candle(price, fluctuation_rate):

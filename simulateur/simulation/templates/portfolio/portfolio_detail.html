@@ -1,0 +1,39 @@
+{% extends 'includes/base_generic.html' %}
+{% block content %}
+<div class="container mx-auto p-6">
+    <h1 class="text-3xl font-bold text-indigo-800 mb-6">{{ title }}</h1>
+
+    <div class="bg-white shadow rounded-lg p-6 mb-6">
+        <h2 class="text-2xl font-bold text-indigo-900 mb-4">{{ portfolio.owner.user.username }}'s Portfolio</h2>
+        <p class="text-gray-700 mb-2">Portfolio Balance: <span class="font-semibold text-green-600">${{ portfolio.balance }}</span></p>
+    </div>
+
+    <div class="bg-indigo-100 shadow rounded-lg p-6 mb-6">
+        <h2 class="text-2xl font-bold text-indigo-900 mb-4">Stocks in Portfolio</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for stock_data in stocks_data %}
+            <div class="bg-white p-4 rounded-lg shadow hover:shadow-md transition duration-200">
+                <h3 class="text-lg font-semibold text-indigo-700">{{ stock_data.stock.ticker }}</h3>
+                <p class="text-gray-600">Company: {{ stock_data.stock.company.name }}</p>
+                <p class="text-gray-600">Current Price: <span class="text-green-600">${{ stock_data.stock.price }}</span></p>
+                <p class="text-gray-600">Shares Owned: {{ stock_data.quantity }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="bg-indigo-100 shadow rounded-lg p-6 mb-6">
+        <h2 class="text-2xl font-bold text-indigo-900 mb-4">Recent Transactions</h2>
+        <ul class="list-disc pl-6 space-y-2">
+            {% for transaction in transactions %}
+            <li>
+                <div class="flex items-center space-x-2">
+                    <span class="font-semibold text-indigo-700">{{ transaction.transaction_type }} {{ transaction.quantity }} shares of {{ transaction.stock.ticker }} at ${{ transaction.price }}</span>
+                    <span class="text-gray-700">{{ transaction.timestamp|date:"F j, Y, g:i a" }}</span>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

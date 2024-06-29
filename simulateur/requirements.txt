@@ -27,3 +27,4 @@ urllib3
 noise
 daphne
 whitenoise
+social-auth-app-django

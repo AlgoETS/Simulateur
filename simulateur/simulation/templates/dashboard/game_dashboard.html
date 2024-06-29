@@ -52,24 +52,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     companies.forEach(company => {
         const ctx = document.getElementById(`chart-${company.id}`).getContext('2d');
+        data[company.name] = {
+            labels: company.stock_prices.map(price => new Date(price.timestamp)),
+            datasets: [{
+                label: `${company.name} Stock Prices`,
+                data: company.stock_prices.map(price => ({
+                    x: new Date(price.timestamp),
+                    o: price.open,
+                    h: price.high,
+                    l: price.low,
+                    c: price.close
+                })),
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                fill: false,
+            }]
+        };
         charts[company.name] = new Chart(ctx, {
             type: 'candlestick',
-            data: {
-                labels: company.stock_prices.map(price => new Date(price.timestamp)),
-                datasets: [{
-                    label: `${company.name} Stock Prices`,
-                    data: company.stock_prices.map(price => ({
-                        t: new Date(price.timestamp),
-                        o: price.open,
-                        h: price.high,
-                        l: price.low,
-                        c: price.close
-                    })),
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    fill: false,
-                }]
-            },
+            data: data[company.name],
             options: {
                 scales: {
                     x: {
@@ -91,23 +92,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
-
-        data[company.name] = {
-            labels: company.stock_prices.map(price => new Date(price.timestamp)),
-            datasets: [{
-                label: `${company.name} Stock Prices`,
-                data: company.stock_prices.map(price => ({
-                    t: new Date(price.timestamp),
-                    o: price.open,
-                    h: price.high,
-                    l: price.low,
-                    c: price.close
-                })),
-                borderColor: 'rgba(75, 192, 192, 1)',
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                fill: false,
-            }]
-        };
     });
 
     let socket = new WebSocket('ws://' + window.location.host + '/ws/simulation/stock/');
@@ -144,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         const ohlcData = {
-            t: new Date(message.timestamp),
+            x: new Date(message.timestamp),
             o: message.open,
             h: message.high,
             l: message.low,
