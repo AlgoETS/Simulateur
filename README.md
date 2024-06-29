@@ -45,6 +45,8 @@ It includes an admin interface to manage the simulation settings and control the
     ```bash
     python manage.py makemigrations
     python manage.py migrate
+    python manage.py clean_database
+    python manage.py seed_database
     ```
 
 3. **Create a Superuser**:
@@ -56,6 +58,8 @@ It includes an admin interface to manage the simulation settings and control the
 4. **Run the Server**:
 
     ```bash
+    python manage.py start_simulation 1
+    # in other terminal run
     daphne -p 8000 simulateur.asgi:application
     ```
 
@@ -71,21 +75,7 @@ python manage.py createsuperuser
 
 Follow the prompts to set up the superadmin credentials.
 
-### Running the Project
-
-1. **Start the Django Server**:
-
-    ```bash
-    python manage.py runserver
-    ```
-
-2. **Start the Vite Development Server**:
-
-    ```bash
-    npm run dev
-    ```
-
-### Running the Daphne Server for ASGI
+### Running Projects
 
 To run the Daphne server with the ASGI application, use the following command:
 
@@ -136,7 +126,7 @@ Here is a brief overview of the project file structure:
 │   ├── settings.py
 │   ├── urls.py
 ├── simulation
-│   ├── admin.py 
+│   ├── admin.py
 │   ├── apps.py
 │   ├── channels # websocket
 │   ├── logic # simulation logic

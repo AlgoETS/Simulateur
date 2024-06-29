@@ -1,13 +1,38 @@
 {% extends "includes/base_generic.html" %}
 
+{% block title %}Stock Market Simulation - Experience Simulated Stock Trading{% endblock %}
+
 {% block content %}
-<div class="flex items-center justify-center min-h-screen bg-gray-100 text-gray-800">
-    <div class="text-center">
-        <h1 class="text-4xl font-bold mb-4">Welcome to Simulation</h1>
-        <p class="mb-6">Experience the thrill of stock trading in a simulated environment. Compete with others, create strategies, and see how well you can perform in the stock market!</p>
-        <a href="{% url 'signup' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+<div class="flex items-center justify-center min-h-screen">
+    <div class="max-w-3xl text-center">
+        <img class="mx-auto h-16 w-auto mb-6" src="https://s39373.pcdn.co/wp-content/uploads/2021/11/cropped-cropped-IMG_0577-150x150.png" alt="Your Company">
+        <h1 class="text-5xl font-extrabold mb-4">Welcome to Stock Market Simulation</h1>
+        <h2 class="text-3xl font-semibold leading-8 tracking-tight text-gray-200 mt-4 mb-6">Experience the thrill of simulated stock trading</h2>
+        <p class="mb-6 text-lg">Compete with others, create strategies, and see how well you can perform in the stock market! Our simulation provides a realistic trading environment to enhance your trading skills.</p>
+        <p class="mb-6 text-lg">Our platform offers a comprehensive simulation of the stock market, allowing users to trade, manage portfolios, and compete with other users in a risk-free environment.</p>
+        <p class="mb-6 text-lg">Join our community of traders and start your journey to becoming a better trader today. Whether you are a beginner or an experienced trader, our simulation has something for everyone.</p>
+        <p class="mb-6 text-lg">To learn more about stock trading, visit our <a href="https://www.investopedia.com" target="_blank" class="text-yellow-400 hover:text-yellow-300 underline">Investopedia</a>.</p>
+        <a href="{% url 'signup' %}" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-6 rounded-full transition duration-300">
             Get Started
         </a>
+        <div class="mt-10">
+            <div id="globeViz" class="mx-auto" style="width: 400px; height: 400px;"></div>
+        </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const myGlobe = Globe()
+            .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
+            .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
+            .width(400)
+            .height(400)
+            .pointsTransitionDuration(1000)
+            .pointOfView({ altitude: 3 })
+            (document.getElementById('globeViz'));
+
+        myGlobe.controls().autoRotate = true;
+    });
+</script>
 {% endblock %}

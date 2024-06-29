@@ -1,5 +1,7 @@
 {% extends 'includes/base_generic.html' %}
 
+{% block title %} Profile {% endblock %}
+
 {% block content %}
 <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-8">
     <h1 class="text-4xl font-extrabold text-gray-900 mb-8">Profile</h1>
@@ -9,6 +11,16 @@
             <p class="mt-1 max-w-2xl text-sm">Personal details and application.</p>
         </div>
         <div class="border-t border-gray-200">
+            <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                <dt class="text-sm font-medium text-gray-500">Avatar</dt>
+                <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                    {% if user_profile.avatar %}
+                        <img src="{{ user_profile.avatar.url }}" alt="{{ user.username }}" class="h-16 w-16 rounded-full">
+                    {% else %}
+                        <p>No avatar uploaded.</p>
+                    {% endif %}
+                </dd>
+            </div>
             <dl>
                 <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt class="text-sm font-medium text-gray-500">Username</dt>
@@ -20,11 +32,11 @@
                 </div>
                 <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt class="text-sm font-medium text-gray-500">Balance</dt>
-                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">${{ user_profile.portfolio.balance }}</dd>
+                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">${{ portfolio.balance }}</dd>
                 </div>
                 <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt class="text-sm font-medium text-gray-500">Team</dt>
-                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ user_profile.team }}</dd>
+                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ user_profile.team.name }}</dd>
                 </div>
                 <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt class="text-sm font-medium text-gray-500">Joined</dt>
