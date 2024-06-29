@@ -136,8 +136,8 @@ class Command(BaseCommand):
                         name=row['name'],
                         defaults={
                             'description': row['description'],
-                            'type': row['trigger_type'],
-                            'value': float(row['trigger_value'])
+                            'type': row['type'],
+                            'value': float(row['value'])
                         }
                     )
 
@@ -187,13 +187,11 @@ class Command(BaseCommand):
                         }
                     )
                     if created:
-                        companies = Company.objects.filter(name__in=row['companies'].split(';'))
                         stocks = Stock.objects.filter(ticker__in=row['stocks'].split(';'))
                         users = UserProfile.objects.filter(user__username__in=row['users'].split(';'))
                         teams = Team.objects.filter(name__in=row['teams'].split(';'))
                         events = Event.objects.filter(name__in=row['events'].split(';'))
                         triggers = Trigger.objects.filter(name__in=row['triggers'].split(';'))
-                        scenario.companies.set(companies)
                         scenario.stocks.set(stocks)
                         scenario.users.set(users)
                         scenario.teams.set(teams)

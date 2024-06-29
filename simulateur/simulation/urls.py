@@ -1,5 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from simulation.api.scenario import CreateScenario, PublishScenario
 from simulation.api.auth import JoinTeam
 
 # Importing HTML views
@@ -9,6 +10,7 @@ from simulation.views.simulation import SimulationGraphView
 # Importing API views
 from simulation.api.simulation import SimulationSettingsView, StartSimulation, PauseSimulation, StopSimulation, FastForwardSimulation, RewindSimulation
 from simulation.api.portfolio import BuyStock, PortfolioView, SellStock
+from simulation.api.scenario import ScenarioStocks, StockHistory, GetPublishedScenarios
 
 router = DefaultRouter()
 
@@ -33,17 +35,22 @@ html_patterns = [
 ]
 
 api_patterns = [
-    path('simulation/start/', StartSimulation.as_view(), name='start-simulation'),
-    path('simulation/pause/', PauseSimulation.as_view(), name='pause-simulation'),
-    path('simulation/stop/', StopSimulation.as_view(), name='stop-simulation'),
+    path('simulation/start/', StartSimulation.as_view(), name='start_simulation'),
+    path('simulation/pause/', PauseSimulation.as_view(), name='pause_simulation'),
+    path('simulation/stop/', StopSimulation.as_view(), name='stop_simulation'),
     path('simulation/fast-forward/', FastForwardSimulation.as_view(), name='fast-forward-simulation'),
     path('simulation/rewind/', RewindSimulation.as_view(), name='rewind-simulation'),
-    path('portfolio/<int:user_id>/', PortfolioView.as_view(), name='portfolio-view'),
-    path('stock/buy/', BuyStock.as_view(), name='buy-stock'),
-    path('stock/sell/', SellStock.as_view(), name='sell-stock'),
-    path('graph/', SimulationGraphView.as_view(), name='simulation-graph'),
-    path('settings/', SimulationSettingsView.as_view(), name='simulation-settings'),
+    path('portfolio/<int:user_id>/', PortfolioView.as_view(), name='portfolio_view'),
+    path('stock/buy/', BuyStock.as_view(), name='buy_stock'),
+    path('stock/sell/', SellStock.as_view(), name='sell_stock'),
+    path('graph/', SimulationGraphView.as_view(), name='simulation_graph'),
+    path('settings/', SimulationSettingsView.as_view(), name='simulation_settings'),
     path('join-team/<int:team_id>/<str:key>/', JoinTeam.as_view(), name='join_team'),
+    path('scenario/create/', CreateScenario.as_view(), name='create_scenario'),
+    path('scenario/publish/<int:scenario_id>/', PublishScenario.as_view(), name='publish_scenario'),
+    path('scenarios/published/', GetPublishedScenarios.as_view(), name='get_published_scenarios'),
+    path('scenarios/<int:scenario_id>/stocks/', ScenarioStocks.as_view(), name='scenario_stocks'),
+    path('stocks/<int:stock_id>/history/', StockHistory.as_view(), name='stock_history'),
 ]
 
 # Combine both HTML and API patterns into a single list

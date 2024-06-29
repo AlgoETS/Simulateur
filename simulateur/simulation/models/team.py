@@ -1,7 +1,8 @@
-from datetime import timedelta, timezone
 from django.db import models
 from django.utils.crypto import get_random_string
 from django.urls import reverse
+from django.utils import timezone
+from datetime import timedelta
 
 class Team(models.Model):
     name = models.CharField(max_length=100, default='')

@@ -1,6 +1,5 @@
 from django.db import models
 
-
 class Portfolio(models.Model):
     owner = models.OneToOneField('UserProfile', on_delete=models.CASCADE, null=True, blank=True, related_name='portfolio')
     teams = models.ManyToManyField('Team', related_name='portfolios', blank=True)

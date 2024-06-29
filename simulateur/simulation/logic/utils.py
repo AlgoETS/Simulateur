@@ -19,19 +19,16 @@ TIME_UNITS = {
 }
 
 def is_market_open(current_time):
-    # check timezone
+    """Check if the stock market is open based on the current time."""
     if current_time.hour < 9 or current_time.hour >= 16:
         return False
-    # check if it's a weekend
-    if current_time.weekday() >= 5:
-        return False
-    open_time = current_time.replace(hour=9, minute=0, second=0, microsecond=0)
-    close_time = current_time.replace(hour=16, minute=0, second=0, microsecond=0)
-    return open_time <= current_time <= close_time
+    return current_time.weekday() < 5
 
 def send_ohlc_update(channel_layer, stock, stock_type):
+    """Send an OHLC update to the specified WebSocket channel."""
     data = {
         'id': stock.id,
+        'ticker': stock.ticker,
         'name': stock.company.name,
         'type': stock_type,
         'open': stock.open_price,
@@ -48,16 +45,9 @@ def send_ohlc_update(channel_layer, stock, stock_type):
             'message': data
         }
     )
-    StockPriceHistory.objects.create(
-        stock=stock,
-        open_price=stock.open_price,
-        high_price=stock.high_price,
-        low_price=stock.low_price,
-        close_price=stock.close_price,
-        current_price=stock.price
-    )
 
 def generate_brownian_motion_candle(price, fluctuation_rate):
+    """Generate a candlestick using Brownian motion."""
     open_price = price
     change = np.random.normal(loc=0, scale=fluctuation_rate)
     close_price = open_price + change
@@ -65,7 +55,9 @@ def generate_brownian_motion_candle(price, fluctuation_rate):
     low_price = min(open_price, close_price) - np.random.uniform(0, fluctuation_rate * 2)
     return {'Open': open_price, 'High': high_price, 'Low': low_price, 'Close': close_price}
 
+
 def generate_perlin_noise_candle(price, i, fluctuation_rate):
+    """Generate a candlestick using Perlin noise."""
     open_price = price
     change = noise.pnoise1(i * 0.1) * fluctuation_rate * 10
     close_price = open_price + change
@@ -73,7 +65,9 @@ def generate_perlin_noise_candle(price, i, fluctuation_rate):
     low_price = min(open_price, close_price) - np.random.uniform(0, fluctuation_rate * 2)
     return {'Open': open_price, 'High': high_price, 'Low': low_price, 'Close': close_price}
 
+
 def generate_random_walk_candle(price, fluctuation_rate):
+    """Generate a candlestick using a random walk."""
     open_price = price
     change = np.random.choice([-1, 1]) * np.random.uniform(0, fluctuation_rate * 5)
     close_price = open_price + change
@@ -81,14 +75,18 @@ def generate_random_walk_candle(price, fluctuation_rate):
     low_price = min(open_price, close_price)
     return {'Open': open_price, 'High': high_price, 'Low': low_price, 'Close': close_price}
 
+
 def generate_random_candle(price, fluctuation_rate):
+    """Generate a candlestick using random values."""
     open_price = price
     high_price = open_price + np.random.uniform(0, fluctuation_rate * 5)
     low_price = open_price - np.random.uniform(0, fluctuation_rate * 5)
     close_price = low_price + np.random.uniform(0, (high_price - low_price))
     return {'Open': open_price, 'High': high_price, 'Low': low_price, 'Close': close_price}
 
+
 def generate_fbm_candles(price, fluctuation_rate):
+    """Generate a candlestick using fractional Brownian motion."""
     open_price = price
     high_price = open_price + np.random.uniform(0, fluctuation_rate * 5)
     low_price = open_price - np.random.uniform(0, fluctuation_rate * 5)

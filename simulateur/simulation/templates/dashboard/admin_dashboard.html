@@ -5,207 +5,210 @@
     <h1 class="text-3xl font-bold mb-6">Admin Dashboard</h1>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-        <!-- Manage Events -->
-        <div class="bg-white shadow rounded p-4">
-            <h3 class="text-xl font-semibold mb-2">Manage Events</h3>
-            <form method="post" action="{% url 'create_event' %}">
-                {% csrf_token %} {{ event_form.as_p }}
-                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Create Event
-                </button>
-            </form>
-            <h4 class="mt-4 font-semibold">Existing Events</h4>
-            <ul class="space-y-2">
-                {% for event in events %}
-                <li class="flex justify-between items-center">
-                    {{ event.name }}
-                    <form method="post" action="{% url 'delete_event' event.id %}" class="inline">
-                        {% csrf_token %}
-                        <button type="submit" class="text-red-500 hover:text-red-700">
-                            Delete
-                        </button>
-                    </form>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-
-        <!-- Manage Triggers -->
-        <div class="bg-white shadow rounded p-4">
-            <h3 class="text-xl font-semibold mb-2">Manage Triggers</h3>
-            <form method="post" action="{% url 'create_trigger' %}">
-                {% csrf_token %} {{ trigger_form.as_p }}
-                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Create Trigger
-                </button>
-            </form>
-            <h4 class="mt-4 font-semibold">Existing Triggers</h4>
-            <ul class="space-y-2">
-                {% for trigger in triggers %}
-                <li class="flex justify-between items-center">
-                    {{ trigger.name }}
-                    <form method="post" action="{% url 'delete_trigger' trigger.id %}" class="inline">
-                        {% csrf_token %}
-                        <button type="submit" class="text-red-500 hover:text-red-700">
-                            Delete
-                        </button>
-                    </form>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-
-        <!-- Manage News -->
-        <div class="bg-white shadow rounded p-4">
-            <h3 class="text-xl font-semibold mb-2">Manage News</h3>
-            <form method="post" action="{% url 'create_news' %}">
-                {% csrf_token %} {{ news_form.as_p }}
-                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Create News
-                </button>
-            </form>
-            <h4 class="mt-4 font-semibold">Existing News</h4>
-            <ul class="space-y-2">
-                {% for news in news_list %}
-                <li class="flex justify-between items-center">
-                    {{ news.title }}
-                    <form method="post" action="{% url 'delete_news' news.id %}" class="inline">
-                        {% csrf_token %}
-                        <button type="submit" class="text-red-500 hover:text-red-700">
-                            Delete
-                        </button>
-                    </form>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-
-        <!-- Manage Companies -->
-        <div class="bg-white shadow rounded p-4">
-            <h3 class="text-xl font-semibold mb-2">Manage Companies</h3>
-            <form method="post" action="{% url 'create_company' %}">
-                {% csrf_token %} {{ company_form.as_p }}
-                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Create Company
-                </button>
-            </form>
-            <h4 class="mt-4 font-semibold">Existing Companies</h4>
-            <ul class="space-y-2">
-                {% for company in companies %}
-                <li class="flex justify-between items-center">
-                    {{ company.name }}
-                    <form method="post" action="{% url 'delete_company' company.id %}" class="inline">
-                        {% csrf_token %}
-                        <button type="submit" class="text-red-500 hover:text-red-700">
-                            Delete
-                        </button>
-                    </form>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-
-        <!-- Manage Stocks -->
-        <div class="bg-white shadow rounded p-4">
-            <h3 class="text-xl font-semibold mb-2">Manage Stocks</h3>
-            <form method="post" action="{% url 'create_stock' %}">
-                {% csrf_token %} {{ stock_form.as_p }}
-                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Create Stock
-                </button>
-            </form>
-            <h4 class="mt-4 font-semibold">Existing Stocks</h4>
-            <ul class="space-y-2">
-                {% for stock in stocks %}
-                <li class="flex justify-between items-center">
-                    {{ stock.ticker }}
-                    <form method="post" action="{% url 'delete_stock' stock.id %}" class="inline">
-                        {% csrf_token %}
-                        <button type="submit" class="text-red-500 hover:text-red-700">
-                            Delete
-                        </button>
-                    </form>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-
         <!-- Manage Scenarios -->
-        <div class="bg-white shadow rounded p-4">
+        <div class="bg-white shadow rounded p-4 col-span-3">
             <h3 class="text-xl font-semibold mb-2">Manage Scenarios</h3>
-            <form method="post" action="{% url 'create_scenario' %}">
-                {% csrf_token %} {{ scenario_form.as_p }}
-                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Create Scenario
-                </button>
-            </form>
-            <h4 class="mt-4 font-semibold">Existing Scenarios</h4>
             <ul class="space-y-2">
                 {% for scenario in scenarios %}
                 <li class="flex justify-between items-center">
-                    {{ scenario.name }}
-                    <form method="post" action="{% url 'delete_scenario' scenario.id %}" class="inline">
-                        {% csrf_token %}
-                        <button type="submit" class="text-red-500 hover:text-red-700">
-                            Delete
-                        </button>
-                    </form>
+                    <div>
+                        <p>{{ scenario.name }} - {{ scenario.description }}</p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="startScenario({{ scenario.id }})" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Start</button>
+                        <button onclick="pauseScenario({{ scenario.id }})" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">Pause</button>
+                        <button onclick="stopScenario({{ scenario.id }})" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Stop</button>
+                        <button onclick="publishScenario({{ scenario.id }})" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Publish</button>
+                    </div>
                 </li>
                 {% endfor %}
             </ul>
         </div>
-    </div>
 
-    <div class="flex gap-4 mb-6">
-        <button onclick="startSimulation()"
-            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded">
-            Start Simulation
-        </button>
-        <button onclick="pauseSimulation()"
-            class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-6 rounded">
-            Pause Simulation
-        </button>
-        <button onclick="stopSimulation()" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-6 rounded">
-            Stop Simulation
-        </button>
-        <button onclick="fastForwardSimulation()"
-            class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-6 rounded">
-            Fast Forward
-        </button>
-        <button onclick="rewindSimulation()"
-            class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded">
-            Rewind
-        </button>
+        <!-- Create Scenario -->
+        <div class="bg-white shadow rounded p-4 col-span-3">
+            <h3 class="text-xl font-semibold mb-2">Create Scenario</h3>
+            <form id="scenarioForm">
+                <!-- Scenario Details -->
+                <label class="block mb-2">Name</label>
+                <input type="text" id="scenarioName" class="block w-full mb-4 p-2 border rounded">
+                <label class="block mb-2">Description</label>
+                <textarea id="scenarioDescription" class="block w-full mb-4 p-2 border rounded"></textarea>
+
+                <!-- Events -->
+                <div>
+                    <h4 class="font-semibold mb-2">Events</h4>
+                    <div id="eventsContainer"></div>
+                    <button type="button" onclick="addEvent()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Add Event</button>
+                </div>
+
+                <!-- Triggers -->
+                <div>
+                    <h4 class="font-semibold mb-2">Triggers</h4>
+                    <div id="triggersContainer"></div>
+                    <button type="button" onclick="addTrigger()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Add Trigger</button>
+                </div>
+
+                <!-- News -->
+                <div>
+                    <h4 class="font-semibold mb-2">News</h4>
+                    <div id="newsContainer"></div>
+                    <button type="button" onclick="addNews()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Add News</button>
+                </div>
+
+                <!-- Teams -->
+                <div>
+                    <h4 class="font-semibold mb-2">Teams</h4>
+                    <div id="teamsContainer"></div>
+                    <button type="button" onclick="addTeam()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Add Team</button>
+                </div>
+
+                <button type="button" onclick="submitScenario()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mt-4">Create Scenario</button>
+            </form>
+        </div>
     </div>
 </div>
 
 <script>
-    function saveSettings() {
-        const settings = {
-            max_users: document.getElementById("maxUsers").value,
-            max_companies: document.getElementById("maxCompanies").value,
-            timer_step: document.getElementById("timerStep").value,
-            interval: document.getElementById("interval").value,
-            max_interval: document.getElementById("maxInterval").value,
-            fluctuation_rate: document.getElementById("fluctuationRate").value,
-            time_unit: document.getElementById("timeUnit").value,
-            close_stock_market_at_night:
-                document.getElementById("closeMarketAtNight").checked,
-            noise_function: document.getElementById("noiseFunction").value,
+    let eventCount = 0;
+    let triggerCount = 0;
+    let newsCount = 0;
+    let teamCount = 0;
+
+    function addEvent() {
+        eventCount++;
+        const eventHTML = `
+            <div id="event-${eventCount}" class="mb-4">
+                <label class="block mb-2">Event Name</label>
+                <input type="text" id="eventName-${eventCount}" class="block w-full mb-2 p-2 border rounded">
+                <label class="block mb-2">Event Date</label>
+                <input type="datetime-local" id="eventDate-${eventCount}" class="block w-full mb-2 p-2 border rounded">
+                <label class="block mb-2">Event Description</label>
+                <textarea id="eventDescription-${eventCount}" class="block w-full mb-2 p-2 border rounded"></textarea>
+                <button type="button" onclick="removeEvent(${eventCount})" class="text-red-500 hover:text-red-700">Remove Event</button>
+            </div>
+        `;
+        document.getElementById('eventsContainer').insertAdjacentHTML('beforeend', eventHTML);
+    }
+
+    function addTrigger() {
+        triggerCount++;
+        const triggerHTML = `
+            <div id="trigger-${triggerCount}" class="mb-4">
+                <label class="block mb-2">Trigger Name</label>
+                <input type="text" id="triggerName-${triggerCount}" class="block w-full mb-2 p-2 border rounded">
+                <label class="block mb-2">Condition</label>
+                <input type="text" id="triggerCondition-${triggerCount}" class="block w-full mb-2 p-2 border rounded">
+                <label class="block mb-2">Action</label>
+                <input type="text" id="triggerAction-${triggerCount}" class="block w-full mb-2 p-2 border rounded">
+                <button type="button" onclick="removeTrigger(${triggerCount})" class="text-red-500 hover:text-red-700">Remove Trigger</button>
+            </div>
+        `;
+        document.getElementById('triggersContainer').insertAdjacentHTML('beforeend', triggerHTML);
+    }
+
+    function addNews() {
+        newsCount++;
+        const newsHTML = `
+            <div id="news-${newsCount}" class="mb-4">
+                <label class="block mb-2">News Title</label>
+                <input type="text" id="newsTitle-${newsCount}" class="block w-full mb-2 p-2 border rounded">
+                <label class="block mb-2">Content</label>
+                <textarea id="newsContent-${newsCount}" class="block w-full mb-2 p-2 border rounded"></textarea>
+                <button type="button" onclick="removeNews(${newsCount})" class="text-red-500 hover:text-red-700">Remove News</button>
+            </div>
+        `;
+        document.getElementById('newsContainer').insertAdjacentHTML('beforeend', newsHTML);
+    }
+
+    function addTeam() {
+        teamCount++;
+        const teamHTML = `
+            <div id="team-${teamCount}" class="mb-4">
+                <label class="block mb-2">Team Name</label>
+                <input type="text" id="teamName-${teamCount}" class="block w-full mb-2 p-2 border rounded">
+                <button type="button" onclick="removeTeam(${teamCount})" class="text-red-500 hover:text-red-700">Remove Team</button>
+            </div>
+        `;
+        document.getElementById('teamsContainer').insertAdjacentHTML('beforeend', teamHTML);
+    }
+
+    function removeEvent(id) {
+        document.getElementById(`event-${id}`).remove();
+    }
+
+    function removeTrigger(id) {
+        document.getElementById(`trigger-${id}`).remove();
+    }
+
+    function removeNews(id) {
+        document.getElementById(`news-${id}`).remove();
+    }
+
+    function removeTeam(id) {
+        document.getElementById(`team-${id}`).remove();
+    }
+
+    function submitScenario() {
+        const scenario = {
+            name: document.getElementById('scenarioName').value,
+            description: document.getElementById('scenarioDescription').value,
+            events: [],
+            triggers: [],
+            news: [],
+            teams: []
         };
 
-        fetch("/api/simulation/settings/", {
+        for (let i = 1; i <= eventCount; i++) {
+            if (document.getElementById(`eventName-${i}`)) {
+                scenario.events.push({
+                    name: document.getElementById(`eventName-${i}`).value,
+                    date: document.getElementById(`eventDate-${i}`).value,
+                    description: document.getElementById(`eventDescription-${i}`).value,
+                });
+            }
+        }
+
+        for (let i = 1; i <= triggerCount; i++) {
+            if (document.getElementById(`triggerName-${i}`)) {
+                scenario.triggers.push({
+                    name: document.getElementById(`triggerName-${i}`).value,
+                    condition: document.getElementById(`triggerCondition-${i}`).value,
+                    action: document.getElementById(`triggerAction-${i}`).value,
+                });
+            }
+        }
+
+        for (let i = 1; i <= newsCount; i++) {
+            if (document.getElementById(`newsTitle-${i}`)) {
+                scenario.news.push({
+                    title: document.getElementById(`newsTitle-${i}`).value,
+                    content: document.getElementById(`newsContent-${i}`).value,
+                });
+            }
+        }
+
+        for (let i = 1; i <= teamCount; i++) {
+            if (document.getElementById(`teamName-${i}`)) {
+                scenario.teams.push({
+                    name: document.getElementById(`teamName-${i}`).value,
+                });
+            }
+        }
+
+        fetch("{% url 'create_scenario' %}", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRFToken": getCookie("csrftoken"),
             },
-            body: JSON.stringify(settings),
-        }).then((response) => {
+            body: JSON.stringify(scenario),
+        }).then(response => {
             if (response.ok) {
-                alert("Settings saved successfully");
+                alert("Scenario created successfully");
+                location.reload(); // Reload the page to update the list of scenarios
             } else {
-                alert("Failed to save settings");
+                alert("Failed to create scenario");
             }
         });
     }
@@ -223,6 +226,70 @@
             }
         }
         return cookieValue;
+    }
+
+    function startScenario(scenarioId) {
+        fetch(`/api/scenario/start/${scenarioId}/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken"),
+            },
+        }).then(response => {
+            if (response.ok) {
+                alert("Scenario started successfully");
+            } else {
+                alert("Failed to start scenario");
+            }
+        });
+    }
+
+    function pauseScenario(scenarioId) {
+        fetch(`/api/scenario/pause/${scenarioId}/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken"),
+            },
+        }).then(response => {
+            if (response.ok) {
+                alert("Scenario paused successfully");
+            } else {
+                alert("Failed to pause scenario");
+            }
+        });
+    }
+
+    function stopScenario(scenarioId) {
+        fetch(`/api/scenario/stop/${scenarioId}/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken"),
+            },
+        }).then(response => {
+            if (response.ok) {
+                alert("Scenario stopped successfully");
+            } else {
+                alert("Failed to stop scenario");
+            }
+        });
+    }
+
+    function publishScenario(scenarioId) {
+        fetch(`/api/scenario/publish/${scenarioId}/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken"),
+            },
+        }).then(response => {
+            if (response.ok) {
+                alert("Scenario published successfully");
+            } else {
+                alert("Failed to publish scenario");
+            }
+        });
     }
 
     function startSimulation() {

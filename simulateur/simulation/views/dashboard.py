@@ -20,6 +20,7 @@ from simulation.models import (
     SimulationSettings,
     Scenario,
     Order,
+    Trigger,
 )
 
 
@@ -41,7 +42,10 @@ class UserDashboardView(View):
             messages.error(
                 request, "User profile does not exist. Please create your profile."
             )
-            return redirect(reverse("create_user_profile"))
+            return redirect(reverse("home"))
+        except Exception as e:
+            messages.error(request, str(e))
+            return redirect(reverse("home"))
 
         if not hasattr(user_profile, "portfolio"):
             portfolio = Portfolio.objects.create(owner=user_profile)
@@ -79,12 +83,18 @@ class UserDashboardView(View):
 
 class AdminDashboardView(AdminOnlyMixin, View):
     def get(self, request):
-        portfolios = Portfolio.objects.all()
-        settings = SimulationSettings.objects.first()
+        scenarios = Scenario.objects.all()
+        news = News.objects.all()
+        events = Event.objects.all()
+        triggers = Trigger.objects.all()
+
+
         context = {
             "title": "Admin Dashboard",
-            "portfolios": portfolios,
-            "settings": settings,
+            "scenarios": scenarios,
+            "news": news,
+            "events": events,
+            "triggers": triggers,
         }
         return render(request, "dashboard/admin_dashboard.html", context)
 
@@ -122,7 +132,6 @@ class TeamDashboardView(View):
         except Exception as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
-
 class GameDashboardView(View):
     def get(self, request):
         try:
@@ -135,49 +144,34 @@ class GameDashboardView(View):
             )
 
         team = user_profile.team
-        portfolios = Portfolio.objects.filter(team=team)
-        companies = Company.objects.all()
-        transactions = TransactionHistory.objects.filter(portfolio__in=portfolios)
+        user_profiles_in_team = UserProfile.objects.filter(team=team)
+        portfolios = Portfolio.objects.filter(owner__in=user_profiles_in_team)
+        stocks = Stock.objects.all()
+        transactions = TransactionHistory.objects.filter(portfolios__in=portfolios)
         news_items = News.objects.all()
+        scenarios = Scenario.objects.all()
 
-        companies_data = []
-        for company in companies:
-            if stock := company.stock_set.first():
-                stock_prices = (
-                    stock.price_history.all()
-                    .order_by("timestamp")
-                    .values(
-                        "timestamp",
-                        "price",
-                        "open_price",
-                        "high_price",
-                        "low_price",
-                        "close_price",
-                    )
-                )
-                stock_prices = map(
-                    lambda x: {
-                        **x,
-                        "timestamp": x["timestamp"].strftime("%Y-%m-%d %H:%M:%S"),
-                    },
-                    stock_prices,
-                )
-                companies_data.append(
-                    {
-                        "id": company.id,
-                        "name": company.name,
-                        "ticker": stock.ticker,
-                        "stock_prices": list(stock_prices),
-                    }
-                )
+        stocks_data = []
+        for stock in stocks:
+            stock_prices = stock.price_history.order_by("timestamp").values(
+                "timestamp", "open_price", "high_price", "low_price", "close_price"
+            )
+            stock_prices = list(map(lambda x: {**x, "timestamp": x["timestamp"].strftime("%Y-%m-%d %H:%M:%S")}, stock_prices))
+            stocks_data.append({
+                "id": stock.id,
+                "name": stock.company.name,
+                "ticker": stock.ticker,
+                "stock_prices": stock_prices,
+            })
 
         context = {
             "title": "Game Dashboard",
             "team": team,
             "portfolios": portfolios,
             "transactions": transactions,
-            "companies": companies_data,
+            "stocks": stocks_data,
             "news_items": news_items,
+            "scenarios": scenarios,
         }
         return render(request, "dashboard/game_dashboard.html", context)
 

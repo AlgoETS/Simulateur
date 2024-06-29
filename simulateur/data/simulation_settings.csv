@@ -1,2 +1,2 @@
 max_users,max_companies,timer_step,timer_step_unit,interval,interval_unit,max_interval,fluctuation_rate,close_stock_market_at_night,noise_function
-100,50,1,second,60,second,300,0.6,True,brownian
+100,50,1,second,60,second,300,0.6,False,brownian

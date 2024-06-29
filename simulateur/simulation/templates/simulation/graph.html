@@ -1,284 +1,254 @@
 {% extends 'includes/base_generic.html' %}
 {% block content %}
-    <div class="container mx-auto p-6">
-        <h1 class="text-3xl font-bold mb-6">WebSocket Simulation Test</h1>
-        <div class="mb-6 flex gap-4">
-            <button onclick="startSimulation()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded">Start Simulation</button>
-            <button onclick="pauseSimulation()" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-6 rounded">Pause Simulation</button>
-            <button onclick="stopSimulation()" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-6 rounded">Stop Simulation</button>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-            <div>
-                <label for="timeStep" class="block text-gray-700 font-medium mb-2">Time Step (in milliseconds):</label>
-                <input type="number" id="timeStep" value="1000" class="bg-white shadow rounded p-2 border border-gray-300 w-full">
-            </div>
-            <div>
-                <label for="timeFormat" class="block text-gray-700 font-medium mb-2">Time Format:</label>
-                <select id="timeFormat" class="bg-white shadow rounded p-2 border border-gray-300 w-full">
-                    <option value="ll HH:mm:ss">Default (ll HH:mm:ss)</option>
-                    <option value="YYYY-MM-DD HH:mm">YYYY-MM-DD HH:mm</option>
-                    <option value="MM-DD-YYYY HH:mm">MM-DD-YYYY HH:mm</option>
-                </select>
-            </div>
-            <div class="flex items-center">
-                <label for="tooltip" class="block text-gray-700 font-medium mb-2 mr-2">Enable Tooltips:</label>
-                <input type="checkbox" id="tooltip" checked class="bg-white shadow rounded p-2 border border-gray-300">
-            </div>
-        </div>
-        <div id="charts" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-        <div id="messages" class="mt-6 space-y-4"></div>
+<div class="container mx-auto p-6">
+    <h1 class="text-3xl font-bold mb-6">WebSocket Simulation Test</h1>
+    <div class="mb-6 flex gap-4">
+        <button id="startBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded">Start Simulation</button>
+        <button id="pauseBtn" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-6 rounded">Pause Simulation</button>
+        <button id="stopBtn" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-6 rounded">Stop Simulation</button>
     </div>
-    <script>
-        let socket;
-        let charts = {};
-        let data = {};
+    <div class="mb-6">
+        <label for="scenarioSelect" class="block text-gray-700 font-medium mb-2">Select Scenario:</label>
+        <select id="scenarioSelect" class="bg-white shadow rounded p-2 border border-gray-300 w-full">
+            {% for scenario in scenarios %}
+                <option value="{{ scenario.id }}">{{ scenario.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div id="charts" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    <div id="messages" class="mt-6 space-y-4"></div>
+</div>
+<script>
+    let socket;
+    let charts = {};
+    let data = {};
 
-        async function fetchCompanies() {
-            const response = await fetch('/api/companies/');
-            if (!response.ok) {
-                console.error('Failed to fetch companies:', response.statusText);
-                return;
+    async function fetchStocksForScenario() {
+        const scenarioId = document.getElementById('scenarioSelect').value;
+        const response = await fetch(`/api/scenarios/${scenarioId}/stocks/`);
+        if (!response.ok) {
+            console.error('Failed to fetch stocks:', response.statusText);
+            return;
+        }
+        const stocks = await response.json();
+        data = {};
+        charts = {};
+        document.getElementById('charts').innerHTML = '';
+        if (!Array.isArray(stocks)) {
+            console.error('Failed to fetch stocks: response is not an array.');
+            return;
+        }
+        stocks.forEach(stock => {
+            if (!data[stock.ticker]) {
+                data[stock.ticker] = {
+                    labels: [],
+                    datasets: [{
+                        label: stock.ticker,
+                        data: (stock.price_history || []).map(price => ({
+                            x: new Date(price.timestamp),
+                            o: price.open_price,
+                            h: price.high_price,
+                            l: price.low_price,
+                            c: price.close_price
+                        })),
+                        borderColor: getRandomColor(),
+                        backgroundColor: 'rgba(0,0,0,0)'
+                    }]
+                };
+                createCanvasForStock(stock.ticker);
+                initializeChart(stock.ticker);
             }
-            const companies = await response.json();
-            companies.forEach(company => {
-                if (!data[company.name]) {
-                    data[company.name] = {
-                        labels: [],
-                        datasets: [{
-                            label: company.name,
-                            data: [],
-                            borderColor: getRandomColor(),
-                            backgroundColor: 'rgba(0,0,0,0)'
-                        }]
-                    };
-                    createCanvasForCompany(company.name);
-                    initializeChart(company.name);
-                }
-            });
-        }
+        });
+    }
 
-        function createCanvasForCompany(companyName) {
-            const chartsDiv = document.getElementById('charts');
-            const container = document.createElement('div');
-            container.className = 'chart-container bg-white shadow rounded-lg p-4 relative';
-            const canvas = document.createElement('canvas');
-            canvas.id = companyName.replace(/\s+/g, '-') + '-chart';
-            const resizeHandle = document.createElement('div');
-            resizeHandle.className = 'resize-handle absolute bottom-0 right-0 w-4 h-4 bg-blue-500 cursor-se-resize';
-            container.appendChild(canvas);
-            container.appendChild(resizeHandle);
-            chartsDiv.appendChild(container);
+    function createCanvasForStock(stockTicker) {
+        const chartsDiv = document.getElementById('charts');
+        const container = document.createElement('div');
+        container.className = 'chart-container bg-white shadow rounded-lg p-4 relative';
+        const canvas = document.createElement('canvas');
+        canvas.id = stockTicker.replace(/\s+/g, '-') + '-chart';
+        container.appendChild(canvas);
+        chartsDiv.appendChild(container);
+    }
 
-            interact(container)
-                .draggable({
-                    inertia: true,
-                    modifiers: [
-                        interact.modifiers.restrictRect({
-                            restriction: 'parent',
-                            endOnly: true
-                        })
-                    ],
-                    autoScroll: true,
-                    listeners: {
-                        move(event) {
-                            const target = event.target;
-                            const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
-                            const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
-                            target.style.transform = `translate(${x}px, ${y}px)`;
-                            target.setAttribute('data-x', x);
-                            target.setAttribute('data-y', y);
-                        }
-                    }
-                })
-                .resizable({
-                    edges: { left: false, right: true, bottom: true, top: false },
-                    listeners: {
-                        move(event) {
-                            const target = event.target;
-                            let x = (parseFloat(target.getAttribute('data-x')) || 0);
-                            let y = (parseFloat(target.getAttribute('data-y')) || 0);
-                            target.style.width = `${event.rect.width}px`;
-                            target.style.height = `${event.rect.height}px`;
-                            target.style.transform = `translate(${x}px, ${y}px)`;
-                            if (charts[companyName]) {
-                                charts[companyName].resize();
-                            }
-                        }
-                    }
-                });
-        }
-
-        function initializeChart(companyName) {
-            const ctx = document.getElementById(companyName.replace(/\s+/g, '-') + '-chart').getContext('2d');
-            const timeFormat = document.getElementById('timeFormat').value;
-            const enableTooltip = document.getElementById('tooltip').checked;
-            charts[companyName] = new Chart(ctx, {
-                type: 'candlestick',
-                data: data[companyName],
-                options: {
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: {
-                                tooltipFormat: timeFormat,
-                            },
-                            ticks: {
-                                source: 'auto',
-                                autoSkip: true
-                            }
+    function initializeChart(stockTicker) {
+        const ctx = document.getElementById(stockTicker.replace(/\s+/g, '-') + '-chart').getContext('2d');
+        charts[stockTicker] = new Chart(ctx, {
+            type: 'candlestick',
+            data: data[stockTicker],
+            options: {
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'day'
                         },
-                        y: {
-                            beginAtZero: true
+                        title: {
+                            display: true,
+                            text: 'Date'
                         }
                     },
-                    plugins: {
-                        tooltip: {
-                            enabled: enableTooltip
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Price'
                         }
                     }
                 }
-            });
-        }
-
-        function getRandomColor() {
-            const letters = '0123456789ABCDEF';
-            let color = '#';
-            for (let i = 0; i < 6; i++) {
-                color += letters[Math.floor(Math.random() * 16)];
             }
-            return color;
+        });
+    }
+
+    function getRandomColor() {
+        const letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
         }
+        return color;
+    }
 
-        async function startSimulation() {
-            const roomName = "stock"; // Change this to dynamically fetch the room name if needed
+    async function startSimulation() {
+        const roomName = "stock"; // Change this to dynamically fetch the room name if needed
 
-            if (socket) {
-                socket.close();
-            }
-            await fetchCompanies();
-
-            const timeStep = parseInt(document.getElementById('timeStep').value);
-
-            socket = new WebSocket(`ws://${window.location.host}/ws/simulation/${roomName}/`);
-
-            socket.onopen = function (e) {
-                console.log("WebSocket connection established");
-                addMessage("WebSocket connection established", "green");
-            };
-
-            socket.onmessage = function (e) {
-                console.log("Message received: " + e.data);
-                const messageData = JSON.parse(e.data);
-                if (messageData.name && messageData.timestamp) {
-                    updateChart(messageData);
-                } else {
-                    console.warn("Received malformed message:", messageData);
-                }
-            };
-
-            socket.onclose = function (e) {
-                console.log("WebSocket connection closed");
-                addMessage("WebSocket connection closed", "red");
-            };
-
-            socket.onerror = function (e) {
-                console.log("WebSocket error: " + e.data);
-                addMessage("WebSocket error: " + e.data, "red");
-            };
-
-            // Simulate periodic data fetching
-            setInterval(() => {
-                if (socket.readyState === WebSocket.OPEN) {
-                    socket.send(JSON.stringify({ action: 'fetch_data' }));
-                }
-            }, timeStep);
+        if (socket) {
+            socket.close();
         }
+        await fetchStocksForScenario();
 
-        function pauseSimulation() {
-            fetch('/api/simulation/pause/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                body: JSON.stringify({})
-            }).then(response => {
-                if (response.ok) {
-                    console.log('Simulation paused');
-                    addMessage("Simulation paused", "yellow");
-                }
-            });
-        }
+        socket = new WebSocket(`ws://${window.location.host}/ws/simulation/${roomName}/`);
 
-        function stopSimulation() {
-            fetch('/api/simulation/stop/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                body: JSON.stringify({})
-            }).then(response => {
-                if (response.ok) {
-                    console.log('Simulation stopped');
-                    addMessage("Simulation stopped", "red");
-                    if (socket) {
-                        socket.close();
-                    }
-                }
-            });
-        }
-
-        function updateChart(message) {
-            const companyName = message.name;
-            if (!data[companyName] || !data[companyName].datasets) {
-                console.warn(`Chart data for ${companyName} is not initialized correctly.`);
-                return;
-            }
-            const ohlcData = {
-                x: new Date(message.timestamp),
-                o: message.open,
-                h: message.high,
-                l: message.low,
-                c: message.close
-            };
-            data[companyName].datasets[0].data.push(ohlcData);
-
-            if (charts[companyName]) {
-                charts[companyName].update();
-            }
-        }
-
-        function addMessage(message, color) {
-            const messageContainer = document.createElement('div');
-            messageContainer.className = `bg-${color}-100 text-${color}-800 p-2 rounded shadow`;
-            messageContainer.innerHTML = message;
-            document.getElementById('messages').appendChild(messageContainer);
-        }
-
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-
-        window.onload = function () {
-            fetchCompanies();
+        socket.onopen = function (e) {
+            console.log("WebSocket connection established");
+            addMessage("WebSocket connection established", "green");
         };
 
-        window.onbeforeunload = function () {
-            if (socket) {
-                socket.close();
+        socket.onmessage = function (e) {
+            console.log("Message received: " + e.data);
+            const messageData = JSON.parse(e.data);
+            if (validateMessage(messageData)) {
+                updateChart(messageData);
+            } else {
+                console.warn("Received malformed message:", messageData);
             }
         };
-    </script>
+
+        socket.onclose = function (e) {
+            console.log("WebSocket connection closed");
+            addMessage("WebSocket connection closed", "red");
+        };
+
+        socket.onerror = function (e) {
+            console.log("WebSocket error: " + e.data);
+            addMessage("WebSocket error: " + e.data, "red");
+        };
+
+        const timeStep = 1000; // You can adjust the interval as needed
+        setInterval(() => {
+            if (socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({ action: 'fetch_data' }));
+            }
+        }, timeStep);
+    }
+
+    function validateMessage(message) {
+        const requiredFields = ['ticker', 'timestamp', 'open', 'high', 'low', 'close', 'current', 'name', 'type'];
+        for (const field of requiredFields) {
+            if (!message.hasOwnProperty(field)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function pauseSimulation() {
+        fetch('/api/simulation/pause/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({})
+        }).then(response => {
+            if (response.ok) {
+                console.log('Simulation paused');
+                addMessage("Simulation paused", "yellow");
+            }
+        });
+    }
+
+    function stopSimulation() {
+        fetch('/api/simulation/stop/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({})
+        }).then(response => {
+            if (response.ok) {
+                console.log('Simulation stopped');
+                addMessage("Simulation stopped", "red");
+                if (socket) {
+                    socket.close();
+                }
+            }
+        });
+    }
+
+    function updateChart(message) {
+        const stockTicker = message.ticker;
+        if (!data[stockTicker] || !data[stockTicker].datasets) {
+            console.warn(`Chart data for ${stockTicker} is not initialized correctly.`);
+            return;
+        }
+        const ohlcData = {
+            x: new Date(message.timestamp),
+            o: message.open,
+            h: message.high,
+            l: message.low,
+            c: message.close
+        };
+        data[stockTicker].datasets[0].data.push(ohlcData);
+
+        if (charts[stockTicker]) {
+            charts[stockTicker].update();
+        }
+    }
+
+    function addMessage(message, color) {
+        const messageContainer = document.createElement('div');
+        messageContainer.className = `bg-${color}-100 text-${color}-800 p-2 rounded shadow`;
+        messageContainer.innerHTML = message;
+        document.getElementById('messages').appendChild(messageContainer);
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById('startBtn').addEventListener('click', startSimulation);
+        document.getElementById('pauseBtn').addEventListener('click', pauseSimulation);
+        document.getElementById('stopBtn').addEventListener('click', stopSimulation);
+        fetchStocksForScenario();
+    });
+
+    window.onbeforeunload = function () {
+        if (socket) {
+            socket.close();
+        }
+    };
+</script>
 {% endblock %}
