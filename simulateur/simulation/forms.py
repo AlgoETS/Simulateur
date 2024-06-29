@@ -16,7 +16,7 @@ class StockForm(forms.ModelForm):
 
 class TeamForm(forms.ModelForm):
     members = forms.ModelMultipleChoiceField(queryset=UserProfile.objects.all(), required=False)
-    
+
     class Meta:
         model = Team
         fields = ['name', 'balance', 'members']
@@ -28,7 +28,6 @@ class JoinLinkForm(forms.ModelForm):
 
 class UserProfileForm(forms.ModelForm):
     team = forms.ModelChoiceField(queryset=Team.objects.all(), required=False)
-    
     class Meta:
         model = UserProfile
         fields = ['user', 'balance', 'team']
@@ -48,7 +47,7 @@ class SimulationSettingsForm(forms.ModelForm):
         model = SimulationSettings
         fields = [
             'max_users', 'max_companies', 'timer_step', 'timer_step_unit', 'interval',
-            'interval_unit', 'max_interval', 'fluctuation_rate', 'time_unit', 
+            'interval_unit', 'max_interval', 'fluctuation_rate', 'time_unit',
             'close_stock_market_at_night', 'noise_function'
         ]
 
@@ -59,11 +58,11 @@ class ScenarioForm(forms.ModelForm):
     teams = forms.ModelMultipleChoiceField(queryset=Team.objects.all(), required=False)
     events = forms.ModelMultipleChoiceField(queryset=Event.objects.all(), required=False)
     triggers = forms.ModelMultipleChoiceField(queryset=Trigger.objects.all(), required=False)
-    
+
     class Meta:
         model = Scenario
         fields = [
-            'name', 'description', 'backstory', 'difficulty_level', 'duration', 
+            'name', 'description', 'backstory', 'difficulty_level', 'duration',
             'companies', 'stocks', 'users', 'teams', 'events', 'triggers', 'simulation_settings'
         ]
 

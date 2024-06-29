@@ -1,14 +1,43 @@
-{% extends 'includes/header.html' %}
+{% extends 'includes/base_generic.html' %}
 {% block content %}
 <div class="container mx-auto p-6">
-    <h1 class="text-3xl font-bold mb-6">Team Dashboard</h1>
-    <h2 class="text-2xl font-bold mb-4">Team: {{ team.name }}</h2>
-    <p>Team Balance: ${{ team.balance }}</p>
-    <h2 class="text-2xl font-bold mb-4 mt-6">Team Portfolios</h2>
-    <ul class="list-disc pl-6">
-        {% for portfolio in portfolios %}
-        <li>{{ portfolio.owner.user.username }}'s Portfolio: ${{ portfolio.balance }}</li>
-        {% endfor %}
-    </ul>
+    <h1 class="text-3xl font-bold text-indigo-800 mb-6">Team Dashboard</h1>
+
+    <div class="bg-indigo-100 shadow rounded-lg p-6 mb-6">
+        <h2 class="text-2xl font-bold text-indigo-900 mb-4">Team: {{ team.name }}</h2>
+        <p class="text-gray-700 mb-2">Team Balance: <span class="font-semibold text-green-600">${{ team.balance }}</span></p>
+    </div>
+
+    <div class="bg-indigo-100 shadow rounded-lg p-6 mb-6">
+        <h2 class="text-2xl font-bold text-indigo-900 mb-4">Team Members</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for member in team.members.all %}
+            <div class="bg-white p-4 rounded-lg shadow hover:shadow-md transition duration-200">
+                <h3 class="text-lg font-semibold text-indigo-700">
+                    <a href="{% url 'public_profile' member.user.id %}">{{ member.user.username }}</a>
+                </h3>
+                <p class="text-gray-600">Balance: <span class="text-green-600">${{ member.balance }}</span></p>
+                <p class="text-gray-600">Joined: {{ member.timestamp|date:"F j, Y" }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="bg-indigo-100 shadow rounded-lg p-6">
+        <h2 class="text-2xl font-bold text-indigo-900 mb-4">Team Portfolios</h2>
+        <ul class="list-disc pl-6 space-y-2">
+            {% for portfolio in portfolios %}
+            <li>
+                <div class="flex items-center space-x-2">
+                    <span class="font-semibold text-indigo-700">
+                        <a href="{% url 'portfolio_detail' portfolio.id %}">{{ portfolio.owner.user.username }}'s Portfolio</a>:
+                    </span>
+                    <span class="text-gray-700">${{ portfolio.balance }}</span>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
 </div>
 {% endblock %}
+

@@ -1,10 +1,11 @@
 from django.db import models
 from django.utils.crypto import get_random_string
 from django.urls import reverse
+from django.utils import timezone
+from datetime import timedelta
 
 class Team(models.Model):
     name = models.CharField(max_length=100, default='')
-    balance = models.FloatField(default=100000)
     members = models.ManyToManyField('UserProfile', related_name='teams')
 
     def __str__(self):

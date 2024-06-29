@@ -1,5 +1,22 @@
 from django.contrib import admin
-from .models import Company, Stock, UserProfile, Event, Team, SimulationSettings, Scenario, Portfolio, TransactionHistory, Trigger, SimulationData
+from .models import (
+    Company,
+    Stock,
+    UserProfile,
+    Event,
+    Team,
+    SimulationSettings,
+    Scenario,
+    Portfolio,
+    TransactionHistory,
+    Trigger,
+    SimulationData,
+    StockPortfolio,
+    News,
+    Order,
+    JoinLink,
+    StockPriceHistory
+)
 from django import forms
 from django_json_widget.widgets import JSONEditorWidget
 
@@ -26,3 +43,9 @@ admin.site.register(Portfolio)
 admin.site.register(TransactionHistory)
 admin.site.register(Trigger)
 admin.site.register(SimulationData, SimulationDataAdmin)
+admin.site.register(StockPortfolio)
+admin.site.register(News)
+admin.site.register(Order)
+admin.site.register(JoinLink)
+admin.site.register(StockPriceHistory)
+
