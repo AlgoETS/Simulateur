@@ -260,6 +260,26 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.AddField(
+            model_name='portfolio',
+            name='transactions',
+            field=models.ManyToManyField(blank=True, related_name='portfolios', to='simulation.transactionhistory'),
+        ),
+        migrations.CreateModel(
+            name='Trigger',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(default='', max_length=100)),
+                ('description', models.TextField(default='')),
+                ('type', models.CharField(default='', max_length=100)),
+                ('value', models.FloatField(default=0.0)),
+                ('timestamp', models.DateTimeField(auto_now_add=True)),
+                ('events', models.ManyToManyField(blank=True, to='simulation.event')),
+            ],
+            options={
+                'verbose_name_plural': 'Triggers',
+            },
+        ),
+        migrations.AddField(
             model_name='scenario',
             name='triggers',
             field=models.ManyToManyField(related_name='scenarios_triggers', to='simulation.trigger'),
