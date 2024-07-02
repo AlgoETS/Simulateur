@@ -1,18 +1,36 @@
 services:
   django:
     build: .
-    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    command: sh -c "python manage.py migrate && daphne simulateur.asgi:application -b 0.0.0.0 -p 8000"
     volumes:
       - .:/workspace
     ports:
       - "8000:8000"
     depends_on:
       - redis
+      - ollama
     environment:
       - DATABASE_URL=postgres://postgres:postgres@db:5432/postgres
       - REDIS_URL=redis://redis:6379
+      - OLLAMA_API_URL=http://ollama:11434  # Example environment variable for Ollama
 
   redis:
     image: redis:6
     ports:
       - "6379:6379"
+
+  ollama:
+    image: ollama/ollama
+    volumes:
+      - ollama:/root/.ollama
+    ports:
+      - "11434:11434"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]  # Uncomment this line if you have Nvidia GPU support
+    runtime: nvidia  # Uncomment this line if you have Nvidia GPU support
+
+volumes:
+  ollama:

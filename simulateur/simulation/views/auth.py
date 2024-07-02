@@ -14,8 +14,11 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.contrib.auth.tokens import default_token_generator
 from simulation.models.team import JoinLink, Team
+from simulation.models.user_profile import UserProfile
+from django.contrib.auth.decorators import login_required
+from django.core.mail import send_mail
 
-from simulation.models import UserProfile
+from simulation.models import UserProfile, Portfolio
 
 @method_decorator(csrf_exempt, name='dispatch')
 class SignupView(View):
@@ -75,44 +78,48 @@ class LogoutView(View):
 class PublicProfileView(View):
     def get(self, request, user_id):
         user_profile = get_object_or_404(UserProfile, user__id=user_id)
+        portfolio = get_object_or_404(Portfolio, owner=user_profile)
         context = {
             "user_profile": user_profile,
-        }
-        return render(request, "profile/profile.html", context)
-
-class PrivateProfileView(View):
-    def get(self, request):
-        user_profile = UserProfile.objects.get(user=request.user)
-        context = {
-            "user_profile": user_profile,
+            "portfolio": portfolio,
         }
         return render(request, "profile/profile.html", context)
 
 class SettingsView(View):
+    @method_decorator(login_required)
     def get(self, request):
-        user_profile = UserProfile.objects.get(user=request.user)
+        user_profile = get_object_or_404(UserProfile, user=request.user)
+        portfolio = get_object_or_404(Portfolio, owner=user_profile)
         context = {
-            "user": request.user,
             "user_profile": user_profile,
+            "portfolio": portfolio,
         }
         return render(request, "registration/settings.html", context)
 
+    @method_decorator(login_required)
     def post(self, request):
-        try:
-            data = json.loads(request.body)
-            user = request.user
-            user.email = data.get("email", user.email)
-            user.save()
+        user_profile = get_object_or_404(UserProfile, user=request.user)
+        portfolio = get_object_or_404(Portfolio, owner=user_profile)
+        if 'avatar' in request.FILES:
+            user_profile.avatar = request.FILES['avatar']
+        if 'email' in request.POST:
+            request.user.email = request.POST['email']
+            request.user.save()
+        if 'balance' in request.POST:
+            portfolio.balance = request.POST['balance']
+            portfolio.save()
+        return redirect('settings')
 
-            user_profile = UserProfile.objects.get(user=user)
-            user_profile.balance = data.get("balance", user_profile.balance)
-            user_profile.save()
-
-            return JsonResponse({"status": "success"})
-        except json.JSONDecodeError:
-            return JsonResponse({"status": "error", "message": "Invalid JSON data"}, status=400)
-        except Exception as e:
-            return JsonResponse({"status": "error", "message": str(e)}, status=400)
+class PrivateProfileView(View):
+    @method_decorator(login_required)
+    def get(self, request):
+        user_profile = get_object_or_404(UserProfile, user=request.user)
+        portfolio = get_object_or_404(Portfolio, owner=user_profile)
+        context = {
+            "user_profile": user_profile,
+            "portfolio": portfolio,
+        }
+        return render(request, "profile/profile.html", context)
 
 class ForgotPasswordView(View):
     def get(self, request):
@@ -173,7 +180,11 @@ class PasswordResetConfirmView(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class JoinTeamView(View):
     def get(self, request):
-        return render(request, "registration/join_team.html")
+        teams = Team.objects.all()
+        context = {
+            'teams': teams,
+        }
+        return render(request, "registration/join_team.html", context)
 
     def post(self, request, *args, **kwargs):
         team_id = kwargs.get('team_id')

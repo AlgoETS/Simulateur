@@ -1,5 +1,9 @@
 {% extends 'includes/base_generic.html' %}
 
+{% load socialaccount %}
+
+{% block title %}Sign In to Stock Market Simulation{% endblock %}
+
 {% block content %}
 <div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
     <div class="sm:mx-auto sm:w-full sm:max-w-md">
@@ -19,7 +23,7 @@
                 <div class="flex items-center justify-between">
                     <label for="password" class="block text-sm font-medium leading-6 text-gray-900">Password</label>
                     <div class="text-sm">
-                        <a href="#" class="font-semibold text-indigo-600 hover:text-indigo-800">Forgot password?</a>
+                        <a href="{% url 'account_reset_password' %}" class="font-semibold text-indigo-600 hover:text-indigo-800">Forgot password?</a>
                     </div>
                 </div>
                 <div class="mt-2">
@@ -30,6 +34,25 @@
                 <button type="button" onclick="handleLogin()" class="flex w-full justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Sign in</button>
             </div>
         </form>
+        <div class="mt-6">
+            <div class="flex justify-center mb-4">
+                <span class="text-gray-500">or sign in with</span>
+            </div>
+            <div class="flex justify-center space-x-4">
+                <a href="{% provider_login_url 'google' %}" class="flex justify-center rounded-md bg-red-600 px-4 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">
+                    Google
+                </a>
+                <a href="{% provider_login_url 'github' %}" class="flex justify-center rounded-md bg-gray-600 px-4 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600">
+                    GitHub
+                </a>
+                <a href="{% provider_login_url 'microsoft' %}" class="flex justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                    Microsoft
+                </a>
+                <a href="{% provider_login_url 'notion' %}" class="flex justify-center rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900">
+                    Notion
+                </a>
+            </div>
+        </div>
         <p class="mt-10 text-center text-sm text-gray-500">
             Not a member?
             <a href="{% url 'signup' %}" class="font-semibold leading-6 text-indigo-600 hover:text-indigo-800">Register</a>
@@ -37,20 +60,6 @@
     </div>
 </div>
 <script>
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
 
     function handleLogin() {
         const username = document.getElementById('username').value;

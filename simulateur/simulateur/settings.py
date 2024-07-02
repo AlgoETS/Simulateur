@@ -10,8 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
-from pathlib import Path
 import os
+from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,21 +27,52 @@ DEBUG = os.getenv("DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = ['*']
 
+SITE_ID = 1
+LOGIN_REDIRECT_URL = '/'
+ACCOUNT_LOGOUT_REDIRECT_URL = '/'
+
 # Application definition
 
 INSTALLED_APPS = [
     'channels',
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
+    'django.contrib.sites',
+    'jet',
+    'jet.dashboard',
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
     'rest_framework',
     'django_json_widget',
-    'social_django',
-    "simulation",
+    'simulation',
+    'django_check_seo',
+    'easyaudit',
+    'django_prometheus',
+    'impostor',
+    'django_typer',
+    'tinymce',
+    'pictures',
+    'imagekit',
+    'colorfield',
+    'djmoney',
+    'any_urlfield',
+    'organizations',
+    'allauth_ui',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.github',
+    'allauth.socialaccount.providers.microsoft',
+    'allauth.socialaccount.providers.notion',
+    'widget_tweaks',
+    'slippers',
+    'guest_user',
 ]
+
+ALLAUTH_UI_THEME = "light"
 
 MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -52,6 +83,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
+    'easyaudit.middleware.easyaudit.EasyAuditMiddleware',
+    'django_prometheus.middleware.PrometheusBeforeMiddleware',
+    'django_prometheus.middleware.PrometheusAfterMiddleware',
 ]
 
 ROOT_URLCONF = "simulateur.urls"
@@ -129,6 +164,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# Channels
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
@@ -138,6 +174,7 @@ CHANNEL_LAYERS = {
     },
 }
 
+# Logging
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -163,9 +200,79 @@ LOGGING = {
 
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.example.com'  # Your SMTP server
-EMAIL_PORT = 587  # Typically 587 for TLS, 465 for SSL
-EMAIL_USE_TLS = True  # Use TLS for security
-EMAIL_HOST_USER = 'your-email@example.com'  # Your email address
-EMAIL_HOST_PASSWORD = 'your-email-password'  # Your email password
+EMAIL_HOST = 'smtp.example.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'your-email@example.com'
+EMAIL_HOST_PASSWORD = 'your-email-password'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# Authentication
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+    'impostor.backend.AuthBackend',
+    'guest_user.backends.GuestBackend'
+)
+
+# Social account providers
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': 'your-google-client-id',
+            'secret': 'your-google-client-secret',
+            'key': ''
+        }
+    },
+    'github': {
+        'APP': {
+            'client_id': 'Ov23lieFcjzlTWoPMJC4',
+            'secret': 'a0caa32d591edd1e0df91140496c04403796af46',
+            'key': ''
+        }
+    },
+    'microsoft': {
+        'APP': {
+            'client_id': 'your-microsoft-client-id',
+            'secret': 'your-microsoft-client-secret',
+            'key': ''
+        }
+    },
+    'notion': {
+        'APP': {
+            'client_id': 'your-not-ion-client-id',
+            'secret': '',
+            'key': ''
+        }
+    }
+}
+
+# Performance recording
+PERF_REC = {
+    "MODE": "once",
+}
+
+# JET settings
+JET_SIDE_MENU_COMPACT = True
+
+PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+JET_MODULE_GOOGLE_ANALYTICS_CLIENT_SECRETS_FILE = os.path.join(PROJECT_DIR, 'client_secrets.json')
+
+# PICTURES settings
+PICTURES = {
+    "BREAKPOINTS": {
+        "xs": 576,
+        "s": 768,
+        "m": 992,
+        "l": 1200,
+        "xl": 1400,
+    },
+    "GRID_COLUMNS": 12,
+    "CONTAINER_WIDTH": 1200,
+    "FILE_TYPES": ["WEBP"],
+    "PIXEL_DENSITIES": [1, 2],
+    "USE_PLACEHOLDERS": True,
+    "QUEUE_NAME": "pictures",
+    "PROCESSOR": "pictures.tasks.process_picture",
+}

@@ -21,14 +21,16 @@ class JoinTeam(generics.GenericAPIView):
             if join_link.is_expired():
                 return Response({'status': 'error', 'message': 'Link has expired'}, status=status.HTTP_400_BAD_REQUEST)
 
-            if team.members.count() == 0:
-                user = request.user
-                user_profile = get_object_or_404(UserProfile, user=user)
-                user_profile.team = team
-                user_profile.save()
-                team.members.add(user_profile)
-                return Response({'status': 'success', 'message': f'Joined team {team.name}'})
-            return Response({'status': 'error', 'message': 'Team already has members'}, status=status.HTTP_400_BAD_REQUEST)
+            user = request.user
+            user_profile = get_object_or_404(UserProfile, user=user)
+            if user_profile.team:
+                return Response({'status': 'error', 'message': 'You are already in a team'}, status=status.HTTP_400_BAD_REQUEST)
+
+            user_profile.team = team
+            user_profile.save()
+            team.members.add(user_profile)
+            return Response({'status': 'success', 'message': f'Joined team {team.name}'})
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class RemoveTeamMember(generics.GenericAPIView):

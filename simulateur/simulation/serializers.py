@@ -7,7 +7,7 @@ from .models import (
 class CompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
-        fields = ['name', 'sector', 'industry']
+        fields = ['name', 'backstory', 'sector', 'country', 'industry']
 
 class StockPriceHistorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -66,25 +66,27 @@ class NewsSerializer(serializers.ModelSerializer):
         fields = ['title', 'content', 'published_date']
 
 class ScenarioSerializer(serializers.ModelSerializer):
-    events = EventSerializer(many=True)
-    triggers = TriggerSerializer(many=True)
-    news = NewsSerializer(many=True)
-    teams = TeamSerializer(many=True)
-    stocks = StockSerializer(many=True)
+    events = EventSerializer(many=True, required=False)
+    triggers = TriggerSerializer(many=True, required=False)
+    news = NewsSerializer(many=True, required=False)
+    teams = TeamSerializer(many=True, required=False)
+    stocks = StockSerializer(many=True, required=False)
     simulation_settings = SimulationSettingsSerializer()
 
     class Meta:
         model = Scenario
-        fields = ['id', 'name', 'description', 'backstory', 'duration', 'stocks', 'users', 'teams', 'news', 'events', 'triggers', 'simulation_settings', 'timestamp', 'published_date']
+        fields = ['id', 'name', 'description', 'backstory', 'duration', 'stocks', 'teams', 'news', 'events', 'triggers', 'simulation_settings', 'timestamp', 'published_date']
 
     def create(self, validated_data):
-        events_data = validated_data.pop('events')
-        triggers_data = validated_data.pop('triggers')
-        news_data = validated_data.pop('news_set')
-        teams_data = validated_data.pop('teams')
-        stocks_data = validated_data.pop('stocks')
+        events_data = validated_data.pop('events', [])
+        triggers_data = validated_data.pop('triggers', [])
+        news_data = validated_data.pop('news', [])
+        teams_data = validated_data.pop('teams', [])
+        stocks_data = validated_data.pop('stocks', [])
+        simulation_settings_data = validated_data.pop('simulation_settings')
 
-        scenario = Scenario.objects.create(**validated_data)
+        simulation_settings = SimulationSettings.objects.create(**simulation_settings_data)
+        scenario = Scenario.objects.create(simulation_settings=simulation_settings, **validated_data)
 
         for event_data in events_data:
             Event.objects.create(scenario=scenario, **event_data)
