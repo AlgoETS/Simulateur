@@ -113,7 +113,7 @@ class SettingsView(View):
 class PrivateProfileView(View):
     @method_decorator(login_required)
     def get(self, request):
-        user_profile = UserProfile.objects.get(user=request.user)
+        user_profile = get_object_or_404(UserProfile, user=request.user)
         portfolio = get_object_or_404(Portfolio, owner=user_profile)
         context = {
             "user_profile": user_profile,
@@ -180,7 +180,11 @@ class PasswordResetConfirmView(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class JoinTeamView(View):
     def get(self, request):
-        return render(request, "registration/join_team.html")
+        teams = Team.objects.all()
+        context = {
+            'teams': teams,
+        }
+        return render(request, "registration/join_team.html", context)
 
     def post(self, request, *args, **kwargs):
         team_id = kwargs.get('team_id')

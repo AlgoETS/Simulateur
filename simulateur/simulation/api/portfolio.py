@@ -1,4 +1,5 @@
 import json
+from decimal import Decimal
 from django.http import JsonResponse
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
@@ -29,7 +30,7 @@ class BuyStock(View):
             stock = Stock.objects.get(id=data['stock_id'])
             scenario = Scenario.objects.get(id=data['scenario_id'])
             amount = int(data['amount'])
-            price = float(data.get('price', stock.price))  # Default to stock price if price not provided
+            price = Decimal(data.get('price', stock.price))  # Default to stock price if price not provided
 
             if amount <= 0:
                 return JsonResponse({'status': 'error', 'message': 'Amount must be greater than zero'}, status=400)
@@ -80,7 +81,7 @@ class SellStock(View):
             stock = Stock.objects.get(id=data['stock_id'])
             scenario = Scenario.objects.get(id=data['scenario_id'])
             amount = int(data['amount'])
-            price = float(data.get('price', stock.price))  # Default to stock price if price not provided
+            price = Decimal(data.get('price', stock.price))  # Default to stock price if price not provided
 
             if amount <= 0:
                 return JsonResponse({'status': 'error', 'message': 'Amount must be greater than zero'}, status=400)

@@ -47,6 +47,7 @@ It includes an admin interface to manage the simulation settings and control the
     python manage.py migrate
     python manage.py clean_database
     python manage.py seed_database
+    python3 manage.py collectstatic
     ```
 
 3. **Create a Superuser**:

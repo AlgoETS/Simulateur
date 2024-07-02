@@ -54,4 +54,7 @@ django-widget-tweaks
 slippers
 django-robots>=4.0.0
 django-guest-user
-"django-typer[rich]"
+rich
+requests
+ollama
+selenium

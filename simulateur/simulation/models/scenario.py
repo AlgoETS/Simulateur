@@ -6,7 +6,6 @@ class Scenario(models.Model):
     backstory = models.TextField(default='')
     duration = models.IntegerField(default=0)
     stocks = models.ManyToManyField('Stock', related_name='scenarios_stocks')
-    users = models.ManyToManyField('UserProfile', related_name='scenarios_users')
     teams = models.ManyToManyField('Team', related_name='scenarios_teams')
     events = models.ManyToManyField('Event', related_name='scenarios_events')
     triggers = models.ManyToManyField('Trigger', related_name='scenarios_triggers')

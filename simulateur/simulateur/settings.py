@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'organizations',
     'allauth_ui',
     'allauth',
+    'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.github',

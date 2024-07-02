@@ -1,7 +1,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Experience the thrill of stock trading in a simulated environment. Compete with others, create strategies, and see how well you can perform in the stock market!">
+    <meta name="description"
+        content="Experience the thrill of stock trading in a simulated environment. Compete with others, create strategies, and see how well you can perform in the stock market!">
     <meta name="keywords" content="stock trading, stock market simulation, trading strategies, compete, simulation">
     <title>{% block title %}Stock Market Simulation - Simulated Stock Trading Environment{% endblock %}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" />
@@ -18,6 +19,8 @@
     <script src="//unpkg.com/globe.gl"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three-globe"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-gauge"></script>
     <script src="https://unpkg.com/d3@6"></script>
     <style>
         body {
@@ -90,4 +93,20 @@
             font-style: italic;
         }
     </style>
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
 </head>

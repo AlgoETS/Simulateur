@@ -1,51 +1,62 @@
 {% extends 'includes/base_generic.html' %}
 
+{% block title %}Join Team{% endblock %}
+
 {% block content %}
 <div class="container mx-auto p-6">
-    <h1 class="text-3xl font-bold mb-6">Join Team</h1>
+    <h1 class="text-3xl font-bold mb-6 text-indigo-800">Join Team</h1>
     <form id="joinTeamForm" class="space-y-6">
-        <div>
-            <label for="team_id" class="block text-sm font-medium leading-6 text-gray-900">Team ID</label>
-            <div class="mt-2">
-                <input id="team_id" name="team_id" type="text" required class="block w-full rounded-md border-0 py-2 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+        <div class="flex space-x-4">
+            <div class="w-1/2">
+                <label for="team_id" class="block text-sm font-medium leading-6 text-gray-900">Team ID</label>
+                <div class="mt-2">
+                    <input id="team_id" name="team_id" type="text" required class="block w-full rounded-md border-0 py-2 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" readonly>
+                </div>
             </div>
-        </div>
-        <div>
-            <label for="key" class="block text-sm font-medium leading-6 text-gray-900">Join Key</label>
-            <div class="mt-2">
-                <input id="key" name="key" type="text" required class="block w-full rounded-md border-0 py-2 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+            <div class="w-1/2">
+                <label for="key" class="block text-sm font-medium leading-6 text-gray-900">Join Key</label>
+                <div class="mt-2">
+                    <input id="key" name="key" type="text" required class="block w-full rounded-md border-0 py-2 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                </div>
             </div>
         </div>
         <div>
             <button type="button" onclick="handleJoinTeam()" class="flex w-full justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Join Team</button>
         </div>
     </form>
-</div>
-<script>
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
 
+    <div class="mt-8">
+        <h2 class="text-2xl font-bold mb-4 text-indigo-900">Available Teams</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for team in teams %}
+            <div class="bg-white shadow-lg rounded-lg p-4 cursor-pointer hover:shadow-xl transition duration-200" onclick="selectTeam('{{ team.id }}')">
+                <h3 class="text-xl font-semibold text-indigo-700">{{ team.name }}</h3>
+                <p class="text-gray-600 mb-2">Balance: <span class="text-green-600">${{ team.balance }}</span></p>
+                <h4 class="text-lg font-semibold text-gray-700">Members:</h4>
+                <ul class="list-disc list-inside">
+                    {% for member in team.members.all %}
+                    <li>{{ member.user.username }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
     function handleJoinTeam() {
         const teamId = document.getElementById('team_id').value;
         const key = document.getElementById('key').value;
         const csrfToken = getCookie('csrftoken');
 
-        axios.post(`/api/join_team/${teamId}/${key}/`, {}, {
+        axios.post(`/api/join_team/${teamId}/${key}/`, {
+            team_id: teamId,
+            key: key
+        }, {
             headers: {
                 'X-CSRFToken': csrfToken
-            }
+            },
         })
         .then(response => {
             if (response.data.status === 'success') {
@@ -58,6 +69,10 @@
         .catch(error => {
             alert('Failed to join team. Please check the provided details.');
         });
+    }
+
+    function selectTeam(teamId) {
+        document.getElementById('team_id').value = teamId;
     }
 </script>
 {% endblock %}

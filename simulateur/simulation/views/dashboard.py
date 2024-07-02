@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.db.models import Sum
 from django.db import transaction
+import json
 
 from simulation.models import (
     UserProfile,
@@ -22,62 +23,70 @@ from simulation.models import (
     Order,
     Trigger,
 )
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class AdminOnlyMixin(UserPassesTestMixin):
     def test_func(self):
         return self.request.user.is_staff
 
-
 class HomeView(View):
     def get(self, request):
         return render(request, "simulation/home.html")
 
-
 class UserDashboardView(View):
     def get(self, request):
         try:
-            user_profile = UserProfile.objects.get(user=request.user)
+            user_profile = UserProfile.objects.select_related('user').get(user=request.user)
         except UserProfile.DoesNotExist:
-            messages.error(
-                request, "User profile does not exist. Please create your profile."
-            )
+            messages.error(request, "User profile does not exist. Please create your profile.")
             return redirect(reverse("home"))
         except Exception as e:
             messages.error(request, str(e))
+            logger.error(f"Unexpected error: {e}")
             return redirect(reverse("home"))
 
-        if not hasattr(user_profile, "portfolio"):
-            portfolio = Portfolio.objects.create(owner=user_profile)
+        # Ensure the user has a portfolio
+        portfolio, created = Portfolio.objects.get_or_create(owner=user_profile)
+        if created:
             user_profile.portfolio = portfolio
             user_profile.save()
 
-        portfolio = user_profile.portfolio
-        orders = Order.objects.filter(user=user_profile).order_by("-timestamp")
-        stocks = Stock.objects.all()
+        # Get the selected scenario
         scenarios = Scenario.objects.all()
-        current_scenario_id = scenarios.first().id if scenarios.exists() else None
+        current_scenario_id = request.GET.get('scenario', scenarios.first().id if scenarios.exists() else None)
 
-        stocks_data = [
-            {
-                "stock": stock,
-                "quantity": StockPortfolio.objects.filter(
-                    portfolio=portfolio, stock=stock
-                ).aggregate(Sum("quantity"))["quantity__sum"]
-                or 0,
-            }
-            for stock in portfolio.stocks.all()
-        ]
+        # Fetch necessary data
+        orders = Order.objects.filter(user=user_profile, scenario_id=current_scenario_id).select_related('stock').order_by("-timestamp")
+        stocks = Stock.objects.filter(scenarios_stocks__id=current_scenario_id).select_related('company')
+
+        # Get the user's portfolio
+        portfolio = user_profile.portfolio
+        stocks_data = StockPortfolio.objects.filter(portfolio=portfolio, stock__in=stocks)
+
+        # Get the user's balance
+        balance = portfolio.balance
+
+        # Get the user's total stock value
+        total_stock_value = stocks_data.aggregate(
+            total_stock_value=Sum('stock__price') * Sum('quantity')
+        )['total_stock_value']
 
         context = {
             "title": "User Dashboard",
+            "user_profile": user_profile,
             "portfolio": portfolio,
-            "orders": orders,
             "stocks": stocks,
-            "stocks_data": stocks_data,
+            "orders": orders,
             "scenarios": scenarios,
             "current_scenario_id": current_scenario_id,
+            "stocks_data": stocks_data,
+            "balance": balance,
+            "total_stock_value": total_stock_value,
         }
+
         return render(request, "dashboard/user_dashboard.html", context)
 
 
@@ -87,7 +96,8 @@ class AdminDashboardView(AdminOnlyMixin, View):
         news = News.objects.all()
         events = Event.objects.all()
         triggers = Trigger.objects.all()
-
+        compagies = Company.objects.all()
+        stocks = Stock.objects.all()
 
         context = {
             "title": "Admin Dashboard",
@@ -95,22 +105,21 @@ class AdminDashboardView(AdminOnlyMixin, View):
             "news": news,
             "events": events,
             "triggers": triggers,
+            "companies": compagies,
+            "stocks": stocks,
         }
         return render(request, "dashboard/admin_dashboard.html", context)
-
 
 class TeamDashboardView(View):
     def get(self, request):
         try:
-            user_profile = UserProfile.objects.get(user=request.user)
+            user_profile = UserProfile.objects.select_related('user').get(user=request.user)
             team = user_profile.team
             if not team:
-                return JsonResponse(
-                    {"status": "error", "message": "User is not part of any team"},
-                    status=400,
-                )
+                messages.error(request, "You are not part of any team. Please join a team.")
+                return redirect(reverse("join_team"))
 
-            portfolios = Portfolio.objects.filter(team=team)
+            portfolios = Portfolio.objects.filter(owner__team=team)
             members = team.user_profiles.all()
 
             context = {
@@ -121,16 +130,14 @@ class TeamDashboardView(View):
             }
             return render(request, "dashboard/team_dashboard.html", context)
         except UserProfile.DoesNotExist:
-            return JsonResponse(
-                {"status": "error", "message": "User profile does not exist"},
-                status=400,
-            )
+            messages.error(request, "User profile does not exist. Please create your profile.")
+            return redirect(reverse("home"))
         except Team.DoesNotExist:
-            return JsonResponse(
-                {"status": "error", "message": "Team does not exist"}, status=400
-            )
+            messages.error(request, "Team does not exist.")
+            return redirect(reverse("home"))
         except Exception as e:
-            return JsonResponse({"status": "error", "message": str(e)}, status=500)
+            messages.error(request, str(e))
+            return redirect(reverse("home"))
 
 class GameDashboardView(View):
     def get(self, request):
@@ -175,7 +182,6 @@ class GameDashboardView(View):
         }
         return render(request, "dashboard/game_dashboard.html", context)
 
-
 class MarketOverviewView(View):
     def get(self, request):
         stocks = Stock.objects.select_related('company').all()
@@ -184,6 +190,7 @@ class MarketOverviewView(View):
         news_items = News.objects.all().order_by('-published_date')[:5]
         transactions = TransactionHistory.objects.prefetch_related('orders').all()
         teams = Team.objects.all()
+        triggers = Trigger.objects.all()
 
         context = {
             "title": "Market Overview",
@@ -193,6 +200,7 @@ class MarketOverviewView(View):
             "news_items": news_items,
             "transactions": transactions,
             "teams": teams,
+            "triggers": triggers,
         }
         return render(request, "simulation/market_overview.html", context)
 

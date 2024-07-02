@@ -1,4 +1,6 @@
 {% extends 'includes/base_generic.html' %}
+{% block title %}Team Dashboard{% endblock %}
+
 {% block content %}
 <div class="container mx-auto p-6">
     <h1 class="text-3xl font-bold text-indigo-800 mb-6">Team Dashboard</h1>
@@ -11,7 +13,7 @@
     <div class="bg-indigo-100 shadow rounded-lg p-6 mb-6">
         <h2 class="text-2xl font-bold text-indigo-900 mb-4">Team Members</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {% for member in team.members.all %}
+            {% for member in members %}
             <div class="bg-white p-4 rounded-lg shadow hover:shadow-md transition duration-200">
                 <h3 class="text-lg font-semibold text-indigo-700">
                     <a href="{% url 'public_profile' member.user.id %}">{{ member.user.username }}</a>
@@ -40,4 +42,3 @@
     </div>
 </div>
 {% endblock %}
-
