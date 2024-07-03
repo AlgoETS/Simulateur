@@ -27,7 +27,7 @@ It includes an admin interface to manage the simulation settings and control the
 ## Requirements
 
 - Python 3.10
-- Django 3.2
+- Django 4.2.13
 
 ## Installation
 

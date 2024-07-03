@@ -63,7 +63,7 @@ api_patterns = [
     path('create-event-ai/', CreateEventAI.as_view(), name='create-event-ai'),
     path('create-trigger-ai/', CreateTriggerAI.as_view(), name='create-trigger-ai'),
     path('create-company-stock-ai/', CreateCompanyAndStockAI.as_view(), name='create-company-stock-ai'),
-    path('create-scenario-ai/', CreateScenarioAI.as_view(), name='create-scenario-ai'),gin/main
+    path('create-scenario-ai/', CreateScenarioAI.as_view(), name='create-scenario-ai'),
 ]
 
 # Combine both HTML and API patterns into a single list
