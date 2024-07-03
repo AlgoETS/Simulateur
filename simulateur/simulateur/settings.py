@@ -61,7 +61,10 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.github',
+    'allauth.socialaccount.providers.microsoft',
+    'allauth.socialaccount.providers.notion',
     'widget_tweaks',
     'slippers',
     'guest_user',
@@ -206,7 +209,6 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
-    'impostor.backend.AuthBackend',
     'guest_user.backends.GuestBackend'
 )
 

@@ -4,6 +4,7 @@ attrs
 bleach
 channels
 channels-redis
+crytography==41.0.7
 Django
 django-json-widget
 djangorestframework
@@ -37,7 +38,6 @@ django-easy-audit
 django-jet-reboot
 django-prometheus
 django-perf-rec
-impostor
 google-api-python-client==1.4.1
 feedparser
 django-typer
