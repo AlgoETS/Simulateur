@@ -7,7 +7,7 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from simulation.models import Portfolio, Stock, Order, TransactionHistory, Scenario
-from simulation.logic.queue import buy_sell_queue
+from simulateur.simulation.logic.BuySellQueue import buy_sell_queue
 from simulation.serializers import PortfolioSerializer
 
 class PortfolioView(View):
