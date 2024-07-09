@@ -1,4 +1,5 @@
 from BuySellQueue import BuySellQueue
+from simulation.models import Stock
 
 
 class Broker:
@@ -36,10 +37,11 @@ class Broker:
         return 1
 
     # To implement
-    def getBestPrices(self):
+    def getBestPrices(self,asset):
 
-        best_bid = 1
-        best_ask = 1
+        stock = Stock.objects.get(ticker=asset)
+        best_bid = stock.low_price
+        best_ask = stock.high_price
 
         return best_bid, best_ask
 
@@ -47,15 +49,23 @@ class Broker:
 
         current_volume = self.getCurrentVolume()
         current_volatility = self.getCurrentVolatility()
-        best_bid, best_ask = self.getBestPrices()
+        best_bid, best_ask = self.getBestPrices(asset)
         spread = self.computeSpread(current_volatility, current_volume)
 
         if transaction_type == "buy":
             adjusted_price = self.adjustClientPrice(best_bid, best_ask, spread, "buy")
             self.buySellQueue.add_to_buy_queue(user, asset, amount, adjusted_price)
+            if adjusted_price > best_ask :
+                stock = Stock.objects.get(ticker=asset)
+                stock.high_price = adjusted_price
+                stock.save()
 
         else:
             adjusted_price = self.adjustClientPrice(best_bid, best_ask, spread, "sell")
             self.buySellQueue.add_to_sell_queue(user, asset, amount, adjusted_price)
+            if adjusted_price < best_bid :
+                stock = Stock.objects.get(ticker=asset)
+                stock.low_price = adjusted_price
+                stock.save()
 
 

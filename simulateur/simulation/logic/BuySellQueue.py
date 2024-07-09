@@ -2,6 +2,7 @@ from collections import deque
 from django.db import transaction
 from django.utils import timezone
 from simulation.models import TransactionHistory
+from simulation.models import Stock
 
 class BuySellQueue:
     def __init__(self):
@@ -48,6 +49,9 @@ class BuySellQueue:
         }
 
     def complete_transaction(self, buyer, seller, asset, amount, price):
+        stock = Stock.objects.get(ticker=asset)
+        stock.price = price
+        stock.save()
         seller.portfolio.stocks.remove(asset)
         buyer.portfolio.stocks.add(asset)
         seller.balance += price * amount
