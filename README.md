@@ -1,7 +1,7 @@
 # Simulateur
 
-![Django](https://img.shields.io/badge/Django-3.2-blue)
-![Python](https://img.shields.io/badge/Python-3.10-blue)
+![Django](https://img.shields.io/badge/Django-4.2.13-blue)
+![Python](https://img.shields.io/badge/Python-3.12-blue)
 
 ## Project Overview
 
@@ -43,10 +43,10 @@ It includes an admin interface to manage the simulation settings and control the
 2. **Apply Migrations**:
 
     ```bash
-    python manage.py makemigrations
-    python manage.py migrate
-    python manage.py clean_database
-    python manage.py seed_database
+    python3 manage.py makemigrations
+    python3 manage.py migrate
+    python3 manage.py clean_database
+    python3 manage.py seed_database
     python3 manage.py collectstatic
     ```
 
