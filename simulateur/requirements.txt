@@ -58,3 +58,4 @@ rich
 requests
 ollama
 selenium
+daphne
