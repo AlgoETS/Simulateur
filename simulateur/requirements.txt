@@ -4,7 +4,7 @@ attrs
 bleach
 channels
 channels-redis
-crytography==41.0.7
+# crytography==41.0.7 python 3.9
 Django
 django-json-widget
 djangorestframework
