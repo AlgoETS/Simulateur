@@ -81,7 +81,7 @@ Follow the prompts to set up the superadmin credentials.
 To run the Daphne server with the ASGI application, use the following command:
 
 ```bash
-daphne -p 8000 simulateur.asgi:application
+python3 - m daphne -p 8000 simulateur.asgi:application --bind 0.0.0.0
 ```
 
 ## Contributing
