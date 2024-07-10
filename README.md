@@ -59,7 +59,7 @@ It includes an admin interface to manage the simulation settings and control the
 4. **Run the Server**:
 
     ```bash
-    python manage.py start_simulation 1
+    python3 manage.py start_simulation 1
     # in other terminal run
     daphne -p 8000 simulateur.asgi:application
     ```
@@ -71,7 +71,7 @@ It includes an admin interface to manage the simulation settings and control the
 To create a superadmin, use the Django management command:
 
 ```bash
-python manage.py createsuperuser
+python3 manage.py createsuperuser
 ```
 
 Follow the prompts to set up the superadmin credentials.
