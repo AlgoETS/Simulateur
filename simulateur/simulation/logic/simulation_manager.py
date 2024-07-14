@@ -3,16 +3,13 @@ import time
 from django.utils import timezone
 from channels.layers import get_channel_layer
 from simulation.models import Scenario, Stock, StockPriceHistory
+from simulation.logic.noise_patterns.strategies import *
 from simulation.logic.utils import (
-    generate_brownian_motion_candle,
-    generate_fbm_candles,
-    generate_perlin_noise_candle,
-    generate_random_candle,
-    generate_random_walk_candle,
     is_market_open,
     send_ohlc_update,
     TIME_UNITS
 )
+
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +26,7 @@ class SimulationManager:
         self.fluctuation_rate = self.settings.fluctuation_rate
         self.noise_function = self.settings.noise_function.lower()
         self.time_index = 0
+        self.noise_strategy = NoiseStrategy()
 
         logger.info(f'Starting simulation for scenario {self.scenario} with time step {self.time_step} seconds')
 
@@ -82,18 +80,19 @@ class SimulationManager:
 
     def apply_changes(self, stock, current_time):
         if self.noise_function == 'brownian':
-            change = generate_brownian_motion_candle(stock.price, self.fluctuation_rate)
+            self.noise_strategy = BrownianMotion()
         elif self.noise_function == 'perlin':
-            change = generate_perlin_noise_candle(stock.price, self.time_index, self.fluctuation_rate)
+            self.noise_strategy = Perlin()
         elif self.noise_function == 'random_walk':
-            change = generate_random_walk_candle(stock.price, self.fluctuation_rate)
+            self.noise_strategy = RandomWalk()
         elif self.noise_function == 'fbm':
-            change = generate_fbm_candles(stock.price, self.time_index, self.fluctuation_rate)
+            self.noise_strategy = Fbm()
         elif self.noise_function == 'random':
-            change = generate_random_candle(stock.price, self.fluctuation_rate)
+            self.noise_strategy = RandomCandle()
         else:
             raise ValueError(f"Unsupported noise function: {self.noise_function}")
-
+        
+        change = self.noise_strategy.generate_noise(stock.price,self.fluctuation_rate,self.time_index)
         self.time_index += 1
         stock.open_price = change['Open']
         stock.high_price = change['High']
