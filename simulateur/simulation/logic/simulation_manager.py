@@ -67,18 +67,15 @@ class SimulationManager:
         logger.info('Simulation stopped')
 
     async def update_prices(self, current_time):
-        stocks = await sync_to_async(list, thread_sensitive=True)(self.scenario.stocks.all())
+        stocks = await self.get_stocks()
         for stock in stocks:
             change = await self.apply_changes(stock, current_time)
-            await sync_to_async(StockPriceHistory.objects.create, thread_sensitive=True)(
-                stock=stock,
-                open_price=change['open'],
-                high_price=change['high'],
-                low_price=change['low'],
-                close_price=change['close'],
-                timestamp=current_time
-            )
+            await self.create_stock_price_history(stock, change, current_time)
             await self.broadcast_update(stock, current_time)
+
+    @sync_to_async
+    def get_stocks(self):
+        return list(self.scenario.stocks.all())
 
     async def apply_changes(self, stock, current_time):
         if self.noise_function == 'brownian':
@@ -100,7 +97,7 @@ class SimulationManager:
         stock.low_price = change['Low']
         stock.close_price = change['Close']
         stock.price = change['Close']
-        await sync_to_async(stock.save, thread_sensitive=True)()
+        await self.save_stock(stock)
 
         return {
             'ticker': stock.ticker,
@@ -110,6 +107,21 @@ class SimulationManager:
             'close': stock.close_price,
             'time': current_time.isoformat()
         }
+
+    @sync_to_async
+    def save_stock(self, stock):
+        stock.save()
+
+    @sync_to_async
+    def create_stock_price_history(self, stock, change, current_time):
+        StockPriceHistory.objects.create(
+            stock=stock,
+            open_price=change['open'],
+            high_price=change['high'],
+            low_price=change['low'],
+            close_price=change['close'],
+            timestamp=current_time
+        )
 
     async def broadcast_update(self, stock, current_time):
         update = {
