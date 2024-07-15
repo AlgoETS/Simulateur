@@ -249,7 +249,6 @@ document.addEventListener('DOMContentLoaded', () => {
             socket.close();
         }
     };
-
     const restrictEdges = {
         outer: 'parent',
         endOnly: true
@@ -260,6 +259,43 @@ document.addEventListener('DOMContentLoaded', () => {
         max: { width: document.getElementById('main-content').clientWidth - 10, height: document.getElementById('main-content').clientHeight - 10 }
     };
 
+    interact('.card').resizable({
+        edges: { left: true, right: true, bottom: true, top: true },
+        listeners: {
+            move(event) {
+                let { x, y } = event.target.dataset;
+                x = (parseFloat(x) || 0) + event.deltaRect.left;
+                y = (parseFloat(y) || 0) + event.deltaRect.top;
+                Object.assign(event.target.style, {
+                    width: `${Math.round(event.rect.width / 10) * 10}px`,
+                    height: `${Math.round(event.rect.height / 10) * 10}px`
+                });
+                Object.assign(event.target.dataset, { x, y });
+
+                // Resize chart inside the card
+                const chartElement = event.target.querySelector('.chart');
+                if (chartElement) {
+                    const chartId = chartElement.id.replace('chart-', '');
+                    if (charts[chartId]) {
+                        charts[chartId].chart.resize(chartElement.clientWidth, chartElement.clientHeight);
+                    }
+                }
+            }
+        },
+        modifiers: [
+            interact.modifiers.restrictEdges(restrictEdges),
+            interact.modifiers.restrictSize(restrictSize),
+            interact.modifiers.snap({
+                targets: [
+                    interact.snappers.grid({ x: 10, y: 10 })
+                ],
+                range: Infinity,
+                relativePoints: [{ x: 0, y: 0 }]
+            })
+        ],
+        inertia: true
+    });
+
     interact('#sidebar').resizable({
         edges: { left: false, right: true, bottom: false, top: false },
         listeners: {
@@ -267,14 +303,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 let { x, y } = event.target.dataset;
                 x = (parseFloat(x) || 0) + event.deltaRect.left;
                 Object.assign(event.target.style, {
-                    width: `${event.rect.width}px`
+                    width: `${Math.round(event.rect.width / 10) * 10}px`
                 });
                 Object.assign(event.target.dataset, { x, y });
             }
         },
         modifiers: [
             interact.modifiers.restrictEdges(restrictEdges),
-            interact.modifiers.restrictSize(restrictSize)
+            interact.modifiers.restrictSize(restrictSize),
+            interact.modifiers.snap({
+                targets: [
+                    interact.snappers.grid({ x: 10, y: 10 })
+                ],
+                range: Infinity,
+                relativePoints: [{ x: 0, y: 0 }]
+            })
         ],
         inertia: true
     });
@@ -286,14 +329,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 let { x, y } = event.target.dataset;
                 x = (parseFloat(x) || 0) + event.deltaRect.left;
                 Object.assign(event.target.style, {
-                    width: `${event.rect.width}px`
+                    width: `${Math.round(event.rect.width / 10) * 10}px`
                 });
                 Object.assign(event.target.dataset, { x, y });
             }
         },
         modifiers: [
             interact.modifiers.restrictEdges(restrictEdges),
-            interact.modifiers.restrictSize(restrictSize)
+            interact.modifiers.restrictSize(restrictSize),
+            interact.modifiers.snap({
+                targets: [
+                    interact.snappers.grid({ x: 10, y: 10 })
+                ],
+                range: Infinity,
+                relativePoints: [{ x: 0, y: 0 }]
+            })
         ],
         inertia: true
     });
@@ -311,39 +361,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
         modifiers: [
-            interact.modifiers.restrictRect(restrictEdges)
+            interact.modifiers.restrictRect(restrictEdges),
+            interact.modifiers.snap({
+                targets: [
+                    interact.snappers.grid({ x: 10, y: 10 })
+                ],
+                range: Infinity,
+                relativePoints: [{ x: 0, y: 0 }]
+            })
         ]
     });
-
-    interact('.card').resizable({
-        edges: { left: true, right: true, bottom: true, top: true },
-        listeners: {
-            move(event) {
-                let { x, y } = event.target.dataset;
-                x = (parseFloat(x) || 0) + event.deltaRect.left;
-                y = (parseFloat(y) || 0) + event.deltaRect.top;
-                Object.assign(event.target.style, {
-                    width: `${event.rect.width}px`,
-                    height: `${event.rect.height}px`
-                });
-                Object.assign(event.target.dataset, { x, y });
-
-                // Resize chart inside the card
-                const chartElement = event.target.querySelector('.chart');
-                if (chartElement) {
-                    const chartId = chartElement.id.replace('chart-', '');
-                    if (charts[chartId]) {
-                        charts[chartId].chart.resize(chartElement.clientWidth, chartElement.clientHeight);
-                    }
-                }
-            }
-        },
-        modifiers: [
-            interact.modifiers.restrictEdges(restrictEdges),
-            interact.modifiers.restrictSize(restrictSize)
-        ],
-        inertia: true
-    });
-});
 </script>
 {% endblock %}
