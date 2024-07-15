@@ -1,4 +1,3 @@
-from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.utils import timezone
 import logging
@@ -26,7 +25,7 @@ def is_market_open(current_time):
         return False
     return current_time.weekday() < 5
 
-async def send_ohlc_update(channel_layer, update, stock_type):
+def send_ohlc_update(channel_layer, update, stock_type):
     """Send an OHLC update to the specified WebSocket channel."""
     data = {
         'id': update['id'],
@@ -40,7 +39,7 @@ async def send_ohlc_update(channel_layer, update, stock_type):
         'current': update['current'],
         'timestamp': timezone.now().isoformat()
     }
-    await channel_layer.group_send(
+    async_to_sync(channel_layer.group_send)(
         f'simulation_{stock_type}',
         {
             'type': 'simulation_update',

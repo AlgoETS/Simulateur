@@ -2,7 +2,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from simulation.api.scenario import CreateScenario, PublishScenario
-from simulation.api.auth import JoinTeam, RemoveTeamMember
 
 # Importing HTML views
 from simulation.views.dashboard import GameDashboardView, HomeView, PortfolioDetailView, PortfolioUserDetailView, UserDashboardView, AdminDashboardView, TeamDashboardView, MarketOverviewView
@@ -13,7 +12,8 @@ from simulation.api.simulation import SimulationSettingsView, StartSimulation, P
 from simulation.api.portfolio import BuyStock, PortfolioView, SellStock
 from simulation.api.scenario import ScenarioStocks, StockHistory, GetPublishedScenarios, CreateCompanyAndStock, CreateNews, CreateEvent, CreateTrigger
 from simulation.api.ai_llm import InteractWithOllama, CreateNewsAI, CreateEventAI, CreateTriggerAI, CreateCompanyAndStockAI, CreateScenarioAI
-from simulation.api.auth import JoinTeam, RemoveTeamMember, UpdateTeamName, UpdateMemberRole
+from simulation.api.auth import UpdateMemberRole
+from simulation.api.teams import GenerateJoinLink, JoinTeam, RemoveTeamMember, UpdateTeamName
 
 router = DefaultRouter()
 
@@ -67,7 +67,7 @@ api_patterns = [
     path('create-trigger-ai/', CreateTriggerAI.as_view(), name='create-trigger-ai'),
     path('create-company-stock-ai/', CreateCompanyAndStockAI.as_view(), name='create-company-stock-ai'),
     path('create-scenario-ai/', CreateScenarioAI.as_view(), name='create-scenario-ai'),
-
+    path('team/generate-join-link/<int:team_id>/', GenerateJoinLink.as_view(), name='generate_join_link'),
 ]
 
 # Combine both HTML and API patterns into a single list

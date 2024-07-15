@@ -1,8 +1,9 @@
 import logging
-import asyncio
+import time
 from django.utils import timezone
+from django.core.cache import cache
+from django.conf import settings
 from channels.layers import get_channel_layer
-from asgiref.sync import sync_to_async
 from simulation.models import Scenario, Stock, StockPriceHistory
 from simulation.logic.utils import (
     generate_brownian_motion_candle,
@@ -16,6 +17,8 @@ from simulation.logic.utils import (
 )
 
 logger = logging.getLogger(__name__)
+
+CACHE_TTL = getattr(settings, 'CACHE_TTL', 60 * 15)  # 15 minutes default
 
 class SimulationManager:
     def __init__(self, scenario):
@@ -32,7 +35,7 @@ class SimulationManager:
 
         logger.info(f'Starting simulation for scenario {self.scenario} with time step {self.time_step} seconds')
 
-    async def start_simulation(self):
+    def start_simulation(self):
         self.running = True
         start_time = timezone.now()
         try:
@@ -47,10 +50,10 @@ class SimulationManager:
                 if self.close_stock_market_at_night and not is_market_open(current_time):
                     logger.info('Stock market is closed')
                 else:
-                    await self.update_prices(current_time)
+                    self.update_prices(current_time)
                     logger.info(f'Simulation time: {current_time}, elapsed time: {elapsed_time}')
                 logger.info(f'Sleeping for {self.time_step} seconds')
-                await asyncio.sleep(self.time_step)
+                time.sleep(self.time_step)
         except KeyboardInterrupt:
             logger.info('Simulation stopped by user')
         except Exception as e:
@@ -66,18 +69,31 @@ class SimulationManager:
         self.running = False
         logger.info('Simulation stopped')
 
-    async def update_prices(self, current_time):
-        stocks = await self.get_stocks()
+    def update_prices(self, current_time):
+        stocks = self.get_stocks()
         for stock in stocks:
-            change = await self.apply_changes(stock, current_time)
-            await self.create_stock_price_history(stock, change, current_time)
-            await self.broadcast_update(stock, current_time)
+            change = self.apply_changes(stock, current_time)
+            StockPriceHistory.objects.create(
+                stock=stock,
+                open_price=change['open'],
+                high_price=change['high'],
+                low_price=change['low'],
+                close_price=change['close'],
+                timestamp=current_time
+            )
+            self.broadcast_update(stock, current_time)
 
-    @sync_to_async
     def get_stocks(self):
-        return list(self.scenario.stocks.all())
+        cache_key = f'stocks_for_scenario_{self.scenario.id}'
+        stocks = cache.get(cache_key)
 
-    async def apply_changes(self, stock, current_time):
+        if not stocks:
+            stocks = list(self.scenario.stocks.all())
+            cache.set(cache_key, stocks, timeout=CACHE_TTL)
+        
+        return stocks
+
+    def apply_changes(self, stock, current_time):
         if self.noise_function == 'brownian':
             change = generate_brownian_motion_candle(stock.price, self.fluctuation_rate)
         elif self.noise_function == 'perlin':
@@ -97,7 +113,11 @@ class SimulationManager:
         stock.low_price = change['Low']
         stock.close_price = change['Close']
         stock.price = change['Close']
-        await self.save_stock(stock)
+        stock.save()
+
+        # Invalidate the cache for the stocks query when changes are applied
+        cache_key = f'stocks_for_scenario_{self.scenario.id}'
+        cache.delete(cache_key)
 
         return {
             'ticker': stock.ticker,
@@ -108,22 +128,7 @@ class SimulationManager:
             'time': current_time.isoformat()
         }
 
-    @sync_to_async
-    def save_stock(self, stock):
-        stock.save()
-
-    @sync_to_async
-    def create_stock_price_history(self, stock, change, current_time):
-        StockPriceHistory.objects.create(
-            stock=stock,
-            open_price=change['open'],
-            high_price=change['high'],
-            low_price=change['low'],
-            close_price=change['close'],
-            timestamp=current_time
-        )
-
-    async def broadcast_update(self, stock, current_time):
+    def broadcast_update(self, stock, current_time):
         update = {
             'id': stock.id,
             'ticker': stock.ticker,
@@ -137,20 +142,16 @@ class SimulationManager:
             'timestamp': current_time.isoformat()
         }
 
-        await self.send_ohlc_update([update])
-
-    async def send_ohlc_update(self, updates):
-        for update in updates:
-            await send_ohlc_update(self.channel_layer, update, 'stock')
+        send_ohlc_update(self.channel_layer, update, 'stock')
 
 
 class SimulationManagerSingleton:
     _instances = {}
 
     @classmethod
-    async def get_instance(cls, scenario_id):
+    def get_instance(cls, scenario_id):
         if scenario_id not in cls._instances:
-            scenario = await sync_to_async(Scenario.objects.get, thread_sensitive=True)(id=scenario_id)
+            scenario = Scenario.objects.get(id=scenario_id)
             cls._instances[scenario_id] = SimulationManager(scenario)
         return cls._instances[scenario_id]
 
