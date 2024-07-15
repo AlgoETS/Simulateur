@@ -27,6 +27,9 @@
         {% for stock in stocks %}
         <div class="bg-white p-4 rounded-lg shadow-lg flex flex-col h-full card">
             <h3 class="text-lg font-semibold mb-4">{{ stock.name }} ({{ stock.ticker }})</h3>
+            <div id="loader-{{ stock.id }}" class="loader absolute inset-0 flex items-center justify-center">
+                <div class="spinner"></div>
+            </div>
             <div id="chart-{{ stock.id }}" class="w-full h-full flex-1 chart"></div>
         </div>
         {% endfor %}
@@ -69,6 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const initCharts = () => {
         stocks.forEach(stock => {
             const chartElement = document.getElementById(`chart-${stock.id}`);
+            const loaderElement = document.getElementById(`loader-${stock.id}`);
             const chart = LightweightCharts.createChart(chartElement, {
                 width: chartElement.clientWidth,
                 height: chartElement.clientHeight,
@@ -111,6 +115,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 series: candlestickSeries,
                 lastUpdateTime: data.length > 0 ? data[data.length - 1].time : null // Store last update time
             };
+
+            // Hide the loader after initial data is set
+            loaderElement.style.display = 'none';
         });
     };
 
@@ -184,6 +191,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             chartInfo.series.update(ohlcData);
             chartInfo.lastUpdateTime = ohlcData.time;
+
+            // Hide the loader after updating the chart
+            document.getElementById(`loader-${charts[ticker].chartElement.id.split('-')[1]}`).style.display = 'none';
         });
 
         // Clear the buffer after processing
