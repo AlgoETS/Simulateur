@@ -20,22 +20,25 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-ypedlkwxvkm2gyl%e=joz==zd*2tnfcmqt)tv9zg)j(%4#qq(u"
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-ypedlkwxvkm2gyl%e=joz==zd*2tnfcmqt)tv9zg)j(%4#qq(u")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
 
+<<<<<<< Updated upstream
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 #CSRF_TRUSTED_ORIGINS = ['*']
 
+=======
+# Site and login configurations
+>>>>>>> Stashed changes
 SITE_ID = 1
 LOGIN_REDIRECT_URL = '/'
 ACCOUNT_LOGOUT_REDIRECT_URL = '/'
 
 # Application definition
-
 INSTALLED_APPS = [
     'channels',
     'django.contrib.sites',
@@ -74,11 +77,26 @@ INSTALLED_APPS = [
     'pwa',
     'webpack_loader',
     'sslserver',
+<<<<<<< Updated upstream
     'django_rq'
+=======
+    'health_check',
+    'health_check.db',
+    'health_check.cache',
+    'health_check.storage',
+    'health_check.contrib.migrations',
+    'health_check.contrib.psutil',
+    'health_check.contrib.s3boto3_storage',
+    'health_check.contrib.rabbitmq',
+    'health_check.contrib.redis',
+    'storages',
+>>>>>>> Stashed changes
 ]
 
+# Theme settings
 ALLAUTH_UI_THEME = "light"
 
+# Middleware configuration
 MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -94,6 +112,7 @@ MIDDLEWARE = [
     'django_prometheus.middleware.PrometheusAfterMiddleware',
 ]
 
+# Webpack loader configuration
 WEBPACK_LOADER = {
     'DEFAULT': {
         'BUNDLE_DIR_NAME': 'yourreactapp/',
@@ -101,8 +120,10 @@ WEBPACK_LOADER = {
     }
 }
 
+# URL configuration
 ROOT_URLCONF = "simulateur.urls"
 
+# Template settings
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -119,12 +140,11 @@ TEMPLATES = [
     },
 ]
 
+# ASGI and WSGI application settings
 ASGI_APPLICATION = 'simulateur.asgi.application'
 WSGI_APPLICATION = 'simulateur.wsgi.application'
 
-# Database
-# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-
+# Database configuration
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -133,37 +153,20 @@ DATABASES = {
 }
 
 # Password validation
-# https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
 # Internationalization
-# https://docs.djangoproject.com/en/3.2/topics/i18n/
-
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "UTC"
-
 USE_I18N = True
-
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.2/howto/static-files/
-
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
@@ -172,21 +175,23 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Channels
+# Channels configuration
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
+<<<<<<< Updated upstream
             "hosts": [('localhost', 6379)],
+=======
+            "hosts": [(os.getenv('REDIS_HOST', '192.168.0.120'), int(os.getenv('REDIS_PORT', 6379)))],
+>>>>>>> Stashed changes
         },
     },
 }
 
-# Logging
+# Logging configuration
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -219,7 +224,7 @@ EMAIL_HOST_USER = 'your-email@example.com'
 EMAIL_HOST_PASSWORD = 'your-email-password'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-# Authentication
+# Authentication settings
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
@@ -265,9 +270,7 @@ PERF_REC = {
 
 # JET settings
 JET_SIDE_MENU_COMPACT = True
-
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
-
 JET_MODULE_GOOGLE_ANALYTICS_CLIENT_SECRETS_FILE = os.path.join(PROJECT_DIR, 'client_secrets.json')
 
 # PICTURES settings
@@ -288,6 +291,7 @@ PICTURES = {
     "PROCESSOR": "pictures.tasks.process_picture",
 }
 
+# PWA settings
 PWA_APP_NAME = 'Simulateur'
 PWA_APP_DESCRIPTION = "Simulateur is a Django web application that helps you simulate your financial decisions."
 PWA_APP_THEME_COLOR = '#317EFB'
@@ -340,3 +344,19 @@ RQ_QUEUES = {
         'DEFAULT_TIMEOUT': 360,
     },
 }
+# Health check settings
+HEALTH_CHECK = {
+    'DISK_USAGE_MAX': 90,  # percent
+    'MEMORY_MIN': 100,    # in MB
+}
+
+# MinIO Storage Configuration
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+AWS_ACCESS_KEY_ID = os.getenv('MINIO_ACCESS_KEY', 'minioadmin')
+AWS_SECRET_ACCESS_KEY = os.getenv('MINIO_SECRET_KEY', 'minioadmin')
+AWS_STORAGE_BUCKET_NAME = 'mybucket'  # Replace with your bucket name
+AWS_S3_ENDPOINT_URL = os.getenv('MINIO_URL', 'http://localhost:9000')
+AWS_S3_CUSTOM_DOMAIN = None
+AWS_S3_FILE_OVERWRITE = False
+AWS_DEFAULT_ACL = None
+AWS_S3_VERIFY = False
