@@ -68,3 +68,4 @@ psutil
 django-storages
 amqp
 kombu
+influxdb-client
