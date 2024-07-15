@@ -74,7 +74,7 @@ INSTALLED_APPS = [
     'pwa',
     'webpack_loader',
     'sslserver',
-    'django_rq'
+    'django_rq',
     'health_check',
     'health_check.db',
     'health_check.cache',
