@@ -21,6 +21,7 @@ COPY . .
 
 # Run collectstatic and migrations
 RUN python manage.py collectstatic --noinput
+RUN python manage.py makemigrations
 RUN python manage.py migrate
 
 # Expose port 8000 for the application

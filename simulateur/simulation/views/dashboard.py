@@ -330,7 +330,7 @@ class TeamDashboardView(View):
 class GameDashboardView(View):
     def get(self, request):
         try:
-            user_profile = UserProfile.objects.select_related('team').get(user=request.user)
+            user_profile = UserProfile.objects.get(user=request.user)
         except UserProfile.DoesNotExist:
             return render(
                 request,
@@ -341,8 +341,8 @@ class GameDashboardView(View):
         team = user_profile.team
         user_profiles_in_team = UserProfile.objects.filter(team=team)
         portfolios = Portfolio.objects.filter(owner__in=user_profiles_in_team)
-        transactions = TransactionHistory.objects.filter(portfolios__in=portfolios).prefetch_related('orders')
-        stocks = Stock.objects.all().prefetch_related('price_history')
+        stocks = Stock.objects.all()
+        transactions = TransactionHistory.objects.filter(portfolios__in=portfolios)
         news_items = News.objects.all()
         scenarios = Scenario.objects.all()
 
@@ -351,10 +351,7 @@ class GameDashboardView(View):
             stock_prices = stock.price_history.order_by("timestamp").values(
                 "timestamp", "open_price", "high_price", "low_price", "close_price"
             )
-            stock_prices = [
-                {**price, "timestamp": price["timestamp"].strftime("%Y-%m-%d %H:%M:%S")}
-                for price in stock_prices
-            ]
+            stock_prices = list(map(lambda x: {**x, "timestamp": x["timestamp"].strftime("%Y-%m-%d %H:%M:%S")}, stock_prices))
             stocks_data.append({
                 "id": stock.id,
                 "name": stock.company.name,
