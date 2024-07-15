@@ -64,6 +64,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const stocks = {{ stocks|safe }};
     let charts = {};
+    let updateBuffer = {}; // Buffer to store incoming updates
 
     const initCharts = () => {
         stocks.forEach(stock => {
