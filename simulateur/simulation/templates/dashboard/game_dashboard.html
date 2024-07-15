@@ -1,6 +1,4 @@
-{% extends 'includes/base_no_nav.html' %}
-
-{% block content %}
+{% extends 'includes/base_no_nav.html' %} {% block content %}
 <div id="dashboard" class="flex flex-1 overflow-hidden bg-gray-100 h-screen">
     <!-- Left Sidebar - Transaction Orders -->
     <div id="sidebar" class="hidden md:flex md:flex-shrink-0 w-1/4 bg-white p-4 border-r border-gray-200 overflow-auto">
@@ -8,19 +6,18 @@
             <h2 class="text-xl font-semibold mb-4">Transaction Orders</h2>
             <!-- Transaction Orders List -->
             <ul class="divide-y divide-gray-200" id="transaction-orders">
-                {% for transaction in transactions %}
-                {% if transaction.orders.count == 0 %}
+                {% for transaction in transactions %} {% if transaction.orders.count ==
+                0 %}
                 <li class="p-2 text-gray-500">No orders</li>
-                {% endif %}
-                {% for order in transaction.orders.all %}
+                {% endif %} {% for order in transaction.orders.all %}
                 <li class="p-2">
                     <span class="font-semibold">{{ order.user }}: {{ order.stock.name }} ({{ order.stock.ticker
                         }})</span>
                     <span class="text-sm text-gray-500">{{ order.get_order_type_display }} - {{ order.quantity }} shares
-                        at ${{ order.price }}</span>
+                        at
+                        ${{ order.price }}</span>
                 </li>
-                {% endfor %}
-                {% endfor %}
+                {% endfor %} {% endfor %}
             </ul>
         </div>
     </div>
@@ -28,7 +25,9 @@
     <div id="main-content" class="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-auto h-full p-4">
         {% for stock in stocks %}
         <div class="bg-white p-4 rounded-lg shadow-lg flex flex-col h-full card">
-            <h3 class="text-lg font-semibold mb-4">{{ stock.name }} ({{ stock.ticker }})</h3>
+            <h3 class="text-lg font-semibold mb-4">
+                {{ stock.name }} ({{ stock.ticker }})
+            </h3>
             <div id="loader-{{ stock.id }}" class="loader absolute inset-0 flex items-center justify-center">
                 <div class="spinner"></div>
             </div>
@@ -69,319 +68,318 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const stocks = {{ stocks| safe
-    }};
-    let charts = {};
-    let updateBuffer = {}; // Buffer to store incoming updates
+        const stocks = {{ stocks| safe}};
+        let charts = {};
+        let updateBuffer = {}; // Buffer to store incoming updates
 
-    const initCharts = () => {
-        stocks.forEach(stock => {
-            const chartElement = document.getElementById(`chart-${stock.id}`);
-            const loaderElement = document.getElementById(`loader-${stock.id}`);
-            const chart = LightweightCharts.createChart(chartElement, {
-                width: chartElement.clientWidth,
-                height: chartElement.clientHeight,
-                layout: {
-                    backgroundColor: '#ffffff',
-                    textColor: '#000000',
-                },
-                grid: {
-                    vertLines: {
-                        color: '#e0e0e0',
+        const initCharts = () => {
+            stocks.forEach(stock => {
+                const chartElement = document.getElementById(`chart-${stock.id}`);
+                const loaderElement = document.getElementById(`loader-${stock.id}`);
+                const chart = LightweightCharts.createChart(chartElement, {
+                    width: chartElement.clientWidth,
+                    height: chartElement.clientHeight,
+                    layout: {
+                        backgroundColor: '#ffffff',
+                        textColor: '#000000',
                     },
-                    horzLines: {
-                        color: '#e0e0e0',
+                    grid: {
+                        vertLines: {
+                            color: '#e0e0e0',
+                        },
+                        horzLines: {
+                            color: '#e0e0e0',
+                        },
                     },
-                },
-                priceScale: {
-                    borderColor: '#cccccc',
-                },
-                timeScale: {
-                    borderColor: '#cccccc',
-                    timeVisible: true,
-                    secondsVisible: false,
-                },
+                    priceScale: {
+                        borderColor: '#cccccc',
+                    },
+                    timeScale: {
+                        borderColor: '#cccccc',
+                        timeVisible: true,
+                        secondsVisible: false,
+                    },
+                });
+
+                const candlestickSeries = chart.addCandlestickSeries();
+
+                const data = stock.stock_prices.map(price => ({
+                    time: Math.floor(new Date(price.timestamp).getTime() / 1000), // Ensure time is in seconds
+                    open: price.open_price,
+                    high: price.high_price,
+                    low: price.low_price,
+                    close: price.close_price,
+                }));
+
+                candlestickSeries.setData(data);
+
+                charts[stock.ticker] = {
+                    chart: chart,
+                    series: candlestickSeries,
+                    lastUpdateTime: data.length > 0 ? data[data.length - 1].time : null // Store last update time
+                };
+
+                // Hide the loader after initial data is set
+                loaderElement.style.display = 'none';
             });
+        };
 
-            const candlestickSeries = chart.addCandlestickSeries();
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const socket = new WebSocket(protocol + '//' + window.location.host + '/ws/simulation/stock/');
 
-            const data = stock.stock_prices.map(price => ({
-                time: Math.floor(new Date(price.timestamp).getTime() / 1000), // Ensure time is in seconds
-                open: price.open_price,
-                high: price.high_price,
-                low: price.low_price,
-                close: price.close_price,
-            }));
+        socket.onopen = () => {
+            console.log("WebSocket connection established");
+            addMessage("WebSocket connection established", "green");
+            initCharts(); // Initialize charts after WebSocket connection
+        };
 
-            candlestickSeries.setData(data);
+        socket.onmessage = (e) => {
+            console.log("Message received: " + e.data);
+            const messageData = JSON.parse(e.data);
+            if (messageData.ticker && messageData.timestamp) {
+                bufferUpdate(messageData);
+            } else if (messageData.type === 'transaction') {
+                updateTransactions(messageData.transactions);
+            } else if (messageData.type === 'news') {
+                updateNews(messageData.news_items);
+            } else {
+                console.warn("Received malformed message:", messageData);
+            }
+        };
 
-            charts[stock.ticker] = {
-                chart: chart,
-                series: candlestickSeries,
-                lastUpdateTime: data.length > 0 ? data[data.length - 1].time : null // Store last update time
-            };
+        socket.onclose = () => {
+            console.log("WebSocket connection closed");
+            addMessage("WebSocket connection closed", "red");
+        };
 
-            // Hide the loader after initial data is set
-            loaderElement.style.display = 'none';
-        });
-    };
+        socket.onerror = (e) => {
+            console.log("WebSocket error: " + e.data);
+            addMessage("WebSocket error: " + e.data, "red");
+        };
 
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const socket = new WebSocket(protocol + '//' + window.location.host + '/ws/simulation/stock/');
+        const bufferUpdate = (message) => {
+            const { ticker } = message;
+            if (!updateBuffer[ticker]) {
+                updateBuffer[ticker] = [];
+            }
+            updateBuffer[ticker].push(message);
+            processBuffer(ticker);
+        };
 
-    socket.onopen = () => {
-        console.log("WebSocket connection established");
-        addMessage("WebSocket connection established", "green");
-        initCharts(); // Initialize charts after WebSocket connection
-    };
-
-    socket.onmessage = (e) => {
-        console.log("Message received: " + e.data);
-        const messageData = JSON.parse(e.data);
-        if (messageData.ticker && messageData.timestamp) {
-            bufferUpdate(messageData);
-        } else if (messageData.type === 'transaction') {
-            updateTransactions(messageData.transactions);
-        } else if (messageData.type === 'news') {
-            updateNews(messageData.news_items);
-        } else {
-            console.warn("Received malformed message:", messageData);
-        }
-    };
-
-    socket.onclose = () => {
-        console.log("WebSocket connection closed");
-        addMessage("WebSocket connection closed", "red");
-    };
-
-    socket.onerror = (e) => {
-        console.log("WebSocket error: " + e.data);
-        addMessage("WebSocket error: " + e.data, "red");
-    };
-
-    const bufferUpdate = (message) => {
-        const { ticker } = message;
-        if (!updateBuffer[ticker]) {
-            updateBuffer[ticker] = [];
-        }
-        updateBuffer[ticker].push(message);
-        processBuffer(ticker);
-    };
-
-    const processBuffer = (ticker) => {
-        if (!charts[ticker] || !charts[ticker].series) {
-            console.warn(`Chart for ${ticker} not found.`);
-            return;
-        }
-
-        const chartInfo = charts[ticker];
-        const buffer = updateBuffer[ticker];
-
-        buffer.forEach((message) => {
-            if (!message.timestamp || !message.open || !message.high || !message.low || !message.close) {
-                console.warn('Incomplete message data:', message);
+        const processBuffer = (ticker) => {
+            if (!charts[ticker] || !charts[ticker].series) {
+                console.warn(`Chart for ${ticker} not found.`);
                 return;
             }
 
-            const { timestamp, open, high, low, close } = message;
-            const ohlcData = {
-                time: Math.floor(new Date(timestamp).getTime() / 1000), // Ensure time is in seconds
-                open: open,
-                high: high,
-                low: low,
-                close: close
-            };
+            const chartInfo = charts[ticker];
+            const buffer = updateBuffer[ticker];
 
-            // Ensure the new data is more recent than the last update
-            if (chartInfo.lastUpdateTime && ohlcData.time <= chartInfo.lastUpdateTime) {
-                let diff = chartInfo.lastUpdateTime - ohlcData.time;
-                // change the update so the chart is updated with the latest data
-                ohlcData.time = chartInfo.lastUpdateTime + diff + 1;
-            }
+            buffer.forEach((message) => {
+                if (!message.timestamp || !message.open || !message.high || !message.low || !message.close) {
+                    console.warn('Incomplete message data:', message);
+                    return;
+                }
 
-            chartInfo.series.update(ohlcData);
-            chartInfo.lastUpdateTime = ohlcData.time;
+                const { timestamp, open, high, low, close } = message;
+                const ohlcData = {
+                    time: Math.floor(new Date(timestamp).getTime() / 1000), // Ensure time is in seconds
+                    open: open,
+                    high: high,
+                    low: low,
+                    close: close
+                };
 
-            // Hide the loader after updating the chart
-            document.getElementById(`loader-${ticker}`).style.display = 'none';
-        });
+                // Ensure the new data is more recent than the last update
+                if (chartInfo.lastUpdateTime && ohlcData.time <= chartInfo.lastUpdateTime) {
+                    let diff = chartInfo.lastUpdateTime - ohlcData.time;
+                    // change the update so the chart is updated with the latest data
+                    ohlcData.time = chartInfo.lastUpdateTime + diff + 1;
+                }
 
-        // Clear the buffer after processing
-        updateBuffer[ticker] = [];
-    };
+                chartInfo.series.update(ohlcData);
+                chartInfo.lastUpdateTime = ohlcData.time;
 
-    const updateTransactions = (transactions) => {
-        const ordersList = document.getElementById('transaction-orders');
-        ordersList.innerHTML = '';
-        transactions.forEach(transaction => {
-            if (transaction.orders.length === 0) {
-                const noOrderItem = document.createElement('li');
-                noOrderItem.className = 'p-2 text-gray-500';
-                noOrderItem.textContent = 'No orders';
-                ordersList.appendChild(noOrderItem);
-            }
-            transaction.orders.forEach(order => {
-                const orderItem = document.createElement('li');
-                orderItem.className = 'p-2';
-                orderItem.innerHTML = `<span class="font-semibold">${order.user}: ${order.stock.name} (${order.stock.ticker})</span> <span class="text-sm text-gray-500">${order.get_order_type_display} - ${order.quantity} shares at $${order.price}</span>`;
-                ordersList.appendChild(orderItem);
+                // Hide the loader after updating the chart
+                document.getElementById(`loader-${ticker}`).style.display = 'none';
             });
-        });
-    };
 
-    const updateNews = (newsItems) => {
-        const newsList = document.getElementById('news-list');
-        const newsTicker = document.getElementById('news-ticker');
-        newsList.innerHTML = '';
-        newsTicker.innerHTML = '';
-        newsItems.forEach(newsItem => {
-            const newsListItem = document.createElement('li');
-            newsListItem.className = 'p-2';
-            newsListItem.innerHTML = `<span class="font-semibold">${newsItem.content}</span>`;
-            newsList.appendChild(newsListItem);
+            // Clear the buffer after processing
+            updateBuffer[ticker] = [];
+        };
 
-            const newsTickerItem = document.createElement('span');
-            newsTickerItem.className = 'mx-4';
-            newsTickerItem.textContent = newsItem.content;
-            newsTicker.appendChild(newsTickerItem);
-        });
-    };
-
-    const addMessage = (message, color) => {
-        const messageContainer = document.createElement('div');
-        messageContainer.className = `bg-${color}-100 text-${color}-800 p-2 rounded shadow`;
-        messageContainer.innerHTML = message;
-        document.getElementById('messages').appendChild(messageContainer);
-    };
-
-    window.onbeforeunload = () => {
-        if (socket) {
-            socket.close();
-        }
-    };
-
-    const restrictEdges = {
-        outer: 'parent',
-        endOnly: true
-    };
-
-    const restrictSize = {
-        min: { width: 150, height: 150 },
-        max: { width: document.getElementById('main-content').clientWidth - 10, height: document.getElementById('main-content').clientHeight - 10 }
-    };
-
-    interact('.card').resizable({
-        edges: { left: true, right: true, bottom: true, top: true },
-        listeners: {
-            move(event) {
-                let { x, y } = event.target.dataset;
-                x = (parseFloat(x) || 0) + event.deltaRect.left;
-                y = (parseFloat(y) || 0) + event.deltaRect.top;
-                Object.assign(event.target.style, {
-                    width: `${Math.round(event.rect.width / 10) * 10}px`,
-                    height: `${Math.round(event.rect.height / 10) * 10}px`
+        const updateTransactions = (transactions) => {
+            const ordersList = document.getElementById('transaction-orders');
+            ordersList.innerHTML = '';
+            transactions.forEach(transaction => {
+                if (transaction.orders.length === 0) {
+                    const noOrderItem = document.createElement('li');
+                    noOrderItem.className = 'p-2 text-gray-500';
+                    noOrderItem.textContent = 'No orders';
+                    ordersList.appendChild(noOrderItem);
+                }
+                transaction.orders.forEach(order => {
+                    const orderItem = document.createElement('li');
+                    orderItem.className = 'p-2';
+                    orderItem.innerHTML = `<span class="font-semibold">${order.user}: ${order.stock.name} (${order.stock.ticker})</span> <span class="text-sm text-gray-500">${order.get_order_type_display} - ${order.quantity} shares at $${order.price}</span>`;
+                    ordersList.appendChild(orderItem);
                 });
-                Object.assign(event.target.dataset, { x, y });
+            });
+        };
 
-                // Resize chart inside the card
-                const chartElement = event.target.querySelector('.chart');
-                if (chartElement) {
-                    const chartId = chartElement.id.replace('chart-', '');
-                    if (charts[chartId]) {
-                        charts[chartId].chart.resize(chartElement.clientWidth, chartElement.clientHeight);
+        const updateNews = (newsItems) => {
+            const newsList = document.getElementById('news-list');
+            const newsTicker = document.getElementById('news-ticker');
+            newsList.innerHTML = '';
+            newsTicker.innerHTML = '';
+            newsItems.forEach(newsItem => {
+                const newsListItem = document.createElement('li');
+                newsListItem.className = 'p-2';
+                newsListItem.innerHTML = `<span class="font-semibold">${newsItem.content}</span>`;
+                newsList.appendChild(newsListItem);
+
+                const newsTickerItem = document.createElement('span');
+                newsTickerItem.className = 'mx-4';
+                newsTickerItem.textContent = newsItem.content;
+                newsTicker.appendChild(newsTickerItem);
+            });
+        };
+
+        const addMessage = (message, color) => {
+            const messageContainer = document.createElement('div');
+            messageContainer.className = `bg-${color}-100 text-${color}-800 p-2 rounded shadow`;
+            messageContainer.innerHTML = message;
+            document.getElementById('messages').appendChild(messageContainer);
+        };
+
+        window.onbeforeunload = () => {
+            if (socket) {
+                socket.close();
+            }
+        };
+
+        const restrictEdges = {
+            outer: 'parent',
+            endOnly: true
+        };
+
+        const restrictSize = {
+            min: { width: 150, height: 150 },
+            max: { width: document.getElementById('main-content').clientWidth - 10, height: document.getElementById('main-content').clientHeight - 10 }
+        };
+
+        interact('.card').resizable({
+            edges: { left: true, right: true, bottom: true, top: true },
+            listeners: {
+                move(event) {
+                    let { x, y } = event.target.dataset;
+                    x = (parseFloat(x) || 0) + event.deltaRect.left;
+                    y = (parseFloat(y) || 0) + event.deltaRect.top;
+                    Object.assign(event.target.style, {
+                        width: `${Math.round(event.rect.width / 10) * 10}px`,
+                        height: `${Math.round(event.rect.height / 10) * 10}px`
+                    });
+                    Object.assign(event.target.dataset, { x, y });
+
+                    // Resize chart inside the card
+                    const chartElement = event.target.querySelector('.chart');
+                    if (chartElement) {
+                        const chartId = chartElement.id.replace('chart-', '');
+                        if (charts[chartId]) {
+                            charts[chartId].chart.resize(chartElement.clientWidth, chartElement.clientHeight);
+                        }
                     }
                 }
-            }
-        },
-        modifiers: [
-            interact.modifiers.restrictEdges(restrictEdges),
-            interact.modifiers.restrictSize(restrictSize),
-            interact.modifiers.snap({
-                targets: [
-                    interact.snappers.grid({ x: 10, y: 10 })
-                ],
-                range: Infinity,
-                relativePoints: [{ x: 0, y: 0 }]
-            })
-        ],
-        inertia: true
-    });
+            },
+            modifiers: [
+                interact.modifiers.restrictEdges(restrictEdges),
+                interact.modifiers.restrictSize(restrictSize),
+                interact.modifiers.snap({
+                    targets: [
+                        interact.snappers.grid({ x: 10, y: 10 })
+                    ],
+                    range: Infinity,
+                    relativePoints: [{ x: 0, y: 0 }]
+                })
+            ],
+            inertia: true
+        });
 
-    interact('#sidebar').resizable({
-        edges: { left: false, right: true, bottom: false, top: false },
-        listeners: {
-            move(event) {
-                let { x, y } = event.target.dataset;
-                x = (parseFloat(x) || 0) + event.deltaRect.left;
-                Object.assign(event.target.style, {
-                    width: `${Math.round(event.rect.width / 10) * 10}px`
-                });
-                Object.assign(event.target.dataset, { x, y });
-            }
-        },
-        modifiers: [
-            interact.modifiers.restrictEdges(restrictEdges),
-            interact.modifiers.restrictSize(restrictSize),
-            interact.modifiers.snap({
-                targets: [
-                    interact.snappers.grid({ x: 10, y: 10 })
-                ],
-                range: Infinity,
-                relativePoints: [{ x: 0, y: 0 }]
-            })
-        ],
-        inertia: true
-    });
+        interact('#sidebar').resizable({
+            edges: { left: false, right: true, bottom: false, top: false },
+            listeners: {
+                move(event) {
+                    let { x, y } = event.target.dataset;
+                    x = (parseFloat(x) || 0) + event.deltaRect.left;
+                    Object.assign(event.target.style, {
+                        width: `${Math.round(event.rect.width / 10) * 10}px`
+                    });
+                    Object.assign(event.target.dataset, { x, y });
+                }
+            },
+            modifiers: [
+                interact.modifiers.restrictEdges(restrictEdges),
+                interact.modifiers.restrictSize(restrictSize),
+                interact.modifiers.snap({
+                    targets: [
+                        interact.snappers.grid({ x: 10, y: 10 })
+                    ],
+                    range: Infinity,
+                    relativePoints: [{ x: 0, y: 0 }]
+                })
+            ],
+            inertia: true
+        });
 
-    interact('#news-sidebar').resizable({
-        edges: { left: true, right: false, bottom: false, top: false },
-        listeners: {
-            move(event) {
-                let { x, y } = event.target.dataset;
-                x = (parseFloat(x) || 0) + event.deltaRect.left;
-                Object.assign(event.target.style, {
-                    width: `${Math.round(event.rect.width / 10) * 10}px`
-                });
-                Object.assign(event.target.dataset, { x, y });
-            }
-        },
-        modifiers: [
-            interact.modifiers.restrictEdges(restrictEdges),
-            interact.modifiers.restrictSize(restrictSize),
-            interact.modifiers.snap({
-                targets: [
-                    interact.snappers.grid({ x: 10, y: 10 })
-                ],
-                range: Infinity,
-                relativePoints: [{ x: 0, y: 0 }]
-            })
-        ],
-        inertia: true
-    });
+        interact('#news-sidebar').resizable({
+            edges: { left: true, right: false, bottom: false, top: false },
+            listeners: {
+                move(event) {
+                    let { x, y } = event.target.dataset;
+                    x = (parseFloat(x) || 0) + event.deltaRect.left;
+                    Object.assign(event.target.style, {
+                        width: `${Math.round(event.rect.width / 10) * 10}px`
+                    });
+                    Object.assign(event.target.dataset, { x, y });
+                }
+            },
+            modifiers: [
+                interact.modifiers.restrictEdges(restrictEdges),
+                interact.modifiers.restrictSize(restrictSize),
+                interact.modifiers.snap({
+                    targets: [
+                        interact.snappers.grid({ x: 10, y: 10 })
+                    ],
+                    range: Infinity,
+                    relativePoints: [{ x: 0, y: 0 }]
+                })
+            ],
+            inertia: true
+        });
 
-    interact('.scrolling-news').draggable({
-        listeners: {
-            move(event) {
-                let { x, y } = event.target.dataset;
-                x = (parseFloat(x) || 0) + event.dx;
-                y = (parseFloat(y) || 0) + event.dy;
-                Object.assign(event.target.style, {
-                    transform: `translate(${x}px, ${y}px)`
-                });
-                Object.assign(event.target.dataset, { x, y });
-            }
-        },
-        modifiers: [
-            interact.modifiers.restrictRect(restrictEdges),
-            interact.modifiers.snap({
-                targets: [
-                    interact.snappers.grid({ x: 10, y: 10 })
-                ],
-                range: Infinity,
-                relativePoints: [{ x: 0, y: 0 }]
-            })
-        ]
-    });
-    });
+        interact('.scrolling-news').draggable({
+            listeners: {
+                move(event) {
+                    let { x, y } = event.target.dataset;
+                    x = (parseFloat(x) || 0) + event.dx;
+                    y = (parseFloat(y) || 0) + event.dy;
+                    Object.assign(event.target.style, {
+                        transform: `translate(${x}px, ${y}px)`
+                    });
+                    Object.assign(event.target.dataset, { x, y });
+                }
+            },
+            modifiers: [
+                interact.modifiers.restrictRect(restrictEdges),
+                interact.modifiers.snap({
+                    targets: [
+                        interact.snappers.grid({ x: 10, y: 10 })
+                    ],
+                    range: Infinity,
+                    relativePoints: [{ x: 0, y: 0 }]
+                })
+            ]
+        });
+  });
 </script>
 {% endblock %}
