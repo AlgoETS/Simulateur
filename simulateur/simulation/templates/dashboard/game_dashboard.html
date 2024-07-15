@@ -14,8 +14,10 @@
                 {% endif %}
                 {% for order in transaction.orders.all %}
                 <li class="p-2">
-                    <span class="font-semibold">{{ order.user }}: {{ order.stock.name }} ({{ order.stock.ticker }})</span>
-                    <span class="text-sm text-gray-500">{{ order.get_order_type_display }} - {{ order.quantity }} shares at ${{ order.price }}</span>
+                    <span class="font-semibold">{{ order.user }}: {{ order.stock.name }} ({{ order.stock.ticker
+                        }})</span>
+                    <span class="text-sm text-gray-500">{{ order.get_order_type_display }} - {{ order.quantity }} shares
+                        at ${{ order.price }}</span>
                 </li>
                 {% endfor %}
                 {% endfor %}
@@ -35,7 +37,8 @@
         {% endfor %}
     </div>
     <!-- Right Sidebar - News -->
-    <div id="news-sidebar" class="hidden md:flex md:flex-shrink-0 w-1/4 bg-white p-4 border-l border-gray-200 overflow-auto">
+    <div id="news-sidebar"
+        class="hidden md:flex md:flex-shrink-0 w-1/4 bg-white p-4 border-l border-gray-200 overflow-auto">
         <div class="w-full">
             <h2 class="text-xl font-semibold mb-4">News</h2>
             <!-- News List -->
@@ -63,9 +66,11 @@
 
 <!-- Messages Container -->
 <div id="messages" class="fixed bottom-16 right-4 space-y-2"></div>
+
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const stocks = {{ stocks|safe }};
+    document.addEventListener('DOMContentLoaded', () => {
+        const stocks = {{ stocks| safe
+    }};
     let charts = {};
     let updateBuffer = {}; // Buffer to store incoming updates
 
@@ -155,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const bufferUpdate = (message) => {
-        const { ticker, timestamp } = message;
+        const { ticker } = message;
         if (!updateBuffer[ticker]) {
             updateBuffer[ticker] = [];
         }
@@ -173,6 +178,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const buffer = updateBuffer[ticker];
 
         buffer.forEach((message) => {
+            if (!message.timestamp || !message.open || !message.high || !message.low || !message.close) {
+                console.warn('Incomplete message data:', message);
+                return;
+            }
+
             const { timestamp, open, high, low, close } = message;
             const ohlcData = {
                 time: Math.floor(new Date(timestamp).getTime() / 1000), // Ensure time is in seconds
@@ -193,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
             chartInfo.lastUpdateTime = ohlcData.time;
 
             // Hide the loader after updating the chart
-            document.getElementById(`loader-${charts[ticker].chartElement.id.split('-')[1]}`).style.display = 'none';
+            document.getElementById(`loader-${ticker}`).style.display = 'none';
         });
 
         // Clear the buffer after processing
@@ -213,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
             transaction.orders.forEach(order => {
                 const orderItem = document.createElement('li');
                 orderItem.className = 'p-2';
-                orderItem.innerHTML = `<span class="font-semibold">${order.user}: ${order.stock.name} (${order.stock.ticker})</span> <span class="text-sm text-gray-500">${order.order_type} - ${order.quantity} shares at $${order.price}</span>`;
+                orderItem.innerHTML = `<span class="font-semibold">${order.user}: ${order.stock.name} (${order.stock.ticker})</span> <span class="text-sm text-gray-500">${order.get_order_type_display} - ${order.quantity} shares at $${order.price}</span>`;
                 ordersList.appendChild(orderItem);
             });
         });
@@ -372,6 +382,6 @@ document.addEventListener('DOMContentLoaded', () => {
             })
         ]
     });
-});
+    });
 </script>
 {% endblock %}
