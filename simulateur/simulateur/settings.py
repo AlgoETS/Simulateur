@@ -77,9 +77,7 @@ INSTALLED_APPS = [
     'pwa',
     'webpack_loader',
     'sslserver',
-<<<<<<< Updated upstream
     'django_rq'
-=======
     'health_check',
     'health_check.db',
     'health_check.cache',
@@ -90,7 +88,6 @@ INSTALLED_APPS = [
     'health_check.contrib.rabbitmq',
     'health_check.contrib.redis',
     'storages',
->>>>>>> Stashed changes
 ]
 
 # Theme settings
