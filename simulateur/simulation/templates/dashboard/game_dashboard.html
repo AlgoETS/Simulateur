@@ -7,7 +7,7 @@
         <div class="w-full">
             <h2 class="text-xl font-semibold mb-4">Transaction Orders</h2>
             <!-- Transaction Orders List -->
-            <ul class="divide-y divide-gray-200">
+            <ul class="divide-y divide-gray-200" id="transaction-orders">
                 {% for transaction in transactions %}
                 {% if transaction.orders.count == 0 %}
                 <li class="p-2 text-gray-500">No orders</li>
@@ -36,7 +36,7 @@
         <div class="w-full">
             <h2 class="text-xl font-semibold mb-4">News</h2>
             <!-- News List -->
-            <ul class="divide-y divide-gray-200">
+            <ul class="divide-y divide-gray-200" id="news-list">
                 {% for news_item in news_items %}
                 <li class="p-2">
                     <span class="font-semibold">{{ news_item.content }}</span>
@@ -50,7 +50,7 @@
 <!-- Bottom News Ticker -->
 <div class="w-full bg-gray-800 text-white p-4 fixed bottom-0 overflow-hidden">
     <div class="overflow-hidden relative">
-        <div class="scrolling-news whitespace-nowrap animate-scroll">
+        <div class="scrolling-news whitespace-nowrap animate-scroll" id="news-ticker">
             {% for news_item in news_items %}
             <span class="mx-4">{{ news_item.content }}</span>
             {% endfor %}
@@ -127,6 +127,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const messageData = JSON.parse(e.data);
         if (messageData.ticker && messageData.timestamp) {
             updateChart(messageData);
+        } else if (messageData.type === 'transaction') {
+            updateTransactions(messageData.transactions);
+        } else if (messageData.type === 'news') {
+            updateNews(messageData.news_items);
         } else {
             console.warn("Received malformed message:", messageData);
         }
@@ -166,6 +170,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
         chartInfo.series.update(ohlcData);
         chartInfo.lastUpdateTime = ohlcData.time; // Update last update time
+    };
+
+    const updateTransactions = (transactions) => {
+        const ordersList = document.getElementById('transaction-orders');
+        ordersList.innerHTML = '';
+        transactions.forEach(transaction => {
+            if (transaction.orders.length === 0) {
+                const noOrderItem = document.createElement('li');
+                noOrderItem.className = 'p-2 text-gray-500';
+                noOrderItem.textContent = 'No orders';
+                ordersList.appendChild(noOrderItem);
+            }
+            transaction.orders.forEach(order => {
+                const orderItem = document.createElement('li');
+                orderItem.className = 'p-2';
+                orderItem.innerHTML = `<span class="font-semibold">${order.user}: ${order.stock.name} (${order.stock.ticker})</span> <span class="text-sm text-gray-500">${order.order_type} - ${order.quantity} shares at $${order.price}</span>`;
+                ordersList.appendChild(orderItem);
+            });
+        });
+    };
+
+    const updateNews = (newsItems) => {
+        const newsList = document.getElementById('news-list');
+        const newsTicker = document.getElementById('news-ticker');
+        newsList.innerHTML = '';
+        newsTicker.innerHTML = '';
+        newsItems.forEach(newsItem => {
+            const newsListItem = document.createElement('li');
+            newsListItem.className = 'p-2';
+            newsListItem.innerHTML = `<span class="font-semibold">${newsItem.content}</span>`;
+            newsList.appendChild(newsListItem);
+
+            const newsTickerItem = document.createElement('span');
+            newsTickerItem.className = 'mx-4';
+            newsTickerItem.textContent = newsItem.content;
+            newsTicker.appendChild(newsTickerItem);
+        });
     };
 
     const addMessage = (message, color) => {
