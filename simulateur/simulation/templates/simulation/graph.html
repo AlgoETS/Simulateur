@@ -104,7 +104,8 @@
             socket.close();
         }
 
-        socket = new WebSocket(`ws://${window.location.host}/ws/simulation/${scenarioId}/`);
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const socket = new WebSocket(protocol + '//' + window.location.host + '/ws/simulation/stock/');
 
         socket.onopen = function () {
             console.log("WebSocket connection established");

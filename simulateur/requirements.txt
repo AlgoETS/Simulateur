@@ -61,3 +61,4 @@ selenium
 daphne
 django-pwa
 django-webpack-loader
+django-sslserver

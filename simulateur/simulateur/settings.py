@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     'guest_user',
     'pwa',
     'webpack_loader',
+    "sslserver",
 ]
 
 ALLAUTH_UI_THEME = "light"
