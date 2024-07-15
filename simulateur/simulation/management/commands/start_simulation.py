@@ -1,3 +1,4 @@
+import asyncio
 from django.core.management.base import BaseCommand
 from simulation.models.scenario import Scenario
 from simulation.logic.simulation_manager import SimulationManager
@@ -12,7 +13,7 @@ class Command(BaseCommand):
         scenario_id = kwargs['scenario_id']
         try:
             simulation_manager = SimulationManager(scenario_id)
-            simulation_manager.start_simulation()
+            asyncio.run(simulation_manager.start_simulation())
         except Scenario.DoesNotExist:
             self.stdout.write(self.style.ERROR(f'Scenario with ID {scenario_id} does not exist.'))
         except KeyboardInterrupt:
