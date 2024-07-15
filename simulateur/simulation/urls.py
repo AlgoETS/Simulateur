@@ -13,6 +13,7 @@ from simulation.api.simulation import SimulationSettingsView, StartSimulation, P
 from simulation.api.portfolio import BuyStock, PortfolioView, SellStock
 from simulation.api.scenario import ScenarioStocks, StockHistory, GetPublishedScenarios, CreateCompanyAndStock, CreateNews, CreateEvent, CreateTrigger
 from simulation.api.ai_llm import InteractWithOllama, CreateNewsAI, CreateEventAI, CreateTriggerAI, CreateCompanyAndStockAI, CreateScenarioAI
+from simulation.api.auth import JoinTeam, RemoveTeamMember, UpdateTeamName, UpdateMemberRole
 
 router = DefaultRouter()
 
@@ -48,7 +49,9 @@ api_patterns = [
     path('graph/', SimulationGraphView.as_view(), name='simulation_graph'),
     path('settings/', SimulationSettingsView.as_view(), name='simulation_settings'),
     path('join_team/<int:team_id>/<str:key>/', JoinTeam.as_view(), name='join_team'),
-    path('remove_team_member/<int:team_id>/<int:user_id>/', RemoveTeamMember.as_view(), name='remove_team_member'),
+    path('team/remove-member/<int:team_id>/<int:user_id>/', RemoveTeamMember.as_view(), name='remove_team_member'),
+    path('team/update-name/<int:team_id>/', UpdateTeamName.as_view(), name='change_team_name'),
+    path('team/update-role/<int:team_id>/<int:user_id>/', UpdateMemberRole.as_view(), name='update_member_role'),
     path('scenario/create/', CreateScenario.as_view(), name='create_scenario'),
     path('scenario/publish/<int:scenario_id>/', PublishScenario.as_view(), name='publish_scenario'),
     path('scenarios/published/', GetPublishedScenarios.as_view(), name='get_published_scenarios'),
@@ -64,6 +67,7 @@ api_patterns = [
     path('create-trigger-ai/', CreateTriggerAI.as_view(), name='create-trigger-ai'),
     path('create-company-stock-ai/', CreateCompanyAndStockAI.as_view(), name='create-company-stock-ai'),
     path('create-scenario-ai/', CreateScenarioAI.as_view(), name='create-scenario-ai'),
+
 ]
 
 # Combine both HTML and API patterns into a single list

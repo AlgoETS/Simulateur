@@ -7,7 +7,15 @@
 
     <div class="bg-indigo-100 shadow rounded-lg p-6 mb-6">
         <h2 class="text-2xl font-bold text-indigo-900 mb-4">Team: {{ team.name }}</h2>
-        <p class="text-gray-700 mb-2">Team Balance: <span class="font-semibold text-green-600">${{ team.balance }}</span></p>
+        <form id="teamNameForm" class="mb-4">
+            <label for="teamName" class="block text-gray-700 font-medium mb-2">Change Team Name:</label>
+            <div class="flex">
+                <input type="text" id="teamName" name="teamName" value="{{ team.name }}" class="flex-grow p-2 border border-gray-300 rounded-l-lg focus:ring-indigo-500 focus:border-indigo-500">
+                <button type="button" onclick="changeTeamName()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-r-lg">Change</button>
+            </div>
+        </form>
+        <p class="text-gray-700 mb-2">Team Balance: <span class="font-semibold text-green-600">${{ team_balance }}</span></p>
+        <p class="text-gray-700">Aggregated Portfolio Balance: <span class="font-semibold text-green-600">${{ portfolio_balance }}</span></p>
     </div>
 
     <div class="bg-indigo-100 shadow rounded-lg p-6 mb-6">
@@ -18,27 +26,57 @@
                 <h3 class="text-lg font-semibold text-indigo-700">
                     <a href="{% url 'public_profile' member.user.id %}">{{ member.user.username }}</a>
                 </h3>
-                <p class="text-gray-600">Balance: <span class="text-green-600">${{ member.balance }}</span></p>
+                <p class="text-gray-600">Role: <span class="font-semibold">{{ member.role }}</span></p>
+                <p class="text-gray-600">Balance: <span class="text-green-600">${{ member.portfolio_balance }}</span></p>
                 <p class="text-gray-600">Joined: {{ member.timestamp|date:"F j, Y" }}</p>
+
+                {% if request.user.userprofile.role == 'admin' %}
+                <!-- Change Role Form -->
+                <form action="{% url 'update_member_role' team.id member.user.id %}" method="post" class="mt-4">
+                    {% csrf_token %}
+                    <label for="role" class="block text-gray-700 font-medium mb-2">Change Role:</label>
+                    <div class="flex">
+                        <select name="role" id="role" class="flex-grow p-2 border border-gray-300 rounded-l-lg focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="member" {% if member.role == 'member' %}selected{% endif %}>Member</option>
+                            <option value="team_leader" {% if member.role == 'team_leader' %}selected{% endif %}>Team Leader</option>
+                            <option value="admin" {% if member.role == 'admin' %}selected{% endif %}>Admin</option>
+                            <option value="super_admin" {% if member.role == 'super_admin' %}selected{% endif %}>Super Admin</option>
+                            <option value="moderator" {% if member.role == 'moderator' %}selected{% endif %}>Moderator</option>
+                        </select>
+                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-r-lg">Change</button>
+                    </div>
+                </form>
+
+                <!-- Remove Member Form -->
+                <form action="{% url 'remove_team_member' team.id member.user.id %}" method="post" class="mt-4">
+                    {% csrf_token %}
+                    <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Remove Member</button>
+                </form>
+                {% endif %}
             </div>
             {% endfor %}
         </div>
     </div>
-
-    <div class="bg-indigo-100 shadow rounded-lg p-6">
-        <h2 class="text-2xl font-bold text-indigo-900 mb-4">Team Portfolios</h2>
-        <ul class="list-disc pl-6 space-y-2">
-            {% for portfolio in portfolios %}
-            <li>
-                <div class="flex items-center space-x-2">
-                    <span class="font-semibold text-indigo-700">
-                        <a href="{% url 'portfolio_detail' portfolio.id %}">{{ portfolio.owner.user.username }}'s Portfolio</a>:
-                    </span>
-                    <span class="text-gray-700">${{ portfolio.balance }}</span>
-                </div>
-            </li>
-            {% endfor %}
-        </ul>
-    </div>
 </div>
+
+<script>
+function changeTeamName() {
+    const teamName = document.getElementById('teamName').value;
+    fetch("{% url 'change_team_name' team.id %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ 'name': teamName })
+    }).then(response => response.json()).then(data => {
+        if (data.status === 'success') {
+            alert('Team name changed successfully');
+            location.reload();
+        } else {
+            alert('Error changing team name: ' + data.message);
+        }
+    });
+}
+</script>
 {% endblock %}

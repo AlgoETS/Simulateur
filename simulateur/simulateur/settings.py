@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     'slippers',
     'guest_user',
     'pwa',
+    'webpack_loader',
 ]
 
 ALLAUTH_UI_THEME = "light"
@@ -87,6 +88,13 @@ MIDDLEWARE = [
     'django_prometheus.middleware.PrometheusBeforeMiddleware',
     'django_prometheus.middleware.PrometheusAfterMiddleware',
 ]
+
+WEBPACK_LOADER = {
+    'DEFAULT': {
+        'BUNDLE_DIR_NAME': 'yourreactapp/',
+        'STATS_FILE': os.path.join(BASE_DIR, 'yourreactapp', 'webpack-stats.json'),
+    }
+}
 
 ROOT_URLCONF = "simulateur.urls"
 
@@ -168,7 +176,7 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],
+            "hosts": [('192.168.0.120', 6379)],
         },
     },
 }

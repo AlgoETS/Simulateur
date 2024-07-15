@@ -61,7 +61,7 @@ It includes an admin interface to manage the simulation settings and control the
     ```bash
     python3 manage.py start_simulation 1
     # in other terminal run
-    python3 - m daphne -p 8000 simulateur.asgi:application --bind 0.0.0.0
+    python3 -m daphne -p 8000 simulateur.asgi:application --bind 0.0.0.0
     ```
 
 ## Usage

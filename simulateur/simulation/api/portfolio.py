@@ -7,7 +7,6 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from simulation.models import Portfolio, Stock, Order, TransactionHistory, Scenario
-from simulation.logic.queue import buy_sell_queue
 from simulation.serializers import PortfolioSerializer
 
 class PortfolioView(View):
@@ -35,6 +34,7 @@ class BuyStock(View):
             if amount <= 0:
                 return JsonResponse({'status': 'error', 'message': 'Amount must be greater than zero'}, status=400)
 
+            # update with current price
             total_cost = amount * price
             if user_profile.portfolio.balance < total_cost:
                 return JsonResponse({'status': 'error', 'message': 'Insufficient funds'}, status=400)

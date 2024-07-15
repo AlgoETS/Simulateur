@@ -1,9 +1,9 @@
 {% extends 'includes/base_no_nav.html' %}
 
 {% block content %}
-<div class="flex flex-1 overflow-hidden mb-16 bg-gray-100">
+<div class="flex flex-1 overflow-hidden bg-gray-100 h-screen">
     <!-- Left Sidebar - Transaction Orders -->
-    <div class="hidden md:flex md:flex-shrink-0 md:w-1/4 bg-white p-4 border-r border-gray-200">
+    <div id="sidebar" class="hidden md:flex md:flex-shrink-0 w-1/4 bg-white p-4 border-r border-gray-200 overflow-auto">
         <div class="w-full">
             <h2 class="text-xl font-semibold mb-4">Transaction Orders</h2>
             <!-- Transaction Orders List -->
@@ -23,17 +23,32 @@
         </div>
     </div>
     <!-- Main Content Area - Stock Charts -->
-    <div class="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 p-4 gap-4">
+    <div id="main-content" class="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-auto h-full p-4">
         {% for stock in stocks %}
-        <div class="bg-white p-4 rounded-lg shadow-lg h-full flex flex-col">
+        <div class="bg-white p-4 rounded-lg shadow-lg flex flex-col h-full card">
             <h3 class="text-lg font-semibold mb-4">{{ stock.name }} ({{ stock.ticker }})</h3>
-            <div id="chart-{{ stock.id }}" class="w-full h-64 flex-1"></div>
+            <div id="chart-{{ stock.id }}" class="w-full h-full flex-1 chart"></div>
         </div>
         {% endfor %}
     </div>
+    <!-- Right Sidebar - News -->
+    <div id="news-sidebar" class="hidden md:flex md:flex-shrink-0 w-1/4 bg-white p-4 border-l border-gray-200 overflow-auto">
+        <div class="w-full">
+            <h2 class="text-xl font-semibold mb-4">News</h2>
+            <!-- News List -->
+            <ul class="divide-y divide-gray-200">
+                {% for news_item in news_items %}
+                <li class="p-2">
+                    <span class="font-semibold">{{ news_item.content }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
 </div>
+
 <!-- Bottom News Ticker -->
-<div class="w-full bg-gray-800 text-white p-4 fixed bottom-0">
+<div class="w-full bg-gray-800 text-white p-4 fixed bottom-0 overflow-hidden">
     <div class="overflow-hidden relative">
         <div class="scrolling-news whitespace-nowrap animate-scroll">
             {% for news_item in news_items %}
@@ -45,113 +60,260 @@
 
 <!-- Messages Container -->
 <div id="messages" class="fixed bottom-16 right-4 space-y-2"></div>
-
-<script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.6/dist/lightweight-charts.standalone.production.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const stocks = {{ stocks|safe }};
     let charts = {};
 
-    stocks.forEach(stock => {
-        const chartElement = document.getElementById(`chart-${stock.id}`);
-        const chart = LightweightCharts.createChart(chartElement, {
-            width: chartElement.clientWidth,
-            height: chartElement.clientHeight,
-            layout: {
-                backgroundColor: '#ffffff',
-                textColor: '#000000',
-            },
-            grid: {
-                vertLines: {
-                    color: '#e0e0e0',
+    const initCharts = () => {
+        stocks.forEach(stock => {
+            const chartElement = document.getElementById(`chart-${stock.id}`);
+            const chart = LightweightCharts.createChart(chartElement, {
+                width: chartElement.clientWidth,
+                height: chartElement.clientHeight,
+                layout: {
+                    backgroundColor: '#ffffff',
+                    textColor: '#000000',
                 },
-                horzLines: {
-                    color: '#e0e0e0',
+                grid: {
+                    vertLines: {
+                        color: '#e0e0e0',
+                    },
+                    horzLines: {
+                        color: '#e0e0e0',
+                    },
                 },
-            },
-            priceScale: {
-                borderColor: '#cccccc',
-            },
-            timeScale: {
-                borderColor: '#cccccc',
-                timeVisible: true,
-                secondsVisible: false,
-            },
+                priceScale: {
+                    borderColor: '#cccccc',
+                },
+                timeScale: {
+                    borderColor: '#cccccc',
+                    timeVisible: true,
+                    secondsVisible: false,
+                },
+            });
+
+            const candlestickSeries = chart.addCandlestickSeries();
+
+            const data = stock.stock_prices.map(price => ({
+                time: Math.floor(new Date(price.timestamp).getTime() / 1000), // Ensure time is in seconds
+                open: price.open_price,
+                high: price.high_price,
+                low: price.low_price,
+                close: price.close_price,
+            }));
+
+            candlestickSeries.setData(data);
+
+            charts[stock.ticker] = {
+                chart: chart,
+                series: candlestickSeries,
+                lastUpdateTime: data.length > 0 ? data[data.length - 1].time : null // Store last update time
+            };
         });
-
-        const candlestickSeries = chart.addCandlestickSeries();
-
-        const data = stock.stock_prices.map(price => ({
-            time: new Date(price.timestamp).getTime() / 1000,
-            open: price.open_price,
-            high: price.high_price,
-            low: price.low_price,
-            close: price.close_price,
-        }));
-
-        candlestickSeries.setData(data);
-
-        charts[stock.name] = chart;
-    });
-
-    let socket = new WebSocket('ws://' + window.location.host + '/ws/simulation/stock/');
-
-    socket.onopen = function () {
-        console.log("WebSocket connection established");
-        addMessage("WebSocket connection established", "green");
     };
 
-    socket.onmessage = function (e) {
+    const socket = new WebSocket('ws://' + window.location.host + '/ws/simulation/stock/');
+
+    socket.onopen = () => {
+        console.log("WebSocket connection established");
+        addMessage("WebSocket connection established", "green");
+        initCharts(); // Initialize charts after WebSocket connection
+    };
+
+    socket.onmessage = (e) => {
         console.log("Message received: " + e.data);
         const messageData = JSON.parse(e.data);
-        if (messageData.name && messageData.timestamp) {
+        if (messageData.ticker && messageData.timestamp) {
             updateChart(messageData);
         } else {
             console.warn("Received malformed message:", messageData);
         }
     };
 
-    socket.onclose = function () {
+    socket.onclose = () => {
         console.log("WebSocket connection closed");
         addMessage("WebSocket connection closed", "red");
     };
 
-    socket.onerror = function (e) {
+    socket.onerror = (e) => {
         console.log("WebSocket error: " + e.data);
         addMessage("WebSocket error: " + e.data, "red");
     };
 
-    function updateChart(message) {
-        const stockName = message.name;
-        const chart = charts[stockName];
-        if (!chart) {
-            console.warn(`Chart for ${stockName} not found.`);
+    const updateChart = (message) => {
+        const { ticker, timestamp, open, high, low, close } = message;
+        const chartInfo = charts[ticker];
+        if (!chartInfo || !chartInfo.series) {
+            console.warn(`Chart for ${ticker} not found.`);
             return;
         }
 
         const ohlcData = {
-            time: new Date(message.timestamp).getTime() / 1000,
-            open: message.open_price,
-            high: message.high_price,
-            low: message.low_price,
-            close: message.close_price
+            time: Math.floor(new Date(timestamp).getTime() / 1000), // Ensure time is in seconds
+            open: open,
+            high: high,
+            low: low,
+            close: close
         };
 
-        chart.series[0].update(ohlcData);
-    }
+        // Ensure the new data is more recent than the last update
+        if (chartInfo.lastUpdateTime && ohlcData.time <= chartInfo.lastUpdateTime) {
+            console.warn(`Ignoring update with time ${ohlcData.time} which is not newer than the last update time ${chartInfo.lastUpdateTime}`);
+            return;
+        }
 
-    function addMessage(message, color) {
+        chartInfo.series.update(ohlcData);
+        chartInfo.lastUpdateTime = ohlcData.time; // Update last update time
+    };
+
+    const addMessage = (message, color) => {
         const messageContainer = document.createElement('div');
         messageContainer.className = `bg-${color}-100 text-${color}-800 p-2 rounded shadow`;
         messageContainer.innerHTML = message;
         document.getElementById('messages').appendChild(messageContainer);
-    }
+    };
 
-    window.onbeforeunload = function () {
+    window.onbeforeunload = () => {
         if (socket) {
             socket.close();
         }
     };
+
+    interact('#sidebar')
+        .resizable({
+            edges: { left: false, right: true, bottom: false, top: false },
+            listeners: {
+                move(event) {
+                    let { x, y } = event.target.dataset;
+
+                    x = (parseFloat(x) || 0) + event.deltaRect.left;
+
+                    Object.assign(event.target.style, {
+                        width: `${event.rect.width}px`
+                    });
+
+                    Object.assign(event.target.dataset, { x, y });
+                }
+            },
+            modifiers: [
+                interact.modifiers.restrictEdges({
+                    outer: 'parent'
+                }),
+                interact.modifiers.restrictSize({
+                    min: { width: 150 },
+                    max: { width: 400 }
+                })
+            ],
+            inertia: true
+        });
+
+    interact('#main-content')
+        .resizable({
+            edges: { left: true, right: false, bottom: false, top: false },
+            listeners: {
+                move(event) {
+                    let { x, y } = event.target.dataset;
+
+                    x = (parseFloat(x) || 0) + event.deltaRect.left;
+
+                    Object.assign(event.target.style, {
+                        width: `${event.rect.width}px`
+                    });
+
+                    Object.assign(event.target.dataset, { x, y });
+                }
+            },
+            modifiers: [
+                interact.modifiers.restrictEdges({
+                    outer: 'parent'
+                }),
+                interact.modifiers.restrictSize({
+                    min: { width: 150 },
+                    max: { width: 400 }
+                })
+            ],
+            inertia: true
+        });
+        
+    interact('#news-sidebar')
+        .resizable({
+            edges: { left: true, right: false, bottom: false, top: false },
+            listeners: {
+                move(event) {
+                    let { x, y } = event.target.dataset;
+
+                    x = (parseFloat(x) || 0) + event.deltaRect.left;
+
+                    Object.assign(event.target.style, {
+                        width: `${event.rect.width}px`
+                    });
+
+                    Object.assign(event.target.dataset, { x, y });
+                }
+            },
+            modifiers: [
+                interact.modifiers.restrictEdges({
+                    outer: 'parent'
+                }),
+                interact.modifiers.restrictSize({
+                    min: { width: 150 },
+                    max: { width: 400 }
+                })
+            ],
+            inertia: true
+        });
+
+    interact('.scrolling-news')
+        .draggable({
+            listeners: {
+                move(event) {
+                    let { x, y } = event.target.dataset;
+
+                    x = (parseFloat(x) || 0) + event.dx;
+                    y = (parseFloat(y) || 0) + event.dy;
+
+                    Object.assign(event.target.style, {
+                        transform: `translate(${x}px, ${y}px)`
+                    });
+
+                    Object.assign(event.target.dataset, { x, y });
+                }
+            },
+            modifiers: [
+                interact.modifiers.restrictRect({
+                    restriction: 'parent',
+                    endOnly: true
+                })
+            ]
+        });
+        interact('.card').resizable({
+            edges: { left: true, right: true, bottom: true, top: true },
+            listeners: {
+                move(event) {
+                    let { x, y } = event.target.dataset;
+
+                    x = (parseFloat(x) || 0) + event.deltaRect.left;
+                    y = (parseFloat(y) || 0) + event.deltaRect.top;
+
+                    Object.assign(event.target.style, {
+                        width: `${event.rect.width}px`,
+                        height: `${event.rect.height}px`
+                    });
+
+                    Object.assign(event.target.dataset, { x, y });
+                }
+            },
+            modifiers: [
+                interact.modifiers.restrictEdges({
+                    outer: 'parent'
+                }),
+                interact.modifiers.restrictSize({
+                    min: { width: 100, height: 50 }
+                })
+            ],
+            inertia: true
+        });
 });
 </script>
 {% endblock %}

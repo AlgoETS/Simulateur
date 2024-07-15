@@ -119,3 +119,12 @@ class SimulationDataSerializer(serializers.ModelSerializer):
 class JoinTeamSerializer(serializers.Serializer):
     team_id = serializers.IntegerField()
     key = serializers.CharField(max_length=32)
+
+class UpdateTeamNameSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=100)
+
+class UpdateMemberRoleSerializer(serializers.Serializer):
+    role = serializers.ChoiceField(choices=[('member', 'Member'), ('team_leader', 'Team Leader'), ('admin', 'Admin'), ('super_admin', 'Super Admin'), ('moderator', 'Moderator')])
+
+class RemoveMemberSerializer(serializers.Serializer):
+    member_id = serializers.IntegerField()

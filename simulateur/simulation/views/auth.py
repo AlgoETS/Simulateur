@@ -204,3 +204,4 @@ class JoinTeamView(View):
         user_profile.save()
         team.members.add(user_profile)
         return JsonResponse({'status': 'success', 'message': f'Joined team {team.name}'})
+

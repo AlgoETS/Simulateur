@@ -60,3 +60,4 @@ ollama
 selenium
 daphne
 django-pwa
+django-webpack-loader

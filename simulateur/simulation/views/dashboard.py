@@ -284,7 +284,6 @@ class AdminDashboardView(AdminOnlyMixin, View):
         }
         return render(request, "dashboard/admin_dashboard.html", context)
 
-
 class TeamDashboardView(View):
     def get(self, request):
         try:
@@ -296,14 +295,24 @@ class TeamDashboardView(View):
                     status=400,
                 )
 
-            portfolios = Portfolio.objects.filter(team=team)
             members = team.user_profiles.all()
+            portfolios = Portfolio.objects.filter(owner__in=members)
+
+            # Calculate balances
+            for member in members:
+                portfolio = Portfolio.objects.filter(owner=member).first()
+                member.portfolio_balance = portfolio.balance if portfolio else 0
+
+            team_balance = sum(member.portfolio_balance for member in members)
+            portfolio_balance = portfolios.aggregate(total_balance=Sum('balance'))['total_balance'] or 0
 
             context = {
                 "title": "Team Dashboard",
                 "team": team,
-                "portfolios": portfolios,
                 "members": members,
+                "portfolios": portfolios,
+                "team_balance": team_balance,
+                "portfolio_balance": portfolio_balance,
             }
             return render(request, "dashboard/team_dashboard.html", context)
         except UserProfile.DoesNotExist:
