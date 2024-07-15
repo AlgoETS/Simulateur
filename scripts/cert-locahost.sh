@@ -6,11 +6,11 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout localhost.key -out l
 
 # Change directory to your project folder
 echo "Navigating to project directory..."
-cd simulateur || { echo "Directory 'simulateur' not found. Exiting."; exit 1; }
+cd ../simulateur || { echo "Directory 'simulateur' not found. Exiting."; exit 1; }
 
 # Start Daphne with SSL enabled
 echo "Starting Daphne with SSL..."
-python -m daphne -e ssl:8000:privateKey=localhost.key:certKey=localhost.crt simulateur.asgi:application --bind 0.0.0.0 &
+python3 -m daphne -e ssl:8001:privateKey=localhost.key:certKey=localhost.crt simulateur.asgi:application --bind 0.0.0.0 &
 
 # Allow some time for the server to start
 sleep 5

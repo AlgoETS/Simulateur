@@ -28,7 +28,7 @@ DEBUG = os.getenv("DEBUG", "True") == "True"
 ALLOWED_HOSTS = ['*']
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-CSRF_TRUSTED_ORIGINS = ['*']
+#CSRF_TRUSTED_ORIGINS = ['*']
 
 SITE_ID = 1
 LOGIN_REDIRECT_URL = '/'
@@ -73,7 +73,8 @@ INSTALLED_APPS = [
     'guest_user',
     'pwa',
     'webpack_loader',
-    "sslserver",
+    'sslserver',
+    'django_rq'
 ]
 
 ALLAUTH_UI_THEME = "light"
@@ -180,7 +181,7 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [('192.168.0.120', 6379)],
+            "hosts": [('localhost', 6379)],
         },
     },
 }
@@ -330,3 +331,12 @@ PWA_APP_SCREENSHOTS = [
       "type": "image/png"
     }
 ]
+
+RQ_QUEUES = {
+    'default': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'DB': 0,
+        'DEFAULT_TIMEOUT': 360,
+    },
+}

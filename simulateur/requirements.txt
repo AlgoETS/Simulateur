@@ -62,3 +62,5 @@ daphne
 django-pwa
 django-webpack-loader
 django-sslserver
+django-rq
+websockets-cli
