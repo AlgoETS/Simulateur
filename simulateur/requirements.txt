@@ -67,3 +67,4 @@ django-health-check
 psutil
 django-storages
 amqp
+kombu
