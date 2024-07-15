@@ -2,7 +2,6 @@ import logging
 import time
 from django.utils import timezone
 from django.core.cache import cache
-from asgiref.sync import async_to_sync
 from django.conf import settings
 from channels.layers import get_channel_layer
 from simulation.models import Scenario, Stock, StockPriceHistory
