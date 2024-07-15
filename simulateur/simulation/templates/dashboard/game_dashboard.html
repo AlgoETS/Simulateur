@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 let diff = chartInfo.lastUpdateTime - ohlcData.time;
                 console.warn(`Difference: ${diff} seconds`);
                 // change the update so the chart is updated with the latest data
-                ohlcData.time = chartInfo.lastUpdateTime + 1;
+                ohlcData.time = chartInfo.lastUpdateTime + diff + 10000;
             }
 
             chartInfo.series.update(ohlcData);
