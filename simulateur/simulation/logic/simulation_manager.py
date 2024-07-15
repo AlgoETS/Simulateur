@@ -67,10 +67,10 @@ class SimulationManager:
         logger.info('Simulation stopped')
 
     async def update_prices(self, current_time):
-        stocks = await sync_to_async(list)(self.scenario.stocks.all())
+        stocks = await sync_to_async(list, thread_sensitive=True)(self.scenario.stocks.all())
         for stock in stocks:
-            change = self.apply_changes(stock, current_time)
-            await sync_to_async(StockPriceHistory.objects.create)(
+            change = await self.apply_changes(stock, current_time)
+            await sync_to_async(StockPriceHistory.objects.create, thread_sensitive=True)(
                 stock=stock,
                 open_price=change['open'],
                 high_price=change['high'],
@@ -80,7 +80,7 @@ class SimulationManager:
             )
             await self.broadcast_update(stock, current_time)
 
-    def apply_changes(self, stock, current_time):
+    async def apply_changes(self, stock, current_time):
         if self.noise_function == 'brownian':
             change = generate_brownian_motion_candle(stock.price, self.fluctuation_rate)
         elif self.noise_function == 'perlin':
@@ -100,8 +100,7 @@ class SimulationManager:
         stock.low_price = change['Low']
         stock.close_price = change['Close']
         stock.price = change['Close']
-        # Ensure the stock save operation is wrapped with sync_to_async
-        asyncio.run(sync_to_async(stock.save)())
+        await sync_to_async(stock.save, thread_sensitive=True)()
 
         return {
             'ticker': stock.ticker,
@@ -139,7 +138,7 @@ class SimulationManagerSingleton:
     @classmethod
     async def get_instance(cls, scenario_id):
         if scenario_id not in cls._instances:
-            scenario = await sync_to_async(Scenario.objects.get)(id=scenario_id)
+            scenario = await sync_to_async(Scenario.objects.get, thread_sensitive=True)(id=scenario_id)
             cls._instances[scenario_id] = SimulationManager(scenario)
         return cls._instances[scenario_id]
 

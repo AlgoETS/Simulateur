@@ -9,6 +9,9 @@ from simulation.models.stock import StockPriceHistory
 logger = logging.getLogger(__name__)
 
 TIME_UNITS = {
+    'millisecond': 0.001,
+    'centisecond': 0.01,
+    'decisecond': 0.1,
     'second': 1,
     'minute': 60,
     'hour': 3600,
