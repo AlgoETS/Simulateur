@@ -18,28 +18,19 @@ from simulation.logic.utils import (
 logger = logging.getLogger(__name__)
 
 class SimulationManager:
-    def __init__(self, scenario_id, run_duration=100000):
-        self.scenario = None
+    def __init__(self, scenario):
+        self.scenario = scenario
         self.channel_layer = get_channel_layer()
         self.running = False
-        self.run_duration = run_duration
-        self.time_step = None
-        self.interval = None
-        self.close_stock_market_at_night = None
-        self.fluctuation_rate = None
-        self.noise_function = None
+        self.run_duration = 100000
+        self.time_step = scenario.simulation_settings.timer_step * TIME_UNITS[scenario.simulation_settings.timer_step_unit]
+        self.interval = scenario.simulation_settings.interval * TIME_UNITS[scenario.simulation_settings.interval_unit]
+        self.close_stock_market_at_night = scenario.simulation_settings.close_stock_market_at_night
+        self.fluctuation_rate = scenario.simulation_settings.fluctuation_rate
+        self.noise_function = scenario.simulation_settings.noise_function.lower()
         self.time_index = 0
-        asyncio.run(self.initialize_scenario(scenario_id))
-        logger.info(f'Starting simulation for scenario {self.scenario} with time step {self.time_step} seconds')
 
-    async def initialize_scenario(self, scenario_id):
-        self.scenario = await sync_to_async(Scenario.objects.get)(id=scenario_id)
-        self.settings = self.scenario.simulation_settings
-        self.time_step = self.settings.timer_step * TIME_UNITS[self.settings.timer_step_unit]
-        self.interval = self.settings.interval * TIME_UNITS[self.settings.interval_unit]
-        self.close_stock_market_at_night = self.settings.close_stock_market_at_night
-        self.fluctuation_rate = self.settings.fluctuation_rate
-        self.noise_function = self.settings.noise_function.lower()
+        logger.info(f'Starting simulation for scenario {self.scenario} with time step {self.time_step} seconds')
 
     async def start_simulation(self):
         self.running = True
@@ -76,7 +67,7 @@ class SimulationManager:
         logger.info('Simulation stopped')
 
     async def update_prices(self, current_time):
-        stocks = await sync_to_async(list)(Scenario.objects.get(id=self.scenario.id).stocks.all())
+        stocks = await sync_to_async(list)(self.scenario.stocks.all())
         for stock in stocks:
             change = self.apply_changes(stock, current_time)
             await sync_to_async(StockPriceHistory.objects.create)(
@@ -145,9 +136,10 @@ class SimulationManagerSingleton:
     _instances = {}
 
     @classmethod
-    def get_instance(cls, scenario_id):
+    async def get_instance(cls, scenario_id):
         if scenario_id not in cls._instances:
-            cls._instances[scenario_id] = SimulationManager(scenario_id)
+            scenario = await sync_to_async(Scenario.objects.get)(id=scenario_id)
+            cls._instances[scenario_id] = SimulationManager(scenario)
         return cls._instances[scenario_id]
 
     @classmethod

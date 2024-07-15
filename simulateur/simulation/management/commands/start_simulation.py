@@ -1,7 +1,7 @@
 import asyncio
 from django.core.management.base import BaseCommand
 from simulation.models.scenario import Scenario
-from simulation.logic.simulation_manager import SimulationManager
+from simulation.logic.simulation_manager import SimulationManager, SimulationManagerSingleton
 
 class Command(BaseCommand):
     help = 'Start the simulation based on a scenario'
@@ -12,12 +12,14 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         scenario_id = kwargs['scenario_id']
         try:
-            simulation_manager = SimulationManager(scenario_id)
-            asyncio.run(simulation_manager.start_simulation())
+            asyncio.run(self.start_simulation(scenario_id))
         except Scenario.DoesNotExist:
             self.stdout.write(self.style.ERROR(f'Scenario with ID {scenario_id} does not exist.'))
         except KeyboardInterrupt:
-            simulation_manager.stop_simulation()
             self.stdout.write(self.style.SUCCESS('Simulation stopped successfully'))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Error occurred: {e}'))
+
+    async def start_simulation(self, scenario_id):
+        simulation_manager = await SimulationManagerSingleton.get_instance(scenario_id)
+        await simulation_manager.start_simulation()
