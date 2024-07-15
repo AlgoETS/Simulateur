@@ -100,7 +100,8 @@ class SimulationManager:
         stock.low_price = change['Low']
         stock.close_price = change['Close']
         stock.price = change['Close']
-        sync_to_async(stock.save)()  # Save stock price asynchronously
+        # Ensure the stock save operation is wrapped with sync_to_async
+        asyncio.run(sync_to_async(stock.save)())
 
         return {
             'ticker': stock.ticker,
