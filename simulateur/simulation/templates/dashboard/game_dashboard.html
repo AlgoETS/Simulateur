@@ -73,8 +73,19 @@ document.addEventListener('DOMContentLoaded', () => {
     let updateBuffer = {}; // Buffer to store incoming updates
 
     const initCharts = () => {
+        if (!stocks || stocks.length === 0) {
+            console.error('No stocks data available');
+            return;
+        }
+
         stocks.forEach(stock => {
+            console.log(`Initializing chart for stock: ${stock.ticker}`);
             const chartElement = document.getElementById(`chart-${stock.id}`);
+            if (!chartElement) {
+                console.error(`Chart element not found for stock: ${stock.ticker}`);
+                return;
+            }
+
             const chart = LightweightCharts.createChart(chartElement, {
                 width: chartElement.clientWidth,
                 height: chartElement.clientHeight,
