@@ -188,7 +188,11 @@ class GameDashboardView(View):
             "news_items": news_items,
             "scenarios": scenarios,
         }
-        return render(request, "dashboard/game_dashboard.html", context)
+
+        # Set client-side cache headers
+        response = render(request, "dashboard/game_dashboard.html", context)
+        response['Cache-Control'] = f'public, max-age={CACHE_TTL}'
+        return response
 
 class MarketOverviewView(View):
     @method_decorator(cache_page(CACHE_TTL))
