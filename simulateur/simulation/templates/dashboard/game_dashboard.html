@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("Message received: " + e.data);
         const messageData = JSON.parse(e.data);
         if (messageData.ticker && messageData.timestamp) {
-            updateChart(messageData);
+            bufferUpdate(messageData);
         } else if (messageData.type === 'transaction') {
             updateTransactions(messageData.transactions);
         } else if (messageData.type === 'news') {
@@ -146,24 +146,46 @@ document.addEventListener('DOMContentLoaded', () => {
         addMessage("WebSocket error: " + e.data, "red");
     };
 
-    const updateChart = (message) => {
-        const { ticker, timestamp, open, high, low, close } = message;
-        const chartInfo = charts[ticker];
-        if (!chartInfo || !chartInfo.series) {
+    const bufferUpdate = (message) => {
+        const { ticker, timestamp } = message;
+        if (!updateBuffer[ticker]) {
+            updateBuffer[ticker] = [];
+        }
+        updateBuffer[ticker].push(message);
+        processBuffer(ticker);
+    };
+
+    const processBuffer = (ticker) => {
+        if (!charts[ticker] || !charts[ticker].series) {
             console.warn(`Chart for ${ticker} not found.`);
             return;
         }
 
-        const ohlcData = {
-            time: Math.floor(new Date(timestamp).getTime() / 1000), // Ensure time is in seconds
-            open: open,
-            high: high,
-            low: low,
-            close: close
-        };
+        const chartInfo = charts[ticker];
+        const buffer = updateBuffer[ticker];
 
-        chartInfo.series.update(ohlcData);
-        chartInfo.lastUpdateTime = ohlcData.time; // Update last update time
+        buffer.forEach((message) => {
+            const { timestamp, open, high, low, close } = message;
+            const ohlcData = {
+                time: Math.floor(new Date(timestamp).getTime() / 1000), // Ensure time is in seconds
+                open: open,
+                high: high,
+                low: low,
+                close: close
+            };
+
+            // Ensure the new data is more recent than the last update
+            if (chartInfo.lastUpdateTime && ohlcData.time <= chartInfo.lastUpdateTime) {
+                console.warn(`Ignoring update with time ${ohlcData.time} which is not newer than the last update time ${chartInfo.lastUpdateTime}`);
+                return;
+            }
+
+            chartInfo.series.update(ohlcData);
+            chartInfo.lastUpdateTime = ohlcData.time; // Update last update time
+        });
+
+        // Clear the buffer after processing
+        updateBuffer[ticker] = [];
     };
 
     const updateTransactions = (transactions) => {
