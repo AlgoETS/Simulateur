@@ -1,8 +1,8 @@
 import logging
-import time
 import asyncio
 from django.utils import timezone
 from channels.layers import get_channel_layer
+from asgiref.sync import sync_to_async
 from simulation.models import Scenario, Stock, StockPriceHistory
 from simulation.logic.utils import (
     generate_brownian_motion_candle,
@@ -19,19 +19,27 @@ logger = logging.getLogger(__name__)
 
 class SimulationManager:
     def __init__(self, scenario_id, run_duration=100000):
-        self.scenario = Scenario.objects.get(id=scenario_id)
+        self.scenario = None
         self.channel_layer = get_channel_layer()
         self.running = False
         self.run_duration = run_duration
+        self.time_step = None
+        self.interval = None
+        self.close_stock_market_at_night = None
+        self.fluctuation_rate = None
+        self.noise_function = None
+        self.time_index = 0
+        asyncio.run(self.initialize_scenario(scenario_id))
+        logger.info(f'Starting simulation for scenario {self.scenario} with time step {self.time_step} seconds')
+
+    async def initialize_scenario(self, scenario_id):
+        self.scenario = await sync_to_async(Scenario.objects.get)(id=scenario_id)
         self.settings = self.scenario.simulation_settings
         self.time_step = self.settings.timer_step * TIME_UNITS[self.settings.timer_step_unit]
         self.interval = self.settings.interval * TIME_UNITS[self.settings.interval_unit]
         self.close_stock_market_at_night = self.settings.close_stock_market_at_night
         self.fluctuation_rate = self.settings.fluctuation_rate
         self.noise_function = self.settings.noise_function.lower()
-        self.time_index = 0
-
-        logger.info(f'Starting simulation for scenario {self.scenario} with time step {self.time_step} seconds')
 
     async def start_simulation(self):
         self.running = True
@@ -68,10 +76,10 @@ class SimulationManager:
         logger.info('Simulation stopped')
 
     async def update_prices(self, current_time):
-        stocks = Scenario.objects.get(id=self.scenario.id).stocks.all()
+        stocks = await sync_to_async(list)(Scenario.objects.get(id=self.scenario.id).stocks.all())
         for stock in stocks:
             change = self.apply_changes(stock, current_time)
-            StockPriceHistory.objects.create(
+            await sync_to_async(StockPriceHistory.objects.create)(
                 stock=stock,
                 open_price=change['open'],
                 high_price=change['high'],
@@ -101,7 +109,7 @@ class SimulationManager:
         stock.low_price = change['Low']
         stock.close_price = change['Close']
         stock.price = change['Close']
-        stock.save()
+        sync_to_async(stock.save)()  # Save stock price asynchronously
 
         return {
             'ticker': stock.ticker,
