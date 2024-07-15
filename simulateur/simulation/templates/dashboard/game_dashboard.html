@@ -200,7 +200,10 @@
                 chartInfo.lastUpdateTime = ohlcData.time;
 
                 // Hide the loader after updating the chart
-                document.getElementById(`loader-${ticker}`).style.display = 'none';
+                const loaderElement = document.getElementById(`loader-${ticker}`);
+                if (loaderElement) {
+                    loaderElement.style.display = 'none';
+                }
             });
 
             // Clear the buffer after processing
