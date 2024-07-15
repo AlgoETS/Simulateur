@@ -6,8 +6,7 @@
             <h2 class="text-xl font-semibold mb-4">Transaction Orders</h2>
             <!-- Transaction Orders List -->
             <ul class="divide-y divide-gray-200" id="transaction-orders">
-                {% for transaction in transactions %} {% if transaction.orders.count ==
-                0 %}
+                {% for transaction in transactions %} {% if transaction.orders.count == 0 %}
                 <li class="p-2 text-gray-500">No orders</li>
                 {% endif %} {% for order in transaction.orders.all %}
                 <li class="p-2">
@@ -68,7 +67,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const stocks = {{ stocks| safe}};
+        const stocks = {{ stocks| safe }};
         let charts = {};
         let updateBuffer = {}; // Buffer to store incoming updates
 
