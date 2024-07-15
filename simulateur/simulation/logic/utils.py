@@ -5,6 +5,7 @@ import logging
 import noise
 import numpy as np
 from simulation.models.stock import StockPriceHistory
+
 logger = logging.getLogger(__name__)
 
 TIME_UNITS = {
@@ -22,21 +23,21 @@ def is_market_open(current_time):
         return False
     return current_time.weekday() < 5
 
-def send_ohlc_update(channel_layer, stock, stock_type):
+async def send_ohlc_update(channel_layer, update, stock_type):
     """Send an OHLC update to the specified WebSocket channel."""
     data = {
-        'id': stock.id,
-        'ticker': stock.ticker,
-        'name': stock.company.name,
+        'id': update['id'],
+        'ticker': update['ticker'],
+        'name': update['name'],
         'type': stock_type,
-        'open': stock.open_price,
-        'high': stock.high_price,
-        'low': stock.low_price,
-        'close': stock.close_price,
-        'current': stock.price,
+        'open': update['open'],
+        'high': update['high'],
+        'low': update['low'],
+        'close': update['close'],
+        'current': update['current'],
         'timestamp': timezone.now().isoformat()
     }
-    async_to_sync(channel_layer.group_send)(
+    await channel_layer.group_send(
         f'simulation_{stock_type}',
         {
             'type': 'simulation_update',

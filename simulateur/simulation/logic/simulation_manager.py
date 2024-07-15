@@ -1,5 +1,6 @@
 import logging
 import time
+import asyncio
 from django.utils import timezone
 from channels.layers import get_channel_layer
 from simulation.models import Scenario, Stock, StockPriceHistory
@@ -32,7 +33,7 @@ class SimulationManager:
 
         logger.info(f'Starting simulation for scenario {self.scenario} with time step {self.time_step} seconds')
 
-    def start_simulation(self):
+    async def start_simulation(self):
         self.running = True
         start_time = timezone.now()
         try:
@@ -47,11 +48,10 @@ class SimulationManager:
                 if self.close_stock_market_at_night and not is_market_open(current_time):
                     logger.info('Stock market is closed')
                 else:
-                    self.update_prices(current_time)
+                    await self.update_prices(current_time)
                     logger.info(f'Simulation time: {current_time}, elapsed time: {elapsed_time}')
-                self.broadcast_updates()
                 logger.info(f'Sleeping for {self.time_step} seconds')
-                time.sleep(self.time_step)
+                await asyncio.sleep(self.time_step)
         except KeyboardInterrupt:
             logger.info('Simulation stopped by user')
         except Exception as e:
@@ -67,7 +67,7 @@ class SimulationManager:
         self.running = False
         logger.info('Simulation stopped')
 
-    def update_prices(self, current_time):
+    async def update_prices(self, current_time):
         stocks = Scenario.objects.get(id=self.scenario.id).stocks.all()
         for stock in stocks:
             change = self.apply_changes(stock, current_time)
@@ -79,6 +79,7 @@ class SimulationManager:
                 close_price=change['close'],
                 timestamp=current_time
             )
+            await self.broadcast_update(stock, current_time)
 
     def apply_changes(self, stock, current_time):
         if self.noise_function == 'brownian':
@@ -111,10 +112,25 @@ class SimulationManager:
             'time': current_time.isoformat()
         }
 
-    def broadcast_updates(self):
-        stocks = Scenario.objects.get(id=self.scenario.id).stocks.all()
-        for stock in stocks:
-            send_ohlc_update(self.channel_layer, stock, 'stock')
+    async def broadcast_update(self, stock, current_time):
+        update = {
+            'id': stock.id,
+            'ticker': stock.ticker,
+            'name': stock.company.name,
+            'type': 'stock',
+            'open': stock.open_price,
+            'high': stock.high_price,
+            'low': stock.low_price,
+            'close': stock.close_price,
+            'current': stock.price,
+            'timestamp': current_time.isoformat()
+        }
+
+        await self.send_ohlc_update([update])
+
+    async def send_ohlc_update(self, updates):
+        for update in updates:
+            await send_ohlc_update(self.channel_layer, update, 'stock')
 
 
 class SimulationManagerSingleton:
