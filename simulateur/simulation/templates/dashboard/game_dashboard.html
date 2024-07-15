@@ -162,12 +162,6 @@ document.addEventListener('DOMContentLoaded', () => {
             close: close
         };
 
-        // Ensure the new data is more recent than the last update only if last update time is very late like 5 sec difference
-        if (chartInfo.lastUpdateTime && ohlcData.time <= chartInfo.lastUpdateTime + 5) {
-            console.warn(`Data for ${ticker} is not more recent than the last update.`);
-            return;
-        }
-
         chartInfo.series.update(ohlcData);
         chartInfo.lastUpdateTime = ohlcData.time; // Update last update time
     };
