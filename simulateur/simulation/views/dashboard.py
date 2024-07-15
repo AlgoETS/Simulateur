@@ -151,9 +151,12 @@ class GameDashboardView(View):
     def get(self, request):
         try:
             user_profile = UserProfile.objects.get(user=request.user)
-        except UserProfile.DoesNotExist or Exception:
+        except UserProfile.DoesNotExist:
             messages.error(request, "User profile does not exist. Please create your profile.")
             return redirect(reverse("signup"))
+        except Exception as e:
+            messages.error(request, str(e))
+            return redirect(reverse("home"))
 
         team = user_profile.team
         user_profiles_in_team = UserProfile.objects.filter(team=team)
