@@ -149,8 +149,15 @@ class CreateCompanyAndStockAI(APIView):
             return Response({'status': 'success', 'company': company_data, 'stock': stock_data}, status=status.HTTP_201_CREATED)
         except ollama.ResponseError as e:
             return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON decode error: {str(e)}")
+            return Response({'status': 'error', 'message': 'Invalid JSON response from AI model'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as e:
+            logger.error(f"Unexpected error: {str(e)}")
+            return Response({'status': 'error', 'message': 'An unexpected error occurred'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def parse_company_stock_data(self, ai_response):
+        logger.debug(f"Raw AI Response: {ai_response}")
         data = json.loads(ai_response)
         company_data = {
             'name': data['company_name'],
@@ -170,6 +177,7 @@ class CreateCompanyAndStockAI(APIView):
             'complete_share': data['stock_complete_share']
         }
         return company_data, stock_data
+
 
 class CreateScenarioAI(APIView):
     def post(self, request, *args, **kwargs):

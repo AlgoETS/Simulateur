@@ -1,11 +1,10 @@
-from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from simulation.serializers import JoinTeamSerializer, UpdateTeamNameSerializer, UpdateMemberRoleSerializer
-from simulation.models import Team, JoinLink, UserProfile
+from .serializers import JoinTeamSerializer, UpdateTeamNameSerializer, UpdateMemberRoleSerializer
+from .models import JoinLink, Team, UserProfile
 
 @method_decorator(csrf_exempt, name='dispatch')
 class JoinTeam(generics.GenericAPIView):
@@ -54,19 +53,17 @@ class RemoveTeamMember(generics.GenericAPIView):
 
         return Response({'status': 'success', 'message': 'User removed from the team'})
 
-
 class UpdateTeamName(generics.GenericAPIView):
+    serializer_class = UpdateTeamNameSerializer
+
     def post(self, request, team_id):
         team = get_object_or_404(Team, id=team_id)
-        new_name = request.POST.get('name')
-
-        if not new_name:
-            return JsonResponse({'status': 'error', 'message': 'Name cannot be empty'}, status=400)
-
-        team.name = new_name
-        team.save()
-        return JsonResponse({'status': 'success', 'message': 'Team name updated successfully'})
-
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            team.name = serializer.validated_data['name']
+            team.save()
+            return Response({'status': 'success', 'message': 'Team name updated successfully'})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UpdateMemberRole(generics.GenericAPIView):
     serializer_class = UpdateMemberRoleSerializer

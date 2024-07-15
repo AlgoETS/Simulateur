@@ -68,6 +68,8 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'slippers',
     'guest_user',
+    'pwa',
+    'webpack_loader',
 ]
 
 ALLAUTH_UI_THEME = "light"
@@ -86,6 +88,13 @@ MIDDLEWARE = [
     'django_prometheus.middleware.PrometheusBeforeMiddleware',
     'django_prometheus.middleware.PrometheusAfterMiddleware',
 ]
+
+WEBPACK_LOADER = {
+    'DEFAULT': {
+        'BUNDLE_DIR_NAME': 'yourreactapp/',
+        'STATS_FILE': os.path.join(BASE_DIR, 'yourreactapp', 'webpack-stats.json'),
+    }
+}
 
 ROOT_URLCONF = "simulateur.urls"
 
@@ -167,7 +176,7 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],
+            "hosts": [('192.168.0.120', 6379)],
         },
     },
 }
@@ -273,3 +282,47 @@ PICTURES = {
     "QUEUE_NAME": "pictures",
     "PROCESSOR": "pictures.tasks.process_picture",
 }
+
+PWA_APP_NAME = 'Simulateur'
+PWA_APP_DESCRIPTION = "Simulateur is a Django web application that helps you simulate your financial decisions."
+PWA_APP_THEME_COLOR = '#317EFB'
+PWA_APP_BACKGROUND_COLOR = '#FFFFFF'
+PWA_APP_DISPLAY = 'standalone'
+PWA_APP_SCOPE = '/'
+PWA_APP_ORIENTATION = 'any'
+PWA_APP_START_URL = '/'
+PWA_APP_STATUS_BAR_COLOR = 'default'
+PWA_APP_ICONS = [
+    {
+        'src': '/static/images/my_app_icon.png',
+        'sizes': '160x160'
+    }
+]
+PWA_APP_ICONS_APPLE = [
+    {
+        'src': '/static/images/my_apple_icon.png',
+        'sizes': '160x160'
+    }
+]
+PWA_APP_SPLASH_SCREEN = [
+    {
+        'src': '/static/images/icons/splash-640x1136.png',
+        'media': '(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)'
+    }
+]
+PWA_APP_DIR = 'ltr'
+PWA_APP_LANG = 'en-US'
+PWA_APP_SHORTCUTS = [
+    {
+        'name': 'Shortcut',
+        'url': '/target',
+        'description': 'Shortcut to a page in my application'
+    }
+]
+PWA_APP_SCREENSHOTS = [
+    {
+      'src': '/static/images/icons/splash-750x1334.png',
+      'sizes': '750x1334',
+      "type": "image/png"
+    }
+]

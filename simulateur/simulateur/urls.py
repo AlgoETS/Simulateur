@@ -19,6 +19,7 @@ urlpatterns = [
     path('', include(simulation_urls)),
     path('', include('django_prometheus.urls')),
     path('', include('guest_user.urls')),
+    path('', include('pwa.urls')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if get_settings().USE_PLACEHOLDERS:
