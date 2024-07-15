@@ -53,7 +53,7 @@ It includes an admin interface to manage the simulation settings and control the
 3. **Create a Superuser**:
 
     ```bash
-    python manage.py createsuperuser
+    python3 manage.py createsuperuser
     ```
 
 4. **Run the Server**:
@@ -61,7 +61,7 @@ It includes an admin interface to manage the simulation settings and control the
     ```bash
     python3 manage.py start_simulation 1
     # in other terminal run
-    daphne -p 8000 simulateur.asgi:application
+    python3 - m daphne -p 8000 simulateur.asgi:application --bind 0.0.0.0
     ```
 
 ## Usage

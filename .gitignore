@@ -161,4 +161,4 @@ cython_debug/
 #.idea/
 
 #Static files
-simulateur/staticfiles/
+simulateur/staticfiles/*

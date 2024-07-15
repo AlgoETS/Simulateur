@@ -59,3 +59,4 @@ requests
 ollama
 selenium
 daphne
+django-pwa
