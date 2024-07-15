@@ -66,3 +66,4 @@ websockets-cli
 django-health-check
 psutil
 django-storages
+amqp
