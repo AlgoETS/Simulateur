@@ -49,14 +49,14 @@ class RemoveTeamMember(generics.GenericAPIView):
         user_to_remove = get_object_or_404(UserProfile, user__id=user_id)
 
         # Check if the request user is part of the team
-        if request.user.userprofile not in team.members.all() and not request.user.team == team:
+        if request.user.userprofile not in team.members.all() and request.user.userprofile.team != team:
             return Response(
                 {"status": "error", "message": "You are not a member of this team"},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
         # Check if the user to remove is a member of the team
-        if user_to_remove not in team.members.all() and not user_to_remove.team == team
+        if user_to_remove not in team.members.all():
             return Response(
                 {"status": "error", "message": "User is not a member of this team"},
                 status=status.HTTP_404_NOT_FOUND,
@@ -66,7 +66,6 @@ class RemoveTeamMember(generics.GenericAPIView):
         team.members.remove(user_to_remove)
         user_to_remove.team = None
         user_to_remove.save()
-        UserProfile.objects.filter(team=team, user=user_to_remove.user).update(team=None)
 
         return Response({"status": "success", "message": "User removed from the team"})
 
@@ -90,7 +89,7 @@ class GenerateJoinLink(generics.GenericAPIView):
     def post(self, request, team_id):
         team = get_object_or_404(Team, id=team_id)
 
-        if request.user.userprofile not in team.members.all() and not request.user.team == team:
+        if request.user.userprofile not in team.members.all() and request.user.userprofile.team != team:
             return Response(
                 {"status": "error", "message": "You are not a member of this team"},
                 status=status.HTTP_403_FORBIDDEN,
