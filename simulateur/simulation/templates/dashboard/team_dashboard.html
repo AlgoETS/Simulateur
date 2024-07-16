@@ -99,7 +99,7 @@ function generateJoinLink() {
         if (data.status === 'success') {
             let joinLinkContainer = document.getElementById('joinLinkContainer');
             let joinLinkInput = document.getElementById('joinLinkInput');
-            joinLinkInput.value = window.location.origin + '/join_team/?team_id=' + '{{ team.id }}' + '&key=' + data.join_link;
+            joinLinkInput.value = window.location.origin + data.join_link;
             joinLinkContainer.classList.remove('hidden');
             alert('New join link generated successfully');
         } else {

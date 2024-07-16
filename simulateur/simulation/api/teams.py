@@ -6,9 +6,10 @@ from django.utils.decorators import method_decorator
 from simulation.serializers import JoinTeamSerializer, UpdateTeamNameSerializer
 from simulation.models import Team, JoinLink, UserProfile
 from django.shortcuts import redirect
+from rest_framework.views import APIView
 
 @method_decorator(csrf_exempt, name="dispatch")
-class JoinTeam(generics.GenericAPIView):
+class JoinTeam(APIView):
     serializer_class = JoinTeamSerializer
 
     def get(self, request, team_id, key, *args, **kwargs):
@@ -54,7 +55,7 @@ class JoinTeam(generics.GenericAPIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class RemoveTeamMember(generics.GenericAPIView):
+class RemoveTeamMember(APIView):
     def post(self, request, team_id, user_id):
         team = get_object_or_404(Team, id=team_id)
         user_to_remove = get_object_or_404(UserProfile, user__id=user_id)
@@ -81,7 +82,7 @@ class RemoveTeamMember(generics.GenericAPIView):
         return Response({"status": "success", "message": "User removed from the team"})
 
 
-class UpdateTeamName(generics.GenericAPIView):
+class UpdateTeamName(APIView):
     serializer_class = UpdateTeamNameSerializer
 
     def post(self, request, team_id):
@@ -96,7 +97,7 @@ class UpdateTeamName(generics.GenericAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class GenerateJoinLink(generics.GenericAPIView):
+class GenerateJoinLink(APIView):
     def post(self, request, team_id):
         team = get_object_or_404(Team, id=team_id)
 
