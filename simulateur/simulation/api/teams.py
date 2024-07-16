@@ -107,4 +107,5 @@ class GenerateJoinLink(generics.GenericAPIView):
             )
 
         join_link = team.generate_join_link()
-        return Response({"status": "success", "join_link": join_link})
+        join_link_url = f"/join_team/?team_id={team.id}&key={join_link.key}"
+        return Response({"status": "success", "join_link": join_link_url})
