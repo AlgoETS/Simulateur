@@ -59,7 +59,7 @@
     function removeFromTeam(teamId, userId) {
         const csrfToken = getCookie('csrftoken');
 
-        axios.post(`/api/remove_team_member/${teamId}/${userId}/`, {}, {
+        axios.post(`/api/team/remove-member/${teamId}/${userId}/`, {}, {
             headers: {
                 'X-CSRFToken': csrfToken
             }
