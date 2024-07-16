@@ -130,6 +130,7 @@ class TeamDashboardView(View):
                 "team": team,
                 "portfolios": portfolios,
                 "members": members,
+                "team_balance": sum(portfolio.balance for portfolio in portfolios),
             }
             return render(request, "dashboard/team_dashboard.html", context)
         except UserProfile.DoesNotExist:

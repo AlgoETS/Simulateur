@@ -15,7 +15,15 @@
             </div>
         </form>
         <p class="text-gray-700 mb-2">Team Balance: <span class="font-semibold text-green-600">${{ team_balance }}</span></p>
-        <p class="text-gray-700 mb-2">Join Link: <span id="joinLink" class="font-semibold text-green-600"></span></p>
+        <p class="text-gray-700 mb-2">Team Leader: <span class="font-semibold">{{ team_leader }}</span></p>
+        <p class="text-gray-700 mb-2">Team Members: <span class="font-semibold">{{ team.members.count }}</span></p>
+        <p class="text-gray-700 mb-2">Team Created: {{ team.timestamp|date:"F j, Y" }}</p>
+        <p class="text-gray-700 mb-2">Join Link:
+            <span id="joinLinkContainer" class="hidden">
+                <input type="text" id="joinLinkInput" class="flex-grow p-2 border border-gray-300 rounded-l-lg" readonly>
+                <button type="button" onclick="copyJoinLink()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-r-lg">Copy Link</button>
+            </span>
+        </p>
         <button type="button" onclick="generateJoinLink()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Generate New Join Link</button>
     </div>
 
@@ -28,7 +36,7 @@
                     <a href="{% url 'public_profile' member.user.id %}">{{ member.user.username }}</a>
                 </h3>
                 <p class="text-gray-600">Role: <span class="font-semibold">{{ member.role }}</span></p>
-                <p class="text-gray-600">Balance: <span class="text-green-600">${{ member.portfolio_balance }}</span></p>
+                <p class="text-gray-600">Balance: <span class="text-green-600">${{ member.portfolio.balance }}</span></p>
                 <p class="text-gray-600">Joined: {{ member.timestamp|date:"F j, Y" }}</p>
 
                 {% if request.user.userprofile.role == 'admin' %}
@@ -80,18 +88,6 @@ function changeTeamName() {
     });
 }
 
-function copyJoinLink() {
-    let joinLink = document.getElementById('joinLink');
-    joinLink.select();
-    joinLink.setSelectionRange(0, 99999); // For mobile devices
-
-    navigator.clipboard.writeText(joinLink.value).then(() => {
-        alert('Join link copied to clipboard');
-    }).catch(err => {
-        alert('Error copying join link: ' + err);
-    });
-}
-
 function generateJoinLink() {
     fetch("{% url 'generate_join_link' team.id %}", {
         method: 'POST',
@@ -101,8 +97,10 @@ function generateJoinLink() {
         },
     }).then(response => response.json()).then(data => {
         if (data.status === 'success') {
-            let joinLink = document.getElementById('joinLink');
-            joinLink.innerHTML = `<button onclick="copyJoinLink()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Copy Join Link</button>`;
+            let joinLinkContainer = document.getElementById('joinLinkContainer');
+            let joinLinkInput = document.getElementById('joinLinkInput');
+            joinLinkInput.value = window.location.origin + data.join_link;
+            joinLinkContainer.classList.remove('hidden');
             alert('New join link generated successfully');
         } else {
             alert('Error generating join link: ' + data.message);
@@ -110,5 +108,48 @@ function generateJoinLink() {
     });
 }
 
+function copyJoinLink() {
+    let joinLinkInput = document.getElementById('joinLinkInput');
+    joinLinkInput.select();
+    joinLinkInput.setSelectionRange(0, 99999); // For mobile devices
+
+    navigator.clipboard.writeText(joinLinkInput.value).then(() => {
+        alert('Join link copied to clipboard');
+    }).catch(err => {
+        alert('Error copying join link: ' + err);
+    });
+}
+
+function checkJoinLink(url) {
+    fetch(window.location.origin + url, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    }).then(response => response.json()).then(data => {
+        if (data.status === 'success' && data.link_valid) {
+            joinTeam(url);
+        } else {
+            alert('Error joining team: ' + data.message);
+        }
+    });
+}
+
+function joinTeam(url) {
+    fetch(window.location.origin + url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+    }).then(response => response.json()).then(data => {
+        if (data.status === 'success') {
+            alert('You have joined the team successfully');
+            location.reload();
+        } else {
+            alert('Error joining team: ' + data.message);
+        }
+    });
+}
 </script>
 {% endblock %}
