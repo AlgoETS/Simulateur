@@ -198,10 +198,11 @@ class JoinTeamView(View):
         teams = Team.objects.all()
         team_id = request.GET.get('team_id', '')
         key = request.GET.get('key', '')
+        portfolios = Portfolio.objects.all()
         teams_balance = [
             {
                 'team': team,
-                'balance': sum([member.portfolio.balance for member in team.members.all()])
+                'balance': sum([portfolios.get(owner=member).balance for member in team.members.all()]),
             }
             for team in teams
         ]
