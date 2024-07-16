@@ -1,15 +1,12 @@
-from django.http import JsonResponse
 from django.urls import reverse
 from django.views import View
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.db.models import Sum
-from django.db import transaction
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 from django.conf import settings
-import json
 
 from simulation.models import (
     UserProfile,
@@ -21,7 +18,6 @@ from simulation.models import (
     News,
     Company,
     Event,
-    SimulationSettings,
     Scenario,
     Order,
     Trigger,
@@ -30,7 +26,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-CACHE_TTL = getattr(settings, 'CACHE_TTL', 60 * 15)  # 15 minutes default
+CACHE_TTL = getattr(settings, 'CACHE_TTL', 30)  # 30 seconds
 
 class AdminOnlyMixin(UserPassesTestMixin):
     def test_func(self):
@@ -117,7 +113,6 @@ class AdminDashboardView(AdminOnlyMixin, View):
         return render(request, "dashboard/admin_dashboard.html", context)
 
 class TeamDashboardView(View):
-    @method_decorator(cache_page(CACHE_TTL))
     def get(self, request):
         try:
             user_profile = UserProfile.objects.select_related('user').get(user=request.user)
@@ -134,6 +129,7 @@ class TeamDashboardView(View):
                 "team": team,
                 "portfolios": portfolios,
                 "members": members,
+                "team_balance": sum(portfolio.balance for portfolio in portfolios),
             }
             return render(request, "dashboard/team_dashboard.html", context)
         except UserProfile.DoesNotExist:

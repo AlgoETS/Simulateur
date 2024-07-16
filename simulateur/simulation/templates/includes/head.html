@@ -24,6 +24,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
     <script src="https://unpkg.com/d3@6"></script>
     <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.6/dist/lightweight-charts.standalone.production.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <style>
         body {
             font-family: "Roboto", sans-serif;
@@ -130,5 +132,21 @@
             }
             return cookieValue;
         }
+    </script>
+    <script>
+        function showToast(message, type) {
+            Toastify({
+                text: message,
+                backgroundColor: type === 'success' ? 'green' : 'red',
+                duration: 3000,
+                close: true,
+            }).showToast();
+        }
+
+        {% if messages %}
+            {% for message in messages %}
+                showToast("{{ message }}", "{{ message.tags }}");
+            {% endfor %}
+        {% endif %}
     </script>
 </head>

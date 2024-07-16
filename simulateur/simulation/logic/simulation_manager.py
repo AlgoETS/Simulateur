@@ -90,7 +90,7 @@ class SimulationManager:
         if not stocks:
             stocks = list(self.scenario.stocks.all())
             cache.set(cache_key, stocks, timeout=CACHE_TTL)
-        
+
         return stocks
 
     def apply_changes(self, stock, current_time):

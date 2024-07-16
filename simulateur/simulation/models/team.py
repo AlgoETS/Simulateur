@@ -18,7 +18,7 @@ class Team(models.Model):
             key=unique_key,
             expires_at=timezone.now() + timedelta(hours=24)
         )
-        return join_link.get_absolute_url()
+        return join_link
 
     class Meta:
         verbose_name_plural = "Teams"

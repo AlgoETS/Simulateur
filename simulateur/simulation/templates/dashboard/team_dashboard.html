@@ -15,7 +15,15 @@
             </div>
         </form>
         <p class="text-gray-700 mb-2">Team Balance: <span class="font-semibold text-green-600">${{ team_balance }}</span></p>
-        <p class="text-gray-700">Join Link: <span id="joinLink" class="font-semibold text-blue-600">{{ join_link }}</span></p>
+        <p class="text-gray-700 mb-2">Team Leader: <span class="font-semibold">{{ team_leader }}</span></p>
+        <p class="text-gray-700 mb-2">Team Members: <span class="font-semibold">{{ team.members.count }}</span></p>
+        <p class="text-gray-700 mb-2">Team Created: {{ team.timestamp|date:"F j, Y" }}</p>
+        <p class="text-gray-700 mb-2">Join Link:
+            <span id="joinLinkContainer" class="hidden">
+                <input type="text" id="joinLinkInput" class="flex-grow p-2 border border-gray-300 rounded-l-lg" readonly>
+                <button type="button" onclick="copyJoinLink()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-r-lg">Copy Link</button>
+            </span>
+        </p>
         <button type="button" onclick="generateJoinLink()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Generate New Join Link</button>
     </div>
 
@@ -28,7 +36,7 @@
                     <a href="{% url 'public_profile' member.user.id %}">{{ member.user.username }}</a>
                 </h3>
                 <p class="text-gray-600">Role: <span class="font-semibold">{{ member.role }}</span></p>
-                <p class="text-gray-600">Balance: <span class="text-green-600">${{ member.portfolio_balance }}</span></p>
+                <p class="text-gray-600">Balance: <span class="text-green-600">${{ member.portfolio.balance }}</span></p>
                 <p class="text-gray-600">Joined: {{ member.timestamp|date:"F j, Y" }}</p>
 
                 {% if request.user.userprofile.role == 'admin' %}
@@ -61,6 +69,18 @@
 </div>
 
 <script>
+function showToast(message, type='success') {
+    Toastify({
+        text: message,
+        duration: 3000,
+        close: true,
+        gravity: "top",
+        position: "right",
+        backgroundColor: type === 'success' ? "#4CAF50" : "#FF0000",
+        stopOnFocus: true,
+    }).showToast();
+}
+
 function changeTeamName() {
     const teamName = document.getElementById('teamName').value;
     fetch("{% url 'change_team_name' team.id %}", {
@@ -72,10 +92,10 @@ function changeTeamName() {
         body: JSON.stringify({ 'name': teamName })
     }).then(response => response.json()).then(data => {
         if (data.status === 'success') {
-            alert('Team name changed successfully');
+            showToast('Team name changed successfully');
             location.reload();
         } else {
-            alert('Error changing team name: ' + data.message);
+            showToast('Error changing team name: ' + data.message, 'error');
         }
     });
 }
@@ -89,10 +109,57 @@ function generateJoinLink() {
         },
     }).then(response => response.json()).then(data => {
         if (data.status === 'success') {
-            document.getElementById('joinLink').textContent = data.join_link;
-            alert('New join link generated successfully');
+            let joinLinkContainer = document.getElementById('joinLinkContainer');
+            let joinLinkInput = document.getElementById('joinLinkInput');
+            joinLinkInput.value = window.location.origin + data.join_link;
+            joinLinkContainer.classList.remove('hidden');
+            showToast('New join link generated successfully');
         } else {
-            alert('Error generating join link: ' + data.message);
+            showToast('Error generating join link: ' + data.message, 'error');
+        }
+    });
+}
+
+function copyJoinLink() {
+    let joinLinkInput = document.getElementById('joinLinkInput');
+    joinLinkInput.select();
+    joinLinkInput.setSelectionRange(0, 99999); // For mobile devices
+
+    navigator.clipboard.writeText(joinLinkInput.value).then(() => {
+        showToast('Join link copied to clipboard');
+    }).catch(err => {
+        showToast('Error copying join link: ' + err, 'error');
+    });
+}
+
+function checkJoinLink(url) {
+    fetch(window.location.origin + url, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    }).then(response => response.json()).then(data => {
+        if (data.status === 'success' && data.link_valid) {
+            joinTeam(url);
+        } else {
+            showToast('Error joining team: ' + data.message, 'error');
+        }
+    });
+}
+
+function joinTeam(url) {
+    fetch(window.location.origin + url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+    }).then(response => response.json()).then(data => {
+        if (data.status === 'success') {
+            showToast('You have joined the team successfully');
+            location.reload();
+        } else {
+            showToast('Error joining team: ' + data.message, 'error');
         }
     });
 }
