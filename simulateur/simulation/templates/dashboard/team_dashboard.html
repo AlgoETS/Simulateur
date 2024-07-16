@@ -15,7 +15,7 @@
             </div>
         </form>
         <p class="text-gray-700 mb-2">Team Balance: <span class="font-semibold text-green-600">${{ team_balance }}</span></p>
-        <p class="text-gray-700">Join Link: <span id="joinLink" class="font-semibold text-blue-600">{{ join_link }}</span></p>
+        <p class="text-gray-700 mb-2">Join Link: <span id="joinLink" class="font-semibold text-green-600"></span></p>
         <button type="button" onclick="generateJoinLink()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Generate New Join Link</button>
     </div>
 
@@ -89,10 +89,30 @@ function generateJoinLink() {
         },
     }).then(response => response.json()).then(data => {
         if (data.status === 'success') {
-            document.getElementById('joinLink').textContent = data.join_link;
+            let joinLink = document.getElementById('joinLink');
+            // current url location and make post on it window location href
+            // make axios post request to the url button
+            joinLink.innerHTML = `<button onclick="joinTeam('${data.url}')" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Join Team</button>`;
             alert('New join link generated successfully');
         } else {
             alert('Error generating join link: ' + data.message);
+        }
+    });
+}
+
+function joinTeam(url) {
+    fetch(window.location.origin + url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+    }).then(response => response.json()).then(data => {
+        if (data.status === 'success') {
+            alert('You have joined the team successfully');
+            location.reload();
+        } else {
+            alert('Error joining team: ' + data.message);
         }
     });
 }
