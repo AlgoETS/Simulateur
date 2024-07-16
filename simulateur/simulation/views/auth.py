@@ -199,18 +199,25 @@ class JoinTeamView(View):
         team_id = request.GET.get('team_id', '')
         key = request.GET.get('key', '')
         portfolios = Portfolio.objects.all()
-        teams_balance = [
-            {
+
+        teams_balance = []
+        for team in teams:
+            balance = 0
+            for member in team.members.all():
+                try:
+                    balance += portfolios.get(owner=member).balance
+                except Portfolio.DoesNotExist:
+                    balance += 0  # Assuming balance is 0 if Portfolio does not exist
+            teams_balance.append({
                 'team': team,
-                'balance': sum([portfolios.get(owner=member).balance for member in team.members.all()]),
-            }
-            for team in teams
-        ]
+                'balance': balance,
+            })
+
         context = {
             'teams': teams,
             'team_id': team_id,
             'key': key,
-            'teams_balance': teams_balance
+            'teams_balance': teams_balance,
         }
         return render(request, "registration/join_team.html", context)
 
