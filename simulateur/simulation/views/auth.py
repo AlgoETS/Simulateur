@@ -200,7 +200,7 @@ class JoinTeamView(View):
         key = request.GET.get('key', '')
         portfolios = Portfolio.objects.all()
         
-        teams_balance = {}
+        teams_balance = []
         for team in teams:
             balance = 0
             for member in team.members.all():
@@ -208,7 +208,10 @@ class JoinTeamView(View):
                     balance += portfolios.get(owner=member).balance
                 except Portfolio.DoesNotExist:
                     balance += 0  # Assuming balance is 0 if Portfolio does not exist
-            teams_balance[team.id] = balance
+            teams_balance.append({
+                'team': team,
+                'balance': balance,
+            })
 
         context = {
             'teams': teams,
