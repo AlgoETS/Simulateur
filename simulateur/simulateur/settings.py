@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 import os
 from pathlib import Path
+from django.core.asgi import get_asgi_application
+import django
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -88,7 +90,7 @@ INSTALLED_APPS = [
 ]
 
 # Theme settings
-ALLAUTH_UI_THEME = "light"
+ALLAUTH_UI_THEME = "dark"
 
 # Middleware configuration
 MIDDLEWARE = [
@@ -135,8 +137,10 @@ TEMPLATES = [
 ]
 
 # ASGI and WSGI application settings
+django_asgi_app = get_asgi_application()
+django.setup()
 ASGI_APPLICATION = 'simulateur.asgi.application'
-WSGI_APPLICATION = 'simulateur.wsgi.application'
+# WSGI_APPLICATION = 'simulateur.wsgi.application'
 
 # Database configuration
 DATABASES = {
@@ -351,7 +355,7 @@ AWS_S3_FILE_OVERWRITE = False
 AWS_DEFAULT_ACL = None
 AWS_S3_VERIFY = False
 
-
+# InfluxDB settings
 INFLUXDB_URL = os.getenv("INFLUXDB_URL", "http://localhost:8086")
 INFLUXDB_TOKEN = os.getenv("INFLUXDB_TOKEN", "my-token")
 INFLUXDB_ORG = os.getenv("INFLUXDB_ORG", "my-org")
