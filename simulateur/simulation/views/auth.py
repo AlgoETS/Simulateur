@@ -194,16 +194,20 @@ class PasswordResetConfirmView(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class JoinTeamView(View):
     @method_decorator(cache_page(CACHE_TTL), name='dispatch')
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         teams = Team.objects.all()
+        team_id = request.GET.get('team_id', '')
+        key = request.GET.get('key', '')
         context = {
             'teams': teams,
+            'team_id': team_id,
+            'key': key,
         }
         return render(request, "registration/join_team.html", context)
 
     def post(self, request, *args, **kwargs):
-        team_id = kwargs.get('team_id')
-        key = kwargs.get('key')
+        team_id = request.POST.get('team_id')
+        key = request.POST.get('key')
         team = get_object_or_404(Team, id=team_id)
         join_link = get_object_or_404(JoinLink, team=team, key=key)
 

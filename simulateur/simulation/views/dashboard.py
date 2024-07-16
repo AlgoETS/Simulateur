@@ -26,7 +26,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-CACHE_TTL = getattr(settings, 'CACHE_TTL', 30)  # 15 minutes default
+CACHE_TTL = getattr(settings, 'CACHE_TTL', 30)  # 30 seconds
 
 class AdminOnlyMixin(UserPassesTestMixin):
     def test_func(self):
@@ -113,7 +113,6 @@ class AdminDashboardView(AdminOnlyMixin, View):
         return render(request, "dashboard/admin_dashboard.html", context)
 
 class TeamDashboardView(View):
-    @method_decorator(cache_page(CACHE_TTL))
     def get(self, request):
         try:
             user_profile = UserProfile.objects.select_related('user').get(user=request.user)

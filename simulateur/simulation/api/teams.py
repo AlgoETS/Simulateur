@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from simulation.serializers import JoinTeamSerializer, UpdateTeamNameSerializer
 from simulation.models import Team, JoinLink, UserProfile
+from django.shortcuts import redirect
 
 @method_decorator(csrf_exempt, name="dispatch")
 class JoinTeam(generics.GenericAPIView):
@@ -20,9 +21,7 @@ class JoinTeam(generics.GenericAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        return Response(
-            {"status": "success", "team_name": team.name, "link_valid": True}
-        )
+        return redirect("join_team", team_id=team_id, key=key)
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -54,6 +53,7 @@ class JoinTeam(generics.GenericAPIView):
             )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class RemoveTeamMember(generics.GenericAPIView):
     def post(self, request, team_id, user_id):
         team = get_object_or_404(Team, id=team_id)

@@ -5,23 +5,24 @@
 {% block content %}
 <div class="container mx-auto p-6">
     <h1 class="text-3xl font-bold mb-6 text-indigo-800">Join Team</h1>
-    <form id="joinTeamForm" class="space-y-6">
+    <form id="joinTeamForm" class="space-y-6" method="post" action="{% url 'join_team' %}">
+        {% csrf_token %}
         <div class="flex space-x-4">
             <div class="w-1/2">
                 <label for="team_id" class="block text-sm font-medium leading-6 text-gray-900">Team ID</label>
                 <div class="mt-2">
-                    <input id="team_id" name="team_id" type="text" required class="block w-full rounded-md border-0 py-2 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" readonly>
+                    <input id="team_id" name="team_id" type="text" value="{{ team_id }}" required class="block w-full rounded-md border-0 py-2 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
                 </div>
             </div>
             <div class="w-1/2">
                 <label for="key" class="block text-sm font-medium leading-6 text-gray-900">Join Key</label>
                 <div class="mt-2">
-                    <input id="key" name="key" type="text" required class="block w-full rounded-md border-0 py-2 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                    <input id="key" name="key" type="text" value="{{ key }}" required class="block w-full rounded-md border-0 py-2 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
                 </div>
             </div>
         </div>
         <div>
-            <button type="button" onclick="handleJoinTeam()" class="flex w-full justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Join Team</button>
+            <button type="submit" class="flex w-full justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Join Team</button>
         </div>
     </form>
 
@@ -45,32 +46,6 @@
 </div>
 
 <script>
-    function handleJoinTeam() {
-        const teamId = document.getElementById('team_id').value;
-        const key = document.getElementById('key').value;
-        const csrfToken = getCookie('csrftoken');
-
-        axios.post(`/api/join_team/${teamId}/${key}/`, {
-            team_id: teamId,
-            key: key
-        }, {
-            headers: {
-                'X-CSRFToken': csrfToken
-            },
-        })
-        .then(response => {
-            if (response.data.status === 'success') {
-                alert(response.data.message);
-                window.location.href = '{% url "user_dashboard" %}';
-            } else {
-                alert(response.data.message);
-            }
-        })
-        .catch(error => {
-            alert('Failed to join team. Please check the provided details.');
-        });
-    }
-
     function selectTeam(teamId) {
         document.getElementById('team_id').value = teamId;
     }
