@@ -1,4 +1,3 @@
-from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.response import Response
@@ -11,14 +10,7 @@ from simulation.models import Team, JoinLink, UserProfile
 class JoinTeam(generics.GenericAPIView):
     serializer_class = JoinTeamSerializer
 
-    def get(self, request, *args, **kwargs):
-        team_id = request.query_params.get("team_id")
-        key = request.query_params.get("key")
-        if not team_id or not key:
-            return Response(
-                {"status": "error", "message": "team_id and key are required"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+    def get(self, request, team_id, key, *args, **kwargs):
         team = get_object_or_404(Team, id=team_id)
         join_link = get_object_or_404(JoinLink, team=team, key=key)
 
