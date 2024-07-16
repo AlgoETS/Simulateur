@@ -1,6 +1,8 @@
 import logging
 import time
 from django.utils import timezone
+from django.core.cache import cache
+from django.conf import settings
 from channels.layers import get_channel_layer
 from simulation.models import Scenario, Stock, StockPriceHistory
 from simulation.logic.utils import (
@@ -16,18 +18,19 @@ from simulation.logic.utils import (
 
 logger = logging.getLogger(__name__)
 
+CACHE_TTL = getattr(settings, 'CACHE_TTL', 60 * 15)  # 15 minutes default
+
 class SimulationManager:
-    def __init__(self, scenario_id, run_duration=100000):
-        self.scenario = Scenario.objects.get(id=scenario_id)
+    def __init__(self, scenario):
+        self.scenario = scenario
         self.channel_layer = get_channel_layer()
         self.running = False
-        self.run_duration = run_duration
-        self.settings = self.scenario.simulation_settings
-        self.time_step = self.settings.timer_step * TIME_UNITS[self.settings.timer_step_unit]
-        self.interval = self.settings.interval * TIME_UNITS[self.settings.interval_unit]
-        self.close_stock_market_at_night = self.settings.close_stock_market_at_night
-        self.fluctuation_rate = self.settings.fluctuation_rate
-        self.noise_function = self.settings.noise_function.lower()
+        self.run_duration = 100000
+        self.time_step = scenario.simulation_settings.timer_step * TIME_UNITS[scenario.simulation_settings.timer_step_unit]
+        self.interval = scenario.simulation_settings.interval * TIME_UNITS[scenario.simulation_settings.interval_unit]
+        self.close_stock_market_at_night = scenario.simulation_settings.close_stock_market_at_night
+        self.fluctuation_rate = scenario.simulation_settings.fluctuation_rate
+        self.noise_function = scenario.simulation_settings.noise_function.lower()
         self.time_index = 0
 
         logger.info(f'Starting simulation for scenario {self.scenario} with time step {self.time_step} seconds')
@@ -49,7 +52,6 @@ class SimulationManager:
                 else:
                     self.update_prices(current_time)
                     logger.info(f'Simulation time: {current_time}, elapsed time: {elapsed_time}')
-                self.broadcast_updates()
                 logger.info(f'Sleeping for {self.time_step} seconds')
                 time.sleep(self.time_step)
         except KeyboardInterrupt:
@@ -68,7 +70,7 @@ class SimulationManager:
         logger.info('Simulation stopped')
 
     def update_prices(self, current_time):
-        stocks = Scenario.objects.get(id=self.scenario.id).stocks.all()
+        stocks = self.get_stocks()
         for stock in stocks:
             change = self.apply_changes(stock, current_time)
             StockPriceHistory.objects.create(
@@ -79,6 +81,17 @@ class SimulationManager:
                 close_price=change['close'],
                 timestamp=current_time
             )
+            self.broadcast_update(stock, current_time)
+
+    def get_stocks(self):
+        cache_key = f'stocks_for_scenario_{self.scenario.id}'
+        stocks = cache.get(cache_key)
+
+        if not stocks:
+            stocks = list(self.scenario.stocks.all())
+            cache.set(cache_key, stocks, timeout=CACHE_TTL)
+        
+        return stocks
 
     def apply_changes(self, stock, current_time):
         if self.noise_function == 'brownian':
@@ -102,6 +115,10 @@ class SimulationManager:
         stock.price = change['Close']
         stock.save()
 
+        # Invalidate the cache for the stocks query when changes are applied
+        cache_key = f'stocks_for_scenario_{self.scenario.id}'
+        cache.delete(cache_key)
+
         return {
             'ticker': stock.ticker,
             'open': stock.open_price,
@@ -111,10 +128,21 @@ class SimulationManager:
             'time': current_time.isoformat()
         }
 
-    def broadcast_updates(self):
-        stocks = Scenario.objects.get(id=self.scenario.id).stocks.all()
-        for stock in stocks:
-            send_ohlc_update(self.channel_layer, stock, 'stock')
+    def broadcast_update(self, stock, current_time):
+        update = {
+            'id': stock.id,
+            'ticker': stock.ticker,
+            'name': stock.company.name,
+            'type': 'stock',
+            'open': stock.open_price,
+            'high': stock.high_price,
+            'low': stock.low_price,
+            'close': stock.close_price,
+            'current': stock.price,
+            'timestamp': current_time.isoformat()
+        }
+
+        send_ohlc_update(self.channel_layer, update, 'stock')
 
 
 class SimulationManagerSingleton:
@@ -123,7 +151,8 @@ class SimulationManagerSingleton:
     @classmethod
     def get_instance(cls, scenario_id):
         if scenario_id not in cls._instances:
-            cls._instances[scenario_id] = SimulationManager(scenario_id)
+            scenario = Scenario.objects.get(id=scenario_id)
+            cls._instances[scenario_id] = SimulationManager(scenario)
         return cls._instances[scenario_id]
 
     @classmethod

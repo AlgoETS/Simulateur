@@ -1,23 +1,47 @@
+version: '3.8'
+
 services:
   django:
     build: .
     command: sh -c "python manage.py migrate && daphne simulateur.asgi:application -b 0.0.0.0 -p 8000"
     volumes:
       - .:/workspace
-    ports:
-      - "8000:8000"
     depends_on:
       - redis
       - ollama
+      - minio
+      - influxdb
     environment:
       - DATABASE_URL=postgres://postgres:postgres@db:5432/postgres
       - REDIS_URL=redis://redis:6379
-      - OLLAMA_API_URL=http://ollama:11434  # Example environment variable for Ollama
+      - OLLAMA_API_URL=http://ollama:11434
+      - MINIO_URL=http://minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=my-token
+      - INFLUXDB_ORG=my-org
+      - INFLUXDB_BUCKET=my-bucket
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   redis:
     image: redis:6
     ports:
       - "6379:6379"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   ollama:
     image: ollama/ollama
@@ -25,12 +49,53 @@ services:
       - ollama:/root/.ollama
     ports:
       - "11434:11434"
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - capabilities: [gpu]  # Uncomment this line if you have Nvidia GPU support
-    runtime: nvidia  # Uncomment this line if you have Nvidia GPU support
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:11434/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  minio:
+    image: minio/minio
+    command: server /data
+    environment:
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+    ports:
+      - "9000:9000"
+    volumes:
+      - minio_data:/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/live || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  influxdb:
+    image: influxdb:latest
+    ports:
+      - "8086:8086"
+    networks:
+      - app-network
+    environment:
+      - INFLUXDB_DB=mydb
+      - INFLUXDB_ADMIN_USER=admin
+      - INFLUXDB_ADMIN_PASSWORD=admin
+      - INFLUXDB_USER=user
+      - INFLUXDB_USER_PASSWORD=password
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8086/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 volumes:
   ollama:
+  minio_data:
+
+networks:
+  app-network:

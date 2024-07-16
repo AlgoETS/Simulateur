@@ -25,21 +25,26 @@ class SimulationConsumer(AsyncWebsocketConsumer):
         logger.debug(f"WebSocket connection closed: {close_code}")
 
     async def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        message_type = text_data_json.get('type')
+        try:
+            text_data_json = json.loads(text_data)
+            message_type = text_data_json.get('type')
 
-        if message_type == 'news':
-            await self.handle_news(text_data_json)
-        elif message_type == 'trigger':
-            await self.handle_trigger(text_data_json)
-        elif message_type == 'event':
-            await self.handle_event(text_data_json)
-        elif message_type == 'transaction':
-            await self.handle_transaction(text_data_json)
-        else:
-            logger.warning(f"Unknown message type received: {message_type}")
+            if message_type == 'news':
+                await self.handle_news(text_data_json)
+            elif message_type == 'trigger':
+                await self.handle_trigger(text_data_json)
+            elif message_type == 'event':
+                await self.handle_event(text_data_json)
+            elif message_type == 'transaction':
+                await self.handle_transaction(text_data_json)
+            else:
+                logger.warning(f"Unknown message type received: {message_type}")
 
-        logger.debug(f"Message received in room {self.room_group_name}: {text_data_json}")
+            logger.debug(f"Message received in room {self.room_group_name}: {text_data_json}")
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON decode error: {e}")
+        except Exception as e:
+            logger.error(f"Error handling message: {e}")
 
     async def handle_news(self, data):
         news_message = data.get('message', 'No news message')

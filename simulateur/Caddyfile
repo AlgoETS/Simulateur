@@ -1,0 +1,28 @@
+{
+        email email@email.com
+        servers {
+                metrics
+        }
+        admin :2019
+}
+
+(log_site) {
+        log {
+                output file /home/ec2-user/caddy/logs/{args[0]}.log {
+                        roll_size 10mb
+                        roll_keep 5
+                        roll_keep_for 168h
+                }
+                level INFO
+        }
+}
+
+simulation.algoets.com {
+        import log_site simulation.antoineboucher.info
+        reverse_proxy 38.23.235.56:8000 {
+                transport http {
+                        keepalive 60m
+                        keepalive_interval 10s
+                }
+        }
+}

@@ -22,7 +22,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three-globe"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-gauge"></script>
     <script src="https://unpkg.com/d3@6"></script>
     <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.6/dist/lightweight-charts.standalone.production.min.js"></script>
     <style>
@@ -94,6 +93,26 @@
 
         .transaction .player {
             font-style: italic;
+        }
+        .loader {
+            background: rgba(255, 255, 255, 0.8);
+            z-index: 10;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #000;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        .card {
+            position: relative;
         }
     </style>
     <script>

@@ -1,13 +1,17 @@
-from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync  # Add this import
 from django.utils import timezone
 import logging
 import noise
 import numpy as np
 from simulation.models.stock import StockPriceHistory
+
 logger = logging.getLogger(__name__)
 
 TIME_UNITS = {
+    'millisecond': 0.001,
+    'centisecond': 0.01,
+    'decisecond': 0.1,
     'second': 1,
     'minute': 60,
     'hour': 3600,
@@ -22,18 +26,18 @@ def is_market_open(current_time):
         return False
     return current_time.weekday() < 5
 
-def send_ohlc_update(channel_layer, stock, stock_type):
+def send_ohlc_update(channel_layer, update, stock_type):
     """Send an OHLC update to the specified WebSocket channel."""
     data = {
-        'id': stock.id,
-        'ticker': stock.ticker,
-        'name': stock.company.name,
+        'id': update['id'],
+        'ticker': update['ticker'],
+        'name': update['name'],
         'type': stock_type,
-        'open': stock.open_price,
-        'high': stock.high_price,
-        'low': stock.low_price,
-        'close': stock.close_price,
-        'current': stock.price,
+        'open': update['open'],
+        'high': update['high'],
+        'low': update['low'],
+        'close': update['close'],
+        'current': update['current'],
         'timestamp': timezone.now().isoformat()
     }
     async_to_sync(channel_layer.group_send)(

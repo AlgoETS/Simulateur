@@ -13,7 +13,11 @@ class Team(models.Model):
 
     def generate_join_link(self):
         unique_key = get_random_string(32)
-        join_link = JoinLink.objects.create(team=self, key=unique_key)
+        join_link = JoinLink.objects.create(
+            team=self,
+            key=unique_key,
+            expires_at=timezone.now() + timedelta(hours=24)
+        )
         return join_link.get_absolute_url()
 
     class Meta:

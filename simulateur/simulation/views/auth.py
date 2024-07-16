@@ -17,11 +17,19 @@ from simulation.models.team import JoinLink, Team
 from simulation.models.user_profile import UserProfile
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
+from django.conf import settings
 
 from simulation.models import UserProfile, Portfolio
 
+CACHE_TTL = getattr(settings, 'CACHE_TTL', 60 * 15)  # 15 minutes default
+
+
+
 @method_decorator(csrf_exempt, name='dispatch')
 class SignupView(View):
+    @method_decorator(cache_page(CACHE_TTL), name='dispatch')
     def get(self, request):
         return render(request, "registration/signup.html")
 
@@ -51,6 +59,7 @@ class SignupView(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class LoginView(View):
+    @method_decorator(cache_page(CACHE_TTL), name='dispatch')
     def get(self, request):
         return render(request, "registration/login.html")
 
@@ -72,10 +81,13 @@ class LogoutView(View):
     def get(self, request):
         logout(request)
         return redirect("login")
+
     def post(self, request):
         logout(request)
         return JsonResponse({"status": "success"})
+
 class PublicProfileView(View):
+    @method_decorator(cache_page(CACHE_TTL))
     def get(self, request, user_id):
         user_profile = get_object_or_404(UserProfile, user__id=user_id)
         portfolio = get_object_or_404(Portfolio, owner=user_profile)
@@ -87,6 +99,7 @@ class PublicProfileView(View):
 
 class SettingsView(View):
     @method_decorator(login_required)
+    @method_decorator(cache_page(CACHE_TTL))
     def get(self, request):
         user_profile = get_object_or_404(UserProfile, user=request.user)
         portfolio = get_object_or_404(Portfolio, owner=user_profile)
@@ -112,6 +125,7 @@ class SettingsView(View):
 
 class PrivateProfileView(View):
     @method_decorator(login_required)
+    @method_decorator(cache_page(CACHE_TTL))
     def get(self, request):
         user_profile = get_object_or_404(UserProfile, user=request.user)
         portfolio = get_object_or_404(Portfolio, owner=user_profile)
@@ -179,6 +193,7 @@ class PasswordResetConfirmView(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class JoinTeamView(View):
+    @method_decorator(cache_page(CACHE_TTL), name='dispatch')
     def get(self, request):
         teams = Team.objects.all()
         context = {
@@ -204,4 +219,3 @@ class JoinTeamView(View):
         user_profile.save()
         team.members.add(user_profile)
         return JsonResponse({'status': 'success', 'message': f'Joined team {team.name}'})
-

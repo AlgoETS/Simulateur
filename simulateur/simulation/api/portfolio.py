@@ -6,6 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from simulation.logic.queue import BuySellQueue, buy_sell_queue
 from simulation.models import Portfolio, Stock, Order, TransactionHistory, Scenario
 from simulation.serializers import PortfolioSerializer
 
@@ -51,7 +52,7 @@ class BuyStock(View):
                 )
 
                 # Logic to buy stock
-                buy_sell_queue.add_to_buy_queue(user_profile, stock, amount, price)
+                BuySellQueue.add_to_buy_queue(user_profile, stock, amount, price)
 
                 # Deduct the amount from the user's balance
                 user_profile.portfolio.balance -= total_cost

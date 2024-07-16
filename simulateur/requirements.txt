@@ -61,3 +61,11 @@ selenium
 daphne
 django-pwa
 django-webpack-loader
+django-rq
+websockets-cli
+django-health-check
+psutil
+django-storages
+amqp
+kombu
+influxdb-client
