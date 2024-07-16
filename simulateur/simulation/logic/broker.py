@@ -11,6 +11,7 @@ class Broker:
         self.c = 0.01  # A constant representing fixed costs or other market-specific adjustments.
         self.queues : dict[str,BuySellQueue]= {}
 
+
     def get_queue(self, ticker):
         if ticker not in self.queues:
             self.queues[ticker] = BuySellQueue()
@@ -42,7 +43,8 @@ class Broker:
 
         stock_queue = self.get_queue(asset)
         best_bid, best_ask = self.getBestPrices(asset)
-        spread = 0.01
+        #TODO make the spread constant a simulation_settings parameter
+        spread = 0.01 * amount
 
         if transaction_type == "buy":
             adjusted_price = self.adjustClientPrice(best_bid, best_ask, spread, "buy")
@@ -61,7 +63,6 @@ class Broker:
 
     #Define a frequency to call this method
     def processQueues(self):
-
         for queue in self.queues.values() :
             queue.process_queues()
 

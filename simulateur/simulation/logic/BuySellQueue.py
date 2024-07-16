@@ -21,6 +21,9 @@ class BuySellQueue:
             buy_order = self.buy_queue.popleft()
             sell_order = self.sell_queue.popleft()
 
+            # check current price
+            # if the 
+
             if buy_order[3] >= sell_order[3]:  # Buy price >= Sell price
                 matched_price = (buy_order[3] + sell_order[3]) / 2
                 transactions.append(self.execute_transaction(buy_order, sell_order, matched_price))

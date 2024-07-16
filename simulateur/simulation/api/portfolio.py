@@ -43,6 +43,7 @@ class BuyStock(View):
 
             with transaction.atomic():
                 # Create an order
+                #TODO Order already processed in BuySellQueue object, but id needed for the JsonResponse here
                 order = Order.objects.create(
                     user=user_profile,
                     stock=stock,
@@ -90,6 +91,7 @@ class SellStock(View):
 
             with transaction.atomic():
                 # Create an order
+                #TODO Order already processed in BuySellQueue object, but id needed for the JsonResponse here
                 order = Order.objects.create(
                     user=user_profile,
                     stock=stock,
@@ -100,11 +102,8 @@ class SellStock(View):
                 )
 
                 # Logic to sell stock
-                buy_sell_queue.add_to_sell_queue(user_profile, stock, amount, price)
+                buy_sell_queue.add_to_sell_queue(user_profile, stock, amount, price,scenario)
 
-                # Add the amount to the user's balance
-                user_profile.portfolio.balance += amount * price
-                user_profile.portfolio.save()
 
                 # Create a transaction history record
                 transaction_history = TransactionHistory.objects.create()
@@ -120,7 +119,7 @@ class SellStock(View):
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
-
+#TODO add the two new urls to the simulator
 class BuyStocKDynamic:
 
     def post(self,request):

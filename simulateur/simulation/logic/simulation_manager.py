@@ -28,6 +28,8 @@ class SimulationManager:
         self.noise_function = self.settings.noise_function.lower()
         self.time_index = 0
         self.noise_strategy = NoiseStrategy()
+        self.trading_strategy = self.settings.stock_trading_logic
+        self.broker = broker
 
         logger.info(f'Starting simulation for scenario {self.scenario} with time step {self.time_step} seconds')
 
@@ -46,7 +48,10 @@ class SimulationManager:
                 if self.close_stock_market_at_night and not is_market_open(current_time):
                     logger.info('Stock market is closed')
                 else:
-                    self.update_prices(current_time)
+                    if self.trading_strategy == 'static': 
+                        self.update_prices(current_time)
+                    else :
+                        self.broker.processQueues()
                     logger.info(f'Simulation time: {current_time}, elapsed time: {elapsed_time}')
                 self.broadcast_updates()
                 logger.info(f'Sleeping for {self.time_step} seconds')
