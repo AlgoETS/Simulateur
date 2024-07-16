@@ -136,11 +136,6 @@ TEMPLATES = [
     },
 ]
 
-# ASGI and WSGI application settings
-django_asgi_app = get_asgi_application()
-django.setup()
-ASGI_APPLICATION = 'simulateur.asgi.application'
-# WSGI_APPLICATION = 'simulateur.wsgi.application'
 
 # Database configuration
 DATABASES = {
@@ -362,3 +357,9 @@ INFLUXDB_ORG = os.getenv("INFLUXDB_ORG", "my-org")
 INFLUXDB_BUCKET = os.getenv("INFLUXDB_BUCKET", "my-bucket")
 
 CACHE_TTL = 60 * 15
+
+# ASGI and WSGI application settings
+django_asgi_app = get_asgi_application()
+django.setup()
+ASGI_APPLICATION = 'simulateur.asgi.application'
+# WSGI_APPLICATION = 'simulateur.wsgi.application'
