@@ -11,6 +11,27 @@ from simulation.models import Team, JoinLink, UserProfile
 class JoinTeam(generics.GenericAPIView):
     serializer_class = JoinTeamSerializer
 
+    def get(self, request, *args, **kwargs):
+        team_id = request.query_params.get("team_id")
+        key = request.query_params.get("key")
+        if not team_id or not key:
+            return Response(
+                {"status": "error", "message": "team_id and key are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        team = get_object_or_404(Team, id=team_id)
+        join_link = get_object_or_404(JoinLink, team=team, key=key)
+
+        if join_link.is_expired():
+            return Response(
+                {"status": "error", "message": "Link has expired"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response(
+            {"status": "success", "team_name": team.name, "link_valid": True}
+        )
+
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
@@ -41,8 +62,6 @@ class JoinTeam(generics.GenericAPIView):
             )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 class RemoveTeamMember(generics.GenericAPIView):
     def post(self, request, team_id, user_id):
         team = get_object_or_404(Team, id=team_id)

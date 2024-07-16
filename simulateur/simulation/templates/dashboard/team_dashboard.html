@@ -80,6 +80,18 @@ function changeTeamName() {
     });
 }
 
+function copyJoinLink() {
+    let joinLink = document.getElementById('joinLink');
+    joinLink.select();
+    joinLink.setSelectionRange(0, 99999); // For mobile devices
+
+    navigator.clipboard.writeText(joinLink.value).then(() => {
+        alert('Join link copied to clipboard');
+    }).catch(err => {
+        alert('Error copying join link: ' + err);
+    });
+}
+
 function generateJoinLink() {
     fetch("{% url 'generate_join_link' team.id %}", {
         method: 'POST',
@@ -90,9 +102,7 @@ function generateJoinLink() {
     }).then(response => response.json()).then(data => {
         if (data.status === 'success') {
             let joinLink = document.getElementById('joinLink');
-            // current url location and make post on it window location href
-            // make axios post request to the url button
-            joinLink.innerHTML = `<button onclick="joinTeam('${data.join_link}')" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Join Team</button>`;
+            joinLink.innerHTML = `<button onclick="checkJoinLink('${data.join_link}')" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Join Team</button>`;
             alert('New join link generated successfully');
         } else {
             alert('Error generating join link: ' + data.message);
@@ -100,21 +110,5 @@ function generateJoinLink() {
     });
 }
 
-function joinTeam(url) {
-    fetch(window.location.origin + url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
-        },
-    }).then(response => response.json()).then(data => {
-        if (data.status === 'success') {
-            alert('You have joined the team successfully');
-            location.reload();
-        } else {
-            alert('Error joining team: ' + data.message);
-        }
-    });
-}
 </script>
 {% endblock %}
