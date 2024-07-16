@@ -32,11 +32,11 @@
             {% for team in teams %}
             <div class="bg-white shadow-lg rounded-lg p-4 cursor-pointer hover:shadow-xl transition duration-200" onclick="selectTeam('{{ team.id }}')">
                 <h3 class="text-xl font-semibold text-indigo-700">{{ team.name }}</h3>
-                <p class="text-gray-600 mb-2">Balance: <span class="text-green-600">${{ team.balance }}</span></p>
+                <p class="text-gray-600 mb-2">Balance: <span class="text-green-600">${{ teams_balance[team.id] }}</span></p>
                 <h4 class="text-lg font-semibold text-gray-700">Members:</h4>
                 <ul class="list-disc list-inside">
                     {% for member in team.members.all %}
-                    <li>{{ member.user.username }}</li>
+                    <li>{{ member.user.username }} {{ member.role }} - ${{ member.portfolio.balance }} </li>
                     {% endfor %}
                 </ul>
             </div>

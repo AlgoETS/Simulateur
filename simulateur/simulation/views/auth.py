@@ -198,10 +198,19 @@ class JoinTeamView(View):
         teams = Team.objects.all()
         team_id = request.GET.get('team_id', '')
         key = request.GET.get('key', '')
+        portfolios = Portfolio.objects.filter(owner__team=team)
+        teams_balance = [
+            {
+                'team': team,
+                'balance': sum([portfolio.balance for portfolio in portfolios])
+            }
+            for team in teams
+        ]
         context = {
             'teams': teams,
             'team_id': team_id,
             'key': key,
+            'teams_balance': teams_balance
         }
         return render(request, "registration/join_team.html", context)
 
