@@ -101,7 +101,8 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'simulation.middleware.CustomXFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
     'easyaudit.middleware.easyaudit.EasyAuditMiddleware',
     'django_prometheus.middleware.PrometheusBeforeMiddleware',
@@ -356,7 +357,7 @@ INFLUXDB_TOKEN = os.getenv("INFLUXDB_TOKEN", "my-token")
 INFLUXDB_ORG = os.getenv("INFLUXDB_ORG", "my-org")
 INFLUXDB_BUCKET = os.getenv("INFLUXDB_BUCKET", "my-bucket")
 
-CACHE_TTL = 60 * 15
+CACHE_TTL = 30
 
 # ASGI and WSGI application settings
 django_asgi_app = get_asgi_application()

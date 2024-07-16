@@ -23,7 +23,7 @@ from django.conf import settings
 
 from simulation.models import UserProfile, Portfolio
 
-CACHE_TTL = getattr(settings, 'CACHE_TTL', 60 * 15)  # 15 minutes default
+CACHE_TTL = getattr(settings, 'CACHE_TTL', 30)
 
 
 
