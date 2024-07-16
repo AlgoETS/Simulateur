@@ -228,14 +228,14 @@ class JoinTeamView(View):
         join_link = get_object_or_404(JoinLink, team=team, key=key)
 
         if join_link.is_expired():
-            return redirect('join_team', error='Link has expired')
+            return JsonResponse({'status': 'error', 'message': 'Link has expired'}, status=400)
 
         user = request.user
         user_profile = get_object_or_404(UserProfile, user=user)
         if user_profile.team:
-            return redirect('team_dashboard', error='You are already part of a team')
+            return JsonResponse({'status': 'error', 'message': 'You are already in a team'}, status=400)
 
         user_profile.team = team
         user_profile.save()
         team.members.add(user_profile)
-        return redirect('team_dashboard', success='Successfully joined the team')
+        return JsonResponse({'status': 'success', 'message': f'Joined team {team.name}'})

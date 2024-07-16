@@ -133,4 +133,20 @@
             return cookieValue;
         }
     </script>
+    <script>
+        function showToast(message, type) {
+            Toastify({
+                text: message,
+                backgroundColor: type === 'success' ? 'green' : 'red',
+                duration: 3000,
+                close: true,
+            }).showToast();
+        }
+
+        {% if messages %}
+            {% for message in messages %}
+                showToast("{{ message }}", "{{ message.tags }}");
+            {% endfor %}
+        {% endif %}
+    </script>
 </head>

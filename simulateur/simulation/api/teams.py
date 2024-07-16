@@ -7,8 +7,9 @@ from simulation.serializers import JoinTeamSerializer, UpdateTeamNameSerializer
 from simulation.models import Team, JoinLink, UserProfile
 from django.shortcuts import redirect
 from rest_framework.views import APIView
+from django.contrib import messages
 
-@method_decorator(csrf_exempt, name="dispatch")
+@method_decorator(csrf_exempt, name='dispatch')
 class JoinTeam(APIView):
     serializer_class = JoinTeamSerializer
 
@@ -17,10 +18,8 @@ class JoinTeam(APIView):
         join_link = get_object_or_404(JoinLink, team=team, key=key)
 
         if join_link.is_expired():
-            return Response(
-                {"status": "error", "message": "Link has expired"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            messages.error(request, "Link has expired")
+            return redirect("join_team")
 
         return redirect("join_team", team_id=team_id, key=key)
 
@@ -33,19 +32,23 @@ class JoinTeam(APIView):
             join_link = get_object_or_404(JoinLink, team=team, key=key)
 
             if join_link.is_expired():
-                return redirect("join_team", error="Link has expired")
+                messages.error(request, "Link has expired")
+                return redirect("join_team")
 
             user = request.user
             user_profile = get_object_or_404(UserProfile, user=user)
             if user_profile.team:
-                return redirect("team_dashboard", error="You are already part of a team")
+                messages.error(request, "You are already part of a team")
+                return redirect("team_dashboard")
 
             user_profile.team = team
             user_profile.save()
             team.members.add(user_profile)
-            return redirect("team_dashboard", success="Successfully joined the team")
+            messages.success(request, f"Successfully joined the team {team.name}")
+            return redirect("team_dashboard")
 
-        return redirect("join_team", error="Invalid data")
+        messages.error(request, "Invalid data")
+        return redirect("join_team")
 
 class RemoveTeamMember(APIView):
     def post(self, request, team_id, user_id):
