@@ -69,6 +69,18 @@
 </div>
 
 <script>
+function showToast(message, type='success') {
+    Toastify({
+        text: message,
+        duration: 3000,
+        close: true,
+        gravity: "top",
+        position: "right",
+        backgroundColor: type === 'success' ? "#4CAF50" : "#FF0000",
+        stopOnFocus: true,
+    }).showToast();
+}
+
 function changeTeamName() {
     const teamName = document.getElementById('teamName').value;
     fetch("{% url 'change_team_name' team.id %}", {
@@ -80,10 +92,10 @@ function changeTeamName() {
         body: JSON.stringify({ 'name': teamName })
     }).then(response => response.json()).then(data => {
         if (data.status === 'success') {
-            alert('Team name changed successfully');
+            showToast('Team name changed successfully');
             location.reload();
         } else {
-            alert('Error changing team name: ' + data.message);
+            showToast('Error changing team name: ' + data.message, 'error');
         }
     });
 }
@@ -101,9 +113,9 @@ function generateJoinLink() {
             let joinLinkInput = document.getElementById('joinLinkInput');
             joinLinkInput.value = window.location.origin + data.join_link;
             joinLinkContainer.classList.remove('hidden');
-            alert('New join link generated successfully');
+            showToast('New join link generated successfully');
         } else {
-            alert('Error generating join link: ' + data.message);
+            showToast('Error generating join link: ' + data.message, 'error');
         }
     });
 }
@@ -114,9 +126,9 @@ function copyJoinLink() {
     joinLinkInput.setSelectionRange(0, 99999); // For mobile devices
 
     navigator.clipboard.writeText(joinLinkInput.value).then(() => {
-        alert('Join link copied to clipboard');
+        showToast('Join link copied to clipboard');
     }).catch(err => {
-        alert('Error copying join link: ' + err);
+        showToast('Error copying join link: ' + err, 'error');
     });
 }
 
@@ -130,7 +142,7 @@ function checkJoinLink(url) {
         if (data.status === 'success' && data.link_valid) {
             joinTeam(url);
         } else {
-            alert('Error joining team: ' + data.message);
+            showToast('Error joining team: ' + data.message, 'error');
         }
     });
 }
@@ -144,10 +156,10 @@ function joinTeam(url) {
         },
     }).then(response => response.json()).then(data => {
         if (data.status === 'success') {
-            alert('You have joined the team successfully');
+            showToast('You have joined the team successfully');
             location.reload();
         } else {
-            alert('Error joining team: ' + data.message);
+            showToast('Error joining team: ' + data.message, 'error');
         }
     });
 }

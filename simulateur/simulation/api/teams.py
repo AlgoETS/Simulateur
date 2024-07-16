@@ -33,27 +33,19 @@ class JoinTeam(APIView):
             join_link = get_object_or_404(JoinLink, team=team, key=key)
 
             if join_link.is_expired():
-                return Response(
-                    {"status": "error", "message": "Link has expired"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+                return redirect("join_team", error="Link has expired")
 
             user = request.user
             user_profile = get_object_or_404(UserProfile, user=user)
             if user_profile.team:
-                return Response(
-                    {"status": "error", "message": "You are already in a team"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+                return redirect("team_dashboard", error="You are already part of a team")
 
             user_profile.team = team
             user_profile.save()
             team.members.add(user_profile)
-            return Response(
-                {"status": "success", "message": f"Joined team {team.name}"}
-            )
+            return redirect("team_dashboard", success="Successfully joined the team")
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return redirect("join_team", error="Invalid data")
 
 class RemoveTeamMember(APIView):
     def post(self, request, team_id, user_id):
