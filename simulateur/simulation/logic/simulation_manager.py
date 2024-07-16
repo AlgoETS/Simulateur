@@ -4,6 +4,7 @@ from django.utils import timezone
 from channels.layers import get_channel_layer
 from simulation.models import Scenario, Stock, StockPriceHistory
 from simulation.logic.noise_patterns.strategies import *
+from simulation.logic.broker import broker
 from simulation.logic.utils import (
     is_market_open,
     send_ohlc_update,

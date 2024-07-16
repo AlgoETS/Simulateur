@@ -16,11 +16,6 @@ class Broker:
             self.queues[ticker] = BuySellQueue()
         return self.queues[ticker]
 
-    def computeSpread(self, volatility, liquidity):
-
-        spread = self.k * volatility + self.c / liquidity
-
-        return spread
 
     def adjustClientPrice(self, best_bid, best_ask, spread, transaction_type):
 
@@ -33,13 +28,6 @@ class Broker:
             bid_price = midprice - spread / 2
             return bid_price
 
-    # To implement
-    def getCurrentVolume(self):
-        return 1
-
-    # To implement
-    def getCurrentVolatility(self):
-        return 1
 
     def getBestPrices(self, asset):
 
@@ -52,11 +40,9 @@ class Broker:
     # Missing limit order logic
     def add_to_buysell_queue(self, user, asset, amount, price, transaction_type):
 
-        current_volume = self.getCurrentVolume()
-        current_volatility = self.getCurrentVolatility()
-        best_bid, best_ask = self.getBestPrices(asset)
-        spread = self.computeSpread(current_volatility, current_volume)
         stock_queue = self.get_queue(asset)
+        best_bid, best_ask = self.getBestPrices(asset)
+        spread = 0.01
 
         if transaction_type == "buy":
             adjusted_price = self.adjustClientPrice(best_bid, best_ask, spread, "buy")
@@ -76,10 +62,9 @@ class Broker:
     #Define a frequency to call this method
     def processQueues(self):
 
-        transactions = []
         for queue in self.queues.values() :
-            transactions.extend(queue.process_queues())
+            queue.process_queues()
 
-        return transactions
+        
 
 broker = Broker("Algo")

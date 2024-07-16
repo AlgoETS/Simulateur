@@ -8,7 +8,9 @@ from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from simulation.models import Portfolio, Stock, Order, TransactionHistory, Scenario
 from simulateur.simulation.logic.BuySellQueue import buy_sell_queue
+from simulateur.simulation.logic.broker import broker
 from simulation.serializers import PortfolioSerializer
+
 
 class PortfolioView(View):
     @method_decorator(login_required)
@@ -51,11 +53,7 @@ class BuyStock(View):
                 )
 
                 # Logic to buy stock
-                buy_sell_queue.add_to_buy_queue(user_profile, stock, amount, price)
-
-                # Deduct the amount from the user's balance
-                user_profile.portfolio.balance -= total_cost
-                user_profile.portfolio.save()
+                buy_sell_queue.add_to_buy_queue(user_profile, stock, amount, price, scenario)
 
                 # Create a transaction history record
                 transaction_history = TransactionHistory.objects.create()
@@ -121,3 +119,31 @@ class SellStock(View):
             return JsonResponse({'status': 'error', 'message': 'Scenario not found'}, status=404)
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+class BuyStocKDynamic:
+
+    def post(self,request):
+
+        data = json.loads(request.body)
+        user_profile = request.user.userprofile
+        stock = Stock.objects.get(id=data['stock_id'])
+        scenario = Scenario.objects.get(id=data['scenario_id'])
+        amount = int(data['amount'])
+        price = Decimal(data.get('price', stock.price))  # Default to stock price if price not provided
+
+        broker.add_to_buysell_queue(user_profile,stock,amount,price,"buy")
+
+class SellStockDynamic:
+
+    def post(self,request):
+
+        data = json.loads(request.body)
+        user_profile = request.user.userprofile
+        stock = Stock.objects.get(id=data['stock_id'])
+        scenario = Scenario.objects.get(id=data['scenario_id'])
+        amount = int(data['amount'])
+        price = Decimal(data.get('price', stock.price))  # Default to stock price if price not provided
+
+        broker.add_to_buysell_queue(user_profile,stock,amount,price,"sell")
+
