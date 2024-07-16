@@ -92,7 +92,7 @@ function generateJoinLink() {
             let joinLink = document.getElementById('joinLink');
             // current url location and make post on it window location href
             // make axios post request to the url button
-            joinLink.innerHTML = `<button onclick="joinTeam('${data.url}')" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Join Team</button>`;
+            joinLink.innerHTML = `<button onclick="joinTeam('${data.join_link}')" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Join Team</button>`;
             alert('New join link generated successfully');
         } else {
             alert('Error generating join link: ' + data.message);
