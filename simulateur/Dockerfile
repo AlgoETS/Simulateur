@@ -19,7 +19,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application code
 COPY . .
 
-# Run collectstatic and migrations
+# Print the settings for debugging
+RUN python -c "from simulateur import settings; print(settings.INSTALLED_APPS)"
+
+# Run migrations and collectstatic separately
 RUN python manage.py makemigrations
 RUN python manage.py migrate
 
