@@ -21,8 +21,6 @@ class PortfolioView(View):
             return JsonResponse(serializer.data, safe=False)
         except Portfolio.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'Portfolio not found'}, status=404)
-
-@method_decorator(csrf_exempt, name='dispatch')
 class BuyStock(View):
     @method_decorator(login_required)
     def post(self, request):
@@ -42,23 +40,23 @@ class BuyStock(View):
                 return JsonResponse({'status': 'error', 'message': 'Insufficient funds'}, status=400)
 
             with transaction.atomic():
+                # Create an order in the broker's queue
+                broker.add_to_buysell_queue(user_profile, stock.ticker, amount, price, "buy")
+
                 # Create an order
-                #TODO Order already processed in BuySellQueue object, but id needed for the JsonResponse here
                 order = Order.objects.create(
                     user=user_profile,
                     stock=stock,
-                    scenario=scenario,
                     quantity=amount,
                     price=price,
                     transaction_type='BUY'
                 )
 
-                # Logic to buy stock
-                buy_sell_queue.add_to_buy_queue(user_profile, stock, amount, price, scenario)
-
-                # Create a transaction history record
-                transaction_history = TransactionHistory.objects.create()
-                transaction_history.orders.set([order])
+                # Create or get a transaction history record
+                transaction_history = TransactionHistory.objects.get(
+                    scenario=scenario
+                )
+                transaction_history.orders.add(order)
 
             return JsonResponse({'status': 'success', 'order_id': order.id})
         except json.JSONDecodeError:
@@ -70,7 +68,6 @@ class BuyStock(View):
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
-@method_decorator(csrf_exempt, name='dispatch')
 class SellStock(View):
     @method_decorator(login_required)
     def post(self, request):
@@ -90,24 +87,23 @@ class SellStock(View):
                 return JsonResponse({'status': 'error', 'message': 'Insufficient stock holdings'}, status=400)
 
             with transaction.atomic():
+                # Create an order in the broker's queue
+                broker.add_to_buysell_queue(user_profile, stock.ticker, amount, price, "sell")
+
                 # Create an order
-                #TODO Order already processed in BuySellQueue object, but id needed for the JsonResponse here
                 order = Order.objects.create(
                     user=user_profile,
                     stock=stock,
-                    scenario=scenario,
                     quantity=amount,
                     price=price,
                     transaction_type='SELL'
                 )
 
-                # Logic to sell stock
-                buy_sell_queue.add_to_sell_queue(user_profile, stock, amount, price,scenario)
-
-
-                # Create a transaction history record
-                transaction_history = TransactionHistory.objects.create()
-                transaction_history.orders.set([order])
+                # Create or get a transaction history record
+                transaction_history = TransactionHistory.objects.get(
+                    scenario=scenario
+                )
+                transaction_history.orders.add(order)
 
             return JsonResponse({'status': 'success', 'order_id': order.id})
         except json.JSONDecodeError:
@@ -120,30 +116,30 @@ class SellStock(View):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 #TODO add the two new urls to the simulator
-class BuyStocKDynamic:
+# class BuyStocKDynamic:
 
-    def post(self,request):
+#     def post(self,request):
 
-        data = json.loads(request.body)
-        user_profile = request.user.userprofile
-        stock = Stock.objects.get(id=data['stock_id'])
-        scenario = Scenario.objects.get(id=data['scenario_id'])
-        amount = int(data['amount'])
-        price = Decimal(data.get('price', stock.price))  # Default to stock price if price not provided
+#         data = json.loads(request.body)
+#         user_profile = request.user.userprofile
+#         stock = Stock.objects.get(id=data['stock_id'])
+#         scenario = Scenario.objects.get(id=data['scenario_id'])
+#         amount = int(data['amount'])
+#         price = Decimal(data.get('price', stock.price))  # Default to stock price if price not provided
 
-        broker.add_to_buysell_queue(user_profile,stock,amount,price,"buy")
+#         broker.add_to_buysell_queue(user_profile,stock,amount,price,"buy")
 
-class SellStockDynamic:
+# class SellStockDynamic:
 
-    def post(self,request):
+#     def post(self,request):
 
-        data = json.loads(request.body)
-        user_profile = request.user.userprofile
-        stock = Stock.objects.get(id=data['stock_id'])
-        scenario = Scenario.objects.get(id=data['scenario_id'])
-        amount = int(data['amount'])
-        price = Decimal(data.get('price', stock.price))  # Default to stock price if price not provided
+#         data = json.loads(request.body)
+#         user_profile = request.user.userprofile
+#         stock = Stock.objects.get(id=data['stock_id'])
+#         scenario = Scenario.objects.get(id=data['scenario_id'])
+#         amount = int(data['amount'])
+#         price = Decimal(data.get('price', stock.price))  # Default to stock price if price not provided
 
-        broker.add_to_buysell_queue(user_profile,stock,amount,price,"sell")
+#         broker.add_to_buysell_queue(user_profile,stock,amount,price,"sell")
 
 

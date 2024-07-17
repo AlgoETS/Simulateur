@@ -45,7 +45,6 @@ It includes an admin interface to manage the simulation settings and control the
     ```bash
     python3 manage.py makemigrations
     python3 manage.py migrate
-    python3 manage.py clean_database
     python3 manage.py seed_database
     ```
 
@@ -60,7 +59,7 @@ It includes an admin interface to manage the simulation settings and control the
     ```bash
     python3 manage.py start_simulation 1
     # in other terminal run
-    python3 -m daphne -p 8000 simulateur.asgi:application --bind 0.0.0.0
+    python3 -m run.py
     ```
 
 ## Usage
@@ -80,7 +79,7 @@ Follow the prompts to set up the superadmin credentials.
 To run the Daphne server with the ASGI application, use the following command:
 
 ```bash
-python3 -m daphne -p 8000 simulateur.asgi:application --bind 0.0.0.0
+python3 -m run.py
 ```
 
 ## Contributing

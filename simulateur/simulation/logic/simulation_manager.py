@@ -17,7 +17,7 @@ from simulation.logic.utils import is_market_open, send_ohlc_update, TIME_UNITS
 
 logger = logging.getLogger(__name__)
 
-CACHE_TTL = getattr(settings, "CACHE_TTL", 60 * 15)  # 15 minutes default
+CACHE_TTL = getattr(settings, "CACHE_TTL", 15)  # 15 minutes default
 
 
 class SimulationManager:
@@ -40,8 +40,8 @@ class SimulationManager:
         self.fluctuation_rate = scenario.simulation_settings.fluctuation_rate
         self.noise_function = scenario.simulation_settings.noise_function.lower()
         self.time_index = 0
-        self.noise_strategy = NoiseStrategy()
-        self.trading_strategy = self.settings.stock_trading_logic
+        self.noise_strategy = BrownianMotion()
+        self.trading_strategy = self.scenario.simulation_settings.stock_trading_logic
         self.broker = broker
 
         logger.info(
