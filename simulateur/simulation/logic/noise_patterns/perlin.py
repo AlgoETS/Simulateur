@@ -1,4 +1,4 @@
-from simulateur.simulation.logic.noise_patterns.noise_strategy import NoiseStrategy
+from simulation.logic.noise_patterns.noise_strategy import NoiseStrategy
 import noise
 import numpy as np
 

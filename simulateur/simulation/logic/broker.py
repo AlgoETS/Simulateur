@@ -1,4 +1,4 @@
-from BuySellQueue import BuySellQueue
+from simulation.logic import BuySellQueue
 from simulation.models import Stock
 
 
@@ -8,7 +8,7 @@ class Broker:
         self.name = name
         self.k = 0.5  # Market maker's risk tolerance and desired profit margin.
         self.c = 0.01  # Fixed costs or other market-specific adjustments.
-        self.queues: dict[str, BuySellQueue] = {}
+        self.queues = {}
 
     def get_queue(self, ticker):
         if ticker not in self.queues:
