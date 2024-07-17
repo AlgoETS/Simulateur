@@ -52,7 +52,7 @@ services:
       - ollama:/root/.ollama
       - ./pull_model.sh:/usr/local/bin/pull_model.sh
     ports:
-      - "11434:11434"
+      - "11435:11434"
     networks:
       - app-network
     entrypoint: ["/bin/sh", "/usr/local/bin/pull_model.sh"]
@@ -69,7 +69,7 @@ services:
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
     ports:
-      - "9000:9000"
+      - "9001:9000"
     volumes:
       - minio_data:/data
     networks:
