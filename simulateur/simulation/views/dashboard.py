@@ -61,7 +61,7 @@ class UserDashboardView(View):
         current_scenario_id = request.GET.get('scenario', scenarios.first().id if scenarios.exists() else None)
 
         # Fetch necessary data
-        transactions = TransactionHistory.objects.filter(scenario_id=current_scenario_id).prefetch_related('orders')
+        transactions = TransactionHistory.objects.filter(scenario__id=current_scenario_id)
         orders = transactions.values_list('orders', flat=True)
         stocks = Stock.objects.filter(scenarios_stocks__id=current_scenario_id).select_related('company')
 

@@ -106,7 +106,7 @@ class BuySellQueue:
         )
         # Create a transaction history record
         transaction_history = TransactionHistory.objects.get_or_create(
-            scenario_id=user.portfolio.scenario.id
+            scenario__id=user.portfolio.scenario.id
         )
         transaction_history.orders.set([order])
 
