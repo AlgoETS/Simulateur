@@ -44,15 +44,20 @@ services:
       retries: 3
 
   ollama:
-    image: ollama/ollama
+    image: ollama/ollama:latest
+    container_name: ollama
+    pull_policy: always
+    tty: true
     volumes:
       - ollama:/root/.ollama
+      - ./pull_model.sh:/usr/local/bin/pull_model.sh
     ports:
       - "11434:11434"
     networks:
       - app-network
+    entrypoint: ["/bin/sh", "/usr/local/bin/pull_model.sh"]
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:11434/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:11434 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
