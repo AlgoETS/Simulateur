@@ -21,6 +21,8 @@ class PortfolioView(View):
             return JsonResponse(serializer.data, safe=False)
         except Portfolio.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'Portfolio not found'}, status=404)
+
+
 class BuyStock(View):
     @method_decorator(login_required)
     def post(self, request):
@@ -67,6 +69,7 @@ class BuyStock(View):
             return JsonResponse({'status': 'error', 'message': 'Scenario not found'}, status=404)
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
 
 class SellStock(View):
     @method_decorator(login_required)
@@ -115,7 +118,7 @@ class SellStock(View):
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
-#TODO add the two new urls to the simulator
+# TODO add the two new urls to the simulator
 # class BuyStocKDynamic:
 
 #     def post(self,request):
@@ -141,5 +144,3 @@ class SellStock(View):
 #         price = Decimal(data.get('price', stock.price))  # Default to stock price if price not provided
 
 #         broker.add_to_buysell_queue(user_profile,stock,amount,price,"sell")
-
-
