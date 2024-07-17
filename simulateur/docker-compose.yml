@@ -8,9 +8,10 @@ services:
       - .:/workspace
     depends_on:
       - redis
-      - ollama
       - minio
       - influxdb
+    ports:
+      - "8000:8000"
     environment:
       - DATABASE_URL=postgres://postgres:postgres@db:5432/postgres
       - REDIS_URL=redis://redis:6379
@@ -43,28 +44,14 @@ services:
       timeout: 10s
       retries: 3
 
-  ollama:
-    image: ollama/ollama
-    volumes:
-      - ollama:/root/.ollama
-    ports:
-      - "11434:11434"
-    networks:
-      - app-network
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:11434/health || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
   minio:
-    image: minio/minio
+    image: minio/minio:RELEASE.2021-08-17T20-53-08Z
     command: server /data
     environment:
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
     ports:
-      - "9000:9000"
+      - "9002:9000"
     volumes:
       - minio_data:/data
     networks:
@@ -94,7 +81,6 @@ services:
       retries: 3
 
 volumes:
-  ollama:
   minio_data:
 
 networks:

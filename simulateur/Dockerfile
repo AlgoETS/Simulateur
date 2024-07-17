@@ -19,8 +19,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application code
 COPY . .
 
-# Run collectstatic and migrations
+# Set the environment variable for Django settings module
+ENV DJANGO_SETTINGS_MODULE=simulateur.settings
+
+# Collect static files
 RUN python manage.py collectstatic --noinput
+
+# Run migrations
 RUN python manage.py makemigrations
 RUN python manage.py migrate
 

@@ -177,7 +177,7 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [(os.getenv('REDIS_HOST', '192.168.0.120'), int(os.getenv('REDIS_PORT', 6379)))],
+            "hosts": [(os.getenv('REDIS_HOST', 'localhost'), int(os.getenv('REDIS_PORT', 6379)))],
         },
     },
 }
@@ -361,7 +361,5 @@ INFLUXDB_BUCKET = os.getenv("INFLUXDB_BUCKET", "my-bucket")
 CACHE_TTL = 30
 
 # ASGI and WSGI application settings
-django_asgi_app = get_asgi_application()
-django.setup()
 ASGI_APPLICATION = 'simulateur.asgi.application'
 # WSGI_APPLICATION = 'simulateur.wsgi.application'
