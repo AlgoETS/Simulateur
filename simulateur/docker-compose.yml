@@ -65,7 +65,7 @@ services:
       retries: 3
 
   minio:
-    image: minio/minio
+    image: minio/minio:RELEASE.2021-08-17T20-53-08Z
     command: server /data
     environment:
       - MINIO_ACCESS_KEY=minioadmin
