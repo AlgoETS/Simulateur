@@ -22,10 +22,12 @@ COPY . .
 # Set the environment variable for Django settings module
 ENV DJANGO_SETTINGS_MODULE=simulateur.settings
 
-# Run migrations and collectstatic separately
+# Collect static files
+RUN python manage.py collectstatic --noinput
+
+# Run migrations
 RUN python manage.py makemigrations
 RUN python manage.py migrate
-RUN python manage.py collectstatic --noinput
 
 # Expose port 8000 for the application
 EXPOSE 8000

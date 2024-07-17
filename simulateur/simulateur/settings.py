@@ -362,6 +362,5 @@ CACHE_TTL = 30
 
 # ASGI and WSGI application settings
 django_asgi_app = get_asgi_application()
-django.setup()
 ASGI_APPLICATION = 'simulateur.asgi.application'
 # WSGI_APPLICATION = 'simulateur.wsgi.application'
