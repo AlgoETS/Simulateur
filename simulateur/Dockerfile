@@ -19,12 +19,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application code
 COPY . .
 
-# Print the settings for debugging
-RUN python -c "from simulateur import settings; print(settings.INSTALLED_APPS)"
+# Set the environment variable for Django settings module
+ENV DJANGO_SETTINGS_MODULE=simulateur.settings
 
 # Run migrations and collectstatic separately
 RUN python manage.py makemigrations
 RUN python manage.py migrate
+RUN python manage.py collectstatic --noinput
 
 # Expose port 8000 for the application
 EXPOSE 8000
