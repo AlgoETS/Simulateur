@@ -31,7 +31,7 @@ class SimulationManager:
         self.noise_function = scenario.simulation_settings.noise_function.lower()
         self.time_index = 0
         self.noise_strategy = None
-        self.trading_strategy = self.settings.stock_trading_logic
+        self.trading_strategy = scenario.simulation_settings.stock_trading_logic
         self.broker = broker
 
         logger.info(f'Starting simulation for scenario {self.scenario} with time step {self.time_step} seconds')
