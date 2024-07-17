@@ -62,7 +62,7 @@ class UserDashboardView(View):
 
         # Fetch necessary data
         transactions = TransactionHistory.objects.filter(scenario__id=current_scenario_id)
-        orders = transactions.orders.all()
+        orders = transactions.prefetch_related('orders').all()
         stocks = Stock.objects.filter(scenarios_stocks__id=current_scenario_id).select_related('company')
 
         # Get the user's portfolio
