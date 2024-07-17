@@ -52,7 +52,7 @@ services:
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
     ports:
-      - "9001:9000"
+      - "9002:9000"
     volumes:
       - minio_data:/data
     networks:
