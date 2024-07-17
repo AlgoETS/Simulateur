@@ -361,6 +361,5 @@ INFLUXDB_BUCKET = os.getenv("INFLUXDB_BUCKET", "my-bucket")
 CACHE_TTL = 30
 
 # ASGI and WSGI application settings
-django_asgi_app = get_asgi_application()
 ASGI_APPLICATION = 'simulateur.asgi.application'
 # WSGI_APPLICATION = 'simulateur.wsgi.application'
