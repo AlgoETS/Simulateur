@@ -8,7 +8,6 @@ services:
       - .:/workspace
     depends_on:
       - redis
-      - ollama
       - minio
       - influxdb
     ports:
