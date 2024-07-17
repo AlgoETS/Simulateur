@@ -29,7 +29,7 @@ RUN python manage.py collectstatic --noinput
 RUN python manage.py makemigrations
 RUN python manage.py migrate
 RUN python manage.py seed_database
-
+RUN python manage.py createsuperadmin --username admin --password admin --noinput --email 'admin@admin.com'
 
 # Expose port 8000 for the application
 EXPOSE 8000
