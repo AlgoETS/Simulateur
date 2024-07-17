@@ -2,6 +2,9 @@ from django.db import models
 
 class SimulationSettings(models.Model):
     TIME_UNIT_CHOICES = [
+        ('millisecond', 'Millisecond'),
+        ('centisecond', 'Centisecond'),
+        ('decisecond', 'Decisecond'),
         ('second', 'Second'),
         ('minute', 'Minute'),
         ('hour', 'Hour'),
@@ -27,9 +30,9 @@ class SimulationSettings(models.Model):
     max_users = models.IntegerField(default=100)
     max_companies = models.IntegerField(default=50)
     timer_step = models.IntegerField(default=10)
-    timer_step_unit = models.CharField(max_length=6, choices=TIME_UNIT_CHOICES, default='minute')
+    timer_step_unit = models.CharField(max_length=20, choices=TIME_UNIT_CHOICES, default='second')
     interval = models.IntegerField(default=20)
-    interval_unit = models.CharField(max_length=6, choices=TIME_UNIT_CHOICES, default='minute')
+    interval_unit = models.CharField(max_length=20, choices=TIME_UNIT_CHOICES, default='second')
     max_interval = models.IntegerField(default=3000)
     fluctuation_rate = models.FloatField(default=0.1)
     close_stock_market_at_night = models.BooleanField(default=True)
