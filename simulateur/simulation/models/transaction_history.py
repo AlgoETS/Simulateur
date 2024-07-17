@@ -3,7 +3,7 @@ from django.db import models
 class TransactionHistory(models.Model):
     orders = models.ManyToManyField('Order', related_name='transactions')
     scenario = models.ForeignKey('Scenario', on_delete=models.CASCADE)
-    
+
     def __str__(self):
         return f'Transaction for {self.orders.first().stock.ticker if self.orders.exists() else "N/A"}'
 

@@ -25,8 +25,6 @@ from simulation.models import UserProfile, Portfolio
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', 30)
 
-
-
 @method_decorator(csrf_exempt, name='dispatch')
 class SignupView(View):
     @method_decorator(cache_page(CACHE_TTL), name='dispatch')

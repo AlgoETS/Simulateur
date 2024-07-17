@@ -164,7 +164,8 @@ class Command(BaseCommand):
                             'max_interval': int(row['max_interval']),
                             'fluctuation_rate': float(row['fluctuation_rate']),
                             'close_stock_market_at_night': row['close_stock_market_at_night'].lower() == 'true',
-                            'noise_function': row['noise_function']
+                            'noise_function': row['noise_function'] if 'noise_function' in row else 'brownian',
+                            'stock_trading_logic': row['stock_trading_logic'] if 'stock_trading_logic' in row else 'static'
                         }
                     )
             self.stdout.write(self.style.SUCCESS('Seeded simulation settings'))

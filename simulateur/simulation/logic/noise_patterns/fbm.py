@@ -1,9 +1,6 @@
-from simulateur.simulation.logic.noise_patterns.noise_strategy import *
-
-
-
+from simulation.logic.noise_patterns.noise_strategy import NoiseStrategy
+import numpy as np
 class Fbm(NoiseStrategy):
-
 
     def generate_noise(self, price, fluctuation_rate, time_index=None):
         """Generate a candlestick using fractional Brownian motion."""

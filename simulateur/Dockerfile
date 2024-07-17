@@ -28,9 +28,11 @@ RUN python manage.py collectstatic --noinput
 # Run migrations
 RUN python manage.py makemigrations
 RUN python manage.py migrate
+RUN python manage.py seed_database
+RUN python manage.py createsuperadmin --username admin --password admin --noinput --email 'admin@admin.com'
 
 # Expose port 8000 for the application
 EXPOSE 8000
 
 # Start the application
-CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "simulateur.asgi:application"]
+CMD [ "python", "run.py" ]
