@@ -69,3 +69,4 @@ django-storages
 amqp
 kombu
 influxdb-client
+django-sslserver
