@@ -59,10 +59,11 @@ class UserDashboardView(View):
         # Get the selected scenario
         scenarios = Scenario.objects.all()
         current_scenario_id = request.GET.get('scenario', scenarios.first().id if scenarios.exists() else None)
+        current_scenario = scenarios.get(id=current_scenario_id)
 
         # Fetch necessary data
-        transactions = TransactionHistory.objects.filter(scenario__id=current_scenario_id)
-        orders = transactions.prefetch_related('orders').all()
+        transactions, created = TransactionHistory.objects.get_or_create(scenario=current_scenario)
+        orders = transactions.orders.all()
         stocks = Stock.objects.filter(scenarios_stocks__id=current_scenario_id).select_related('company')
 
         # Get the user's portfolio

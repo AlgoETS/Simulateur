@@ -35,4 +35,4 @@ RUN python manage.py createsuperadmin --username admin --password admin --noinpu
 EXPOSE 8000
 
 # Start the application
-CMD [ "python", "run.py" ]
+CMD [ "python", "run.py", "--quick" ]

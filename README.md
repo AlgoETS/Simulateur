@@ -31,6 +31,10 @@ It includes an admin interface to manage the simulation settings and control the
 
 ## Installation
 
+Use pycharm professional or community
+
+![img.png](img.png)
+
 ### Backend (Django)
 
 1. **Install Dependencies**:
@@ -38,6 +42,8 @@ It includes an admin interface to manage the simulation settings and control the
     ```bash
     cd simulateur
     pip install -r requirements.txt
+    ou
+     python3 -m run.py --install
     ```
 
 2. **Apply Migrations**:
@@ -57,9 +63,7 @@ It includes an admin interface to manage the simulation settings and control the
 4. **Run the Server**:
 
     ```bash
-    python3 manage.py start_simulation 1
-    # in other terminal run
-    python3 -m run.py
+    python3 -m run.py --quick --start-simulation 1
     ```
 
 ## Usage
@@ -79,7 +83,7 @@ Follow the prompts to set up the superadmin credentials.
 To run the Daphne server with the ASGI application, use the following command:
 
 ```bash
-python3 -m run.py
+python3 -m run.py --quick
 ```
 
 ## Contributing
