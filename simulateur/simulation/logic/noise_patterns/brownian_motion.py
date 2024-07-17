@@ -1,7 +1,7 @@
-from simulateur.simulation.logic.noise_patterns.noise_strategy import *
+from .noise_strategy import *
 
 
-class BrownianMotion(Noise):
+class BrownianMotion(NoiseStrategy):
 
 
     def generate_noise(self,price, fluctuation_rate,time_index=None):

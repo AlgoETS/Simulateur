@@ -74,18 +74,21 @@ class SimulationManager:
         logger.info('Simulation stopped')
 
     def update_prices(self, current_time):
-        stocks = self.get_stocks()
-        for stock in stocks:
-            change = self.apply_changes(stock, current_time)
-            StockPriceHistory.objects.create(
-                stock=stock,
-                open_price=change['open'],
-                high_price=change['high'],
-                low_price=change['low'],
-                close_price=change['close'],
-                timestamp=current_time
-            )
+        if self.trading_strategy == 'static':
+            stocks = self.get_stocks()
+            for stock in stocks:
+                change = self.apply_changes(stock, current_time)
+                StockPriceHistory.objects.create(
+                    stock=stock,
+                    open_price=change['open'],
+                    high_price=change['high'],
+                    low_price=change['low'],
+                    close_price=change['close'],
+                    timestamp=current_time
+                )
             self.broadcast_update(stock, current_time)
+        else:
+            self.broker.processQueues()
 
     def get_stocks(self):
         cache_key = f'stocks_for_scenario_{self.scenario.id}'
@@ -96,6 +99,7 @@ class SimulationManager:
             cache.set(cache_key, stocks, timeout=CACHE_TTL)
 
         return stocks
+        
 
     def apply_changes(self, stock, current_time):
         if self.noise_function == 'brownian':

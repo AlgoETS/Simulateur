@@ -1,4 +1,4 @@
-from BuySellQueue import BuySellQueue
+from .BuySellQueue import BuySellQueue
 from simulation.models import Stock
 
 

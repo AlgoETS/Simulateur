@@ -1,4 +1,4 @@
-from simulateur.simulation.logic.noise_patterns.noise_strategy import *
+from .noise_strategy import *
 
 
 

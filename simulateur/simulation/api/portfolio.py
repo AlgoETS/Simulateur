@@ -7,8 +7,8 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from simulation.models import Portfolio, Stock, Order, TransactionHistory, Scenario
-from simulateur.simulation.logic.BuySellQueue import buy_sell_queue
-from simulateur.simulation.logic.broker import broker
+from simulation.logic.BuySellQueue import buy_sell_queue
+from simulation.logic.broker import broker
 from simulation.serializers import PortfolioSerializer
 
 
@@ -52,10 +52,11 @@ class BuyStock(View):
                     price=price,
                     transaction_type='BUY'
                 )
-
                 # Logic to buy stock
-                buy_sell_queue.add_to_buy_queue(user_profile, stock, amount, price, scenario)
-
+                if scenario.simulation_settings.stock_trading_logic == 'static':
+                    buy_sell_queue.add_to_buy_queue(user_profile, stock, amount, price, scenario)
+                else:
+                     broker.add_to_buysell_queue(user_profile,stock,amount,price,"buy")
                 # Create a transaction history record
                 transaction_history = TransactionHistory.objects.create()
                 transaction_history.orders.set([order])
@@ -101,10 +102,13 @@ class SellStock(View):
                     transaction_type='SELL'
                 )
 
-                # Logic to sell stock
-                buy_sell_queue.add_to_sell_queue(user_profile, stock, amount, price,scenario)
+                if scenario.simulation_settings.stock_trading_logic == 'static':
+                    # Logic to sell stock
+                    buy_sell_queue.add_to_sell_queue(user_profile, stock, amount, price,scenario)
 
-
+                else:
+                    broker.add_to_buysell_queue(user_profile,stock,amount,price,"sell")
+                    
                 # Create a transaction history record
                 transaction_history = TransactionHistory.objects.create()
                 transaction_history.orders.set([order])
