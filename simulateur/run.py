@@ -84,10 +84,6 @@ if __name__ == '__main__':
         username, password = args.create_superuser
         create_superuser(username, password)
 
-    if args.seed_database:
-        # Seed the database
-        seed_database()
-
     # Start the Daphne server in a separate thread
     daphne_thread = threading.Thread(target=daphne_server, args=(args.bind, args.port))
     daphne_thread.start()
