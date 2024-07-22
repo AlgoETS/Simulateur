@@ -138,9 +138,7 @@ class SimulationManager:
         stock.price = change["Close"]
         stock.save()
 
-        # Invalidate the cache for the stocks query when changes are applied
-        cache_key = f"stocks_for_scenario_{self.scenario.id}"
-        cache.delete(cache_key)
+        logger.info(f"Updated stock {stock.ticker} with new price: {stock.price} at {current_time}")
 
         return {
             "ticker": stock.ticker,
