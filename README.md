@@ -41,29 +41,13 @@ Use pycharm professional or community
 
     ```bash
     cd simulateur
-    pip install -r requirements.txt
-    ou
-     python3 -m run.py --install
+    python3 -m run.py --install
     ```
 
-2. **Apply Migrations**:
+2. **Run the Server**:
 
     ```bash
-    python3 manage.py makemigrations
-    python3 manage.py migrate
-    python3 manage.py seed_database
-    ```
-
-3. **Create a Superuser**:
-
-    ```bash
-    python3 manage.py createsuperuser
-    ```
-
-4. **Run the Server**:
-
-    ```bash
-    python3 -m run.py --quick --start-simulation 1
+    python3 -m run.py --start-simulation 1
     ```
 
 ## Usage
@@ -83,7 +67,7 @@ Follow the prompts to set up the superadmin credentials.
 To run the Daphne server with the ASGI application, use the following command:
 
 ```bash
-python3 -m run.py --quick
+python3 -m run.py
 ```
 
 ## Contributing

@@ -26,6 +26,28 @@ def start_simulation(simulation_id):
         print(f"Failed to start simulation: {e}")
         sys.exit(1)
 
+def seed_database():
+    try:
+        subprocess.check_call([sys.executable, 'manage.py', 'seed_database'])
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to seed database: {e}")
+        sys.exit(1)
+
+def create_superuser(username, password):
+    try:
+        subprocess.check_call([
+            sys.executable, 'manage.py', 'createsuperuser',
+            '--noinput',
+            f'--username={username}',
+            f'--email={username}@example.com'
+        ])
+        subprocess.check_call([
+            sys.executable, 'manage.py', 'changepassword', username, '--password', password
+        ])
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to create superuser: {e}")
+        sys.exit(1)
+
 def daphne_server(bind, port):
     import django
     # Set the Django settings module environment variable
@@ -47,21 +69,28 @@ if __name__ == '__main__':
     parser.add_argument('--quick', action='store_true', help='Skip installing requirements and applying migrations')
     parser.add_argument('--install', action='store_true', help='Only install requirements')
     parser.add_argument('--start-simulation', type=int, help='Start a simulation with the given ID')
+    parser.add_argument('--create-superuser', nargs=2, metavar=('USERNAME', 'PASSWORD'), help='Create a superuser with the given username and password')
     parser.add_argument('-b', '--bind', default='0.0.0.0', help='Bind address')
     parser.add_argument('-p', '--port', default='8000', help='Port number')
     args = parser.parse_args()
 
     if args.install:
-        # Only install requirements and exit
-        install_requirements()
-        sys.exit(0)
-
-    if not args.quick:
         # Install requirements
         install_requirements()
-
         # Apply migrations
         apply_migrations()
+        create_superuser('admin', 'admin')
+        seed_database()
+        sys.exit(0)
+
+    if args.create_superuser:
+        # Create superuser
+        username, password = args.create_superuser
+        create_superuser(username, password)
+
+    if args.seed_database:
+        # Seed the database
+        seed_database()
 
     # Start the Daphne server in a separate thread
     daphne_thread = threading.Thread(target=daphne_server, args=(args.bind, args.port))
