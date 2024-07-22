@@ -36,13 +36,9 @@ def seed_database():
 def create_superuser(username, password):
     try:
         subprocess.check_call([
-            sys.executable, 'manage.py', 'createsuperuser',
-            '--noinput',
+            sys.executable, 'manage.py', 'createsuperadmin',
             f'--username={username}',
-            f'--email={username}@example.com'
-        ])
-        subprocess.check_call([
-            sys.executable, 'manage.py', 'changepassword', username, '--password', password
+            f'--password={password}'
         ])
     except subprocess.CalledProcessError as e:
         print(f"Failed to create superuser: {e}")
