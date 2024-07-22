@@ -68,7 +68,7 @@ class SimulationManager:
                     if self.trading_strategy == "static":
                         self.update_prices(current_time)
                     else:
-                        self.broker.processQueues()
+                        self.broker.process_queues()
                     logger.info(
                         f"Simulation time: {current_time}, elapsed time: {elapsed_time}"
                     )
