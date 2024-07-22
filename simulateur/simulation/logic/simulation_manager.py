@@ -165,6 +165,8 @@ class SimulationManager:
             "timestamp": current_time.isoformat(),
         }
 
+        logger.info(f"Broadcasting update: {update}")
+
         send_ohlc_update(self.channel_layer, update, "stock")
 
 
