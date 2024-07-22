@@ -59,7 +59,16 @@ class UserDashboardView(View):
         # Get the selected scenario
         scenarios = Scenario.objects.all()
         current_scenario_id = request.GET.get('scenario', scenarios.first().id if scenarios.exists() else None)
-        current_scenario = scenarios.get(id=current_scenario_id)
+
+        if current_scenario_id is None:
+            messages.error(request, "No scenarios available.")
+            return redirect(reverse("home"))
+
+        try:
+            current_scenario = scenarios.get(id=current_scenario_id)
+        except Scenario.DoesNotExist:
+            messages.error(request, "Selected scenario does not exist.")
+            return redirect(reverse("home"))
 
         # Fetch necessary data
         transactions, created = TransactionHistory.objects.get_or_create(scenario=current_scenario)
