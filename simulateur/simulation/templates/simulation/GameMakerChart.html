@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Graph</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        canvas {
+            border: 1px solid black;
+        }
+        table {
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: center;
+        }
+        input {
+            width: 60px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="graphCanvas" width="800" height="600"></canvas>
+    <table id="pointsTable">
+        <thead>
+            <tr>
+                <th>Noise</th>
+                <th>X</th>
+                <th>Y</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <script>
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+        const margin = 50;
+        const graphWidth = canvas.width - 2 * margin;
+        const graphHeight = canvas.height - 2 * margin;
+        const points = [{ x: margin, y: canvas.height - margin }];
+        let functionType = 'linear';  // Starting function type
+        
+        function drawGraph() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+
+            // Draw x and y axis
+            ctx.beginPath();
+            ctx.moveTo(margin, margin);
+            ctx.lineTo(margin, canvas.height - margin);
+            ctx.lineTo(canvas.width - margin, canvas.height - margin);
+            ctx.strokeStyle = 'black';
+            ctx.stroke();
+
+            // Draw grid lines and labels
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // Draw y-axis labels
+            for (let i = 0; i <= 10; i++) {
+                const y = margin + i * (graphHeight / 10);
+                ctx.moveTo(margin - 5, y);
+                ctx.lineTo(margin + 5, y);
+                ctx.stroke();
+                ctx.fillText(100 - i * 10, margin - 20, y);
+            }
+
+            // Draw x-axis labels
+            for (let i = 0; i <= 10; i++) {
+                const x = margin + i * (graphWidth / 10);
+                ctx.moveTo(x, canvas.height - margin - 5);
+                ctx.lineTo(x, canvas.height - margin + 5);
+                ctx.stroke();
+                ctx.fillText(i * 10, x, canvas.height - margin + 20);
+            }
+
+            // Draw points and lines
+            for (let i = 0; i < points.length; i++) {
+                const point = points[i];
+                drawPoint(point.x, point.y);
+                if (i > 0) {
+                    const prevPoint = points[i - 1];
+                    drawLine(prevPoint.x, prevPoint.y, point.x, point.y);
+                }
+            }
+        }
+
+        function drawPoint(x, y) {
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, 2 * Math.PI);
+            ctx.fillStyle = 'red';
+            ctx.fill();
+        }
+
+        function drawLine(fromX, fromY, toX, toY) {
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(toX, toY);
+            ctx.strokeStyle = 'blue';
+            ctx.stroke();
+        }
+
+        canvas.addEventListener('click', (event) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            const lastPoint = points[points.length - 1];
+
+            // Only add the point if its x-coordinate is greater than or equal to the last point's x-coordinate
+            if (x >= lastPoint.x) {
+                drawLine(lastPoint.x, lastPoint.y, x, y);
+                drawPoint(x, y);
+                points.push({ x, y });
+                addPointToTable(x, y);
+            }
+        });
+
+        canvas.addEventListener('wheel', (event) => {
+            nextFunctionType();
+            console.log('Function type:', functionType);
+            event.preventDefault(); // Prevent scrolling the page
+        });
+
+        function nextFunctionType() {
+            if (functionType === 'linear') {
+                functionType = 'exponential';
+            } else if (functionType === 'exponential') {
+                functionType = 'logarithmic';
+            } else if (functionType === 'logarithmic') {
+                functionType = 'linear';
+            }
+        }
+
+        function addPointToTable(x, y) {
+            const tableBody = document.getElementById('pointsTable').querySelector('tbody');
+            const newRow = document.createElement('tr');
+
+            const noiseCell = document.createElement('td');
+            const noiseInput = document.createElement('input');
+            noiseInput.type = 'number';
+            noiseInput.value = 0;
+            noiseInput.addEventListener('input', updateGraph);
+            noiseCell.appendChild(noiseInput);
+
+            const xCell = document.createElement('td');
+            const xInput = document.createElement('input');
+            xInput.type = 'number';
+            xInput.value = x;
+            xInput.addEventListener('input', updateGraph);
+            xCell.appendChild(xInput);
+
+            const yCell = document.createElement('td');
+            const yInput = document.createElement('input');
+            yInput.type = 'number';
+            yInput.value = y;
+            yInput.addEventListener('input', updateGraph);
+            yCell.appendChild(yInput);
+
+            newRow.appendChild(noiseCell);
+            newRow.appendChild(xCell);
+            newRow.appendChild(yCell);
+
+            tableBody.appendChild(newRow);
+        }
+
+        function updateGraph() {
+            const tableRows = document.getElementById('pointsTable').querySelector('tbody').rows;
+            points.length = 0; // Clear the points array
+            for (let i = 0; i < tableRows.length; i++) {
+                const row = tableRows[i];
+                const x = parseFloat(row.cells[1].querySelector('input').value);
+                const y = parseFloat(row.cells[2].querySelector('input').value);
+                points.push({ x, y });
+            }
+            drawGraph();
+        }
+
+        // Initialize the graph
+        drawGraph();
+        drawPoint(points[0].x, points[0].y);
+    </script>
+</body>
+</html>
