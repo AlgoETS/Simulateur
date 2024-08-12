@@ -1,0 +1,39 @@
+@startuml
+actor User
+actor Admin
+actor Organiser
+
+usecase "User Login" as UC_UserLogin
+usecase "Join Team" as UC_JoinTeam
+usecase "Buy Stocks" as UC_BuyStocks
+usecase "Sell Stocks" as UC_SellStocks
+
+usecase "Admin Login" as UC_AdminLogin
+usecase "Create Scenario" as UC_CreateScenario
+usecase "Change Settings" as UC_ChangeSettings
+usecase "Choose Timer Step Interval" as UC_ChooseTimerStep
+usecase "Publish Scenario" as UC_PublishScenario
+usecase "Start Simulation" as UC_StartSimulation
+
+usecase "Start Simulation" as UC_StartSim
+usecase "Pause Simulation" as UC_PauseSim
+usecase "Stop Simulation" as UC_StopSim
+usecase "Show Simulation Results" as UC_ShowSimResults
+
+User -- UC_UserLogin
+User -- UC_JoinTeam
+User -- UC_BuyStocks
+User -- UC_SellStocks
+
+Admin -- UC_AdminLogin
+Admin -- UC_CreateScenario
+Admin -- UC_ChangeSettings
+Admin -- UC_ChooseTimerStep
+Admin -- UC_PublishScenario
+Admin -- UC_StartSimulation
+
+Organiser -- UC_StartSim
+Organiser -- UC_PauseSim
+Organiser -- UC_StopSim
+Organiser -- UC_ShowSimResults
+@enduml

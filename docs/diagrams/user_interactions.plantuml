@@ -1,0 +1,29 @@
+@startuml
+actor User
+participant "UserProfile" as UP
+participant "Team" as T
+participant "Portfolio" as P
+participant "Stock" as S
+participant "TransactionHistory" as TH
+
+User -> UP: Login()
+UP -> User: Display user dashboard
+
+User -> UP: Choose team
+UP -> T: Join team
+T -> UP: Confirm team join
+UP -> User: Team joined confirmation
+
+User -> S: Search for stock
+S -> User: Display stock details
+
+User -> P: Select stock to buy
+P -> User: Display stock purchase option
+
+User -> P: Confirm stock purchase
+P -> S: Execute stock purchase
+S -> TH: Record transaction
+TH -> P: Transaction recorded
+P -> UP: Update user portfolio
+UP -> User: Purchase confirmation and updated portfolio
+@enduml

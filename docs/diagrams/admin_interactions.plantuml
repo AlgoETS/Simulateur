@@ -1,0 +1,66 @@
+@startuml
+skinparam backgroundColor #1e1e1e
+skinparam handwritten true
+skinparam shadowing false
+skinparam sequence {
+    ArrowColor White
+    ActorBorderColor White
+    ActorFontColor White
+    ParticipantBorderColor White
+    ParticipantFontColor White
+    LifeLineBorderColor White
+    LifeLineBackgroundColor #1e1e1e
+    ParticipantBackgroundColor #1e1e1e
+    BoxBorderColor White
+    BoxBackgroundColor #1e1e1e
+    SequenceDividerBorderColor White
+    SequenceDividerBackgroundColor #1e1e1e
+    SequenceGroupBorderColor White
+    SequenceGroupBackgroundColor #1e1e1e
+}
+
+actor Admin
+participant "AdminPanel" as AP
+participant "ScenarioManager" as SM
+participant "SimulationSettings" as SS
+participant "Scenario" as S
+participant "Event" as E
+participant "News" as N
+participant "Trigger" as T
+
+Admin -> AP: Login
+AP -> Admin: Display dashboard
+
+Admin -> AP: Create new scenario
+AP -> SM: Initialize scenario
+
+Admin -> SM: Enter scenario details
+SM -> Admin: Confirm details
+
+Admin -> SM: Configure settings
+
+Admin -> SS: Set timer step
+Admin -> SS: Set fluctuation rate
+
+Admin -> SS: Add event
+SS -> E: Initialize event
+Admin -> E: Enter event details
+E -> N: Link to news
+N -> E: Confirm link
+E -> SS: Confirm event
+
+Admin -> SS: Add trigger
+SS -> T: Initialize trigger
+Admin -> T: Enter trigger details
+T -> E: Link to event
+E -> T: Confirm link
+T -> SS: Confirm trigger
+
+SS -> SM: Save settings
+
+Admin -> SM: Finalize creation
+SM -> S: Create scenario
+S -> SM: Confirm creation
+SM -> AP: Confirm scenario
+AP -> Admin: Display confirmation
+@enduml
