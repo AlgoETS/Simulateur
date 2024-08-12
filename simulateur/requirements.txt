@@ -69,3 +69,4 @@ amqp
 kombu
 influxdb-client
 django-sslserver
+django-timescaledb

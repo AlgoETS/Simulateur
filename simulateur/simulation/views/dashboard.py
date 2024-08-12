@@ -24,6 +24,8 @@ from simulation.models import (
 )
 import logging
 
+from simulation.models import StockPriceHistory
+
 logger = logging.getLogger(__name__)
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', 30)  # 30 seconds
@@ -87,6 +89,11 @@ class UserDashboardView(View):
             total_stock_value=Sum('stock__price') * Sum('quantity')
         )['total_stock_value']
 
+        # Fetch historical price data for the stocks in the portfolio
+        price_history = StockPriceHistory.objects.filter(
+            stock__in=[stock_data.stock for stock_data in stocks_data]
+        ).order_by('timestamp')
+
         context = {
             "title": "User Dashboard",
             "user_profile": user_profile,
@@ -98,6 +105,7 @@ class UserDashboardView(View):
             "stocks_data": stocks_data,
             "balance": balance,
             "total_stock_value": total_stock_value,
+            "price_history": price_history,  # Add this to the context
         }
 
         return render(request, "dashboard/user_dashboard.html", context)

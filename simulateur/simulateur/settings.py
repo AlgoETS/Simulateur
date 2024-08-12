@@ -111,12 +111,12 @@ MIDDLEWARE = [
 ]
 
 # Webpack loader configuration
-WEBPACK_LOADER = {
-    'DEFAULT': {
-        'BUNDLE_DIR_NAME': 'yourreactapp/',
-        'STATS_FILE': os.path.join(BASE_DIR, 'yourreactapp', 'webpack-stats.json'),
-    }
-}
+# WEBPACK_LOADER = {
+#     'DEFAULT': {
+#         'BUNDLE_DIR_NAME': 'yourreactapp/',
+#         'STATS_FILE': os.path.join(BASE_DIR, 'yourreactapp', 'webpack-stats.json'),
+#     }
+# }
 
 # URL configuration
 ROOT_URLCONF = "simulateur.urls"
