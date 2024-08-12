@@ -31,6 +31,8 @@ class Command(BaseCommand):
         self.seed_simulation_settings()
         self.seed_scenarios()
         self.seed_portfolios()
+        self.seed_orders()
+        self.seed_transactions()
 
     def seed_users(self):
         try:
@@ -222,3 +224,38 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS('Seeded portfolios'))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Error seeding portfolios: {e}'))
+
+
+    def seed_orders(self):
+        try:
+            with open('data/orders.csv', newline='') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    user_profile = UserProfile.objects.get(user__username=row['user'])
+                    stock = Stock.objects.get(ticker=row['stock'])
+                    Order.objects.create(
+                        user=user_profile,
+                        stock=stock,
+                        quantity=int(row['quantity']),
+                        price=float(row['price']),
+                        transaction_type=row['transaction_type'],
+                        timestamp=datetime.strptime(row['timestamp'], '%Y-%m-%d %H:%M:%S')
+                    )
+            self.stdout.write(self.style.SUCCESS('Seeded orders'))
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f'Error seeding orders: {e}'))
+
+    def seed_transactions(self):
+        try:
+            with open('data/transactions.csv', newline='') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    order_ids = row['orders'].split(';')
+                    orders = Order.objects.filter(id__in=order_ids)
+                    scenario = Scenario.objects.get(name=row['scenario'])
+                    transaction_history = TransactionHistory.objects.create(scenario=scenario)
+                    transaction_history.orders.set(orders)
+                    transaction_history.save()
+            self.stdout.write(self.style.SUCCESS('Seeded transactions'))
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f'Error seeding transactions: {e}'))

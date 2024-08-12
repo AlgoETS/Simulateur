@@ -1,0 +1,6 @@
+user,stock,quantity,price,transaction_type,timestamp
+johndoe,AMI,10,150.0,BUY,2024-08-01 10:00:00
+janedoe,CCFC,5,1800.0,BUY,2024-08-01 11:00:00
+janedoe,CCFC,5,2800.0,SELL,2024-08-01 12:00:00
+johndoe,MINET,3,700.0,BUY,2024-08-01 13:00:00
+johndoe,MINET,3,500.0,SELL,2024-08-01 14:00:00
