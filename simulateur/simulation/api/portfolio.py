@@ -61,8 +61,9 @@ class BuyStock(View):
                 user_profile.portfolio.save()
 
                 # Create a transaction history record
-                transaction_history = TransactionHistory.objects.create()
-                transaction_history.orders.set([order])
+                transaction_history = TransactionHistory.objects.get(scenario=scenario)
+                ## how to add the order to the transaction history record:
+                transaction_history.orders.add(order)
 
             return JsonResponse({'status': 'success', 'order_id': order.id})
         except json.JSONDecodeError:
@@ -112,8 +113,8 @@ class SellStock(View):
                 user_profile.portfolio.save()
 
                 # Create a transaction history record
-                transaction_history = TransactionHistory.objects.create()
-                transaction_history.orders.set([order])
+                transaction_history = TransactionHistory.objects.get(scenario=scenario)
+                transaction_history.orders.add(order)
 
             return JsonResponse({'status': 'success', 'order_id': order.id})
         except json.JSONDecodeError:
@@ -145,11 +146,21 @@ class UserOrders(View):
             data = json.loads(request.body)
             user_profile = request.user.userprofile
             scenario = Scenario.objects.get(id=data['scenario_id'])
-            order = Order.objects.filter(user=user_profile, scenario=scenario).all()
-            if not order:
-                return JsonResponse({'status': 'error', 'message': 'Order already exists'}, status=400)
+            transaction_history = TransactionHistory.objects.filter(scenario=scenario).first()
+            orders = transaction_history.orders.filter(user=user_profile).order_by('-timestamp')
 
-            return JsonResponse({'status': 'success', 'orders': order})
+            
+            # Prepare the data to send to the frontend
+            orders_data = [{
+                'transaction_type': order.transaction_type,
+                'quantity': order.quantity,
+                'ticker': order.stock.ticker,
+                'price': order.price,
+                'timestamp': order.timestamp.strftime('%B %d, %Y, %I:%M %p')
+            } for order in orders]
+            
+
+            return JsonResponse({'status': 'success', 'orders': orders_data})
         except UserProfile.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'User profile does not exist'}, status=404)
         except Scenario.DoesNotExist:

@@ -9,7 +9,7 @@ from simulation.views.auth import ForgotPasswordView, LogoutView, PasswordResetC
 from simulation.views.simulation import SimulationGraphView
 # Importing API views
 from simulation.api.simulation import SimulationSettingsView, StartSimulation, PauseSimulation, StopSimulation, FastForwardSimulation, RewindSimulation
-from simulation.api.portfolio import BuyStock, PortfolioView, SellStock, StockPrice
+from simulation.api.portfolio import BuyStock, PortfolioView, SellStock, StockPrice, UserOrders
 from simulation.api.scenario import ScenarioStocks, StockHistory, GetPublishedScenarios, CreateCompanyAndStock, CreateNews, CreateEvent, CreateTrigger
 from simulation.api.ai_llm import InteractWithOllama, CreateNewsAI, CreateEventAI, CreateTriggerAI, CreateCompanyAndStockAI, CreateScenarioAI
 from simulation.api.auth import UpdateMemberRole
@@ -48,6 +48,7 @@ api_patterns = [
     path('stock/sell/', SellStock.as_view(), name='sell_stock'),
     #new path to fetch stock price
     path('stock/price/<stock_id>/', StockPrice.as_view(), name='stock_price'),
+    path('user/orders/', UserOrders.as_view(), name='user_orders'),
 
     path('graph/', SimulationGraphView.as_view(), name='simulation_graph'),
     path('settings/', SimulationSettingsView.as_view(), name='simulation_settings'),
