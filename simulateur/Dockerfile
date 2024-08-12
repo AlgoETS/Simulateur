@@ -25,14 +25,16 @@ ENV DJANGO_SETTINGS_MODULE=simulateur.settings
 # Collect static files
 RUN python manage.py collectstatic --noinput
 
-# Run migrations
+# Run migrations and seed the database
 RUN python manage.py makemigrations
 RUN python manage.py migrate
 RUN python manage.py seed_database
+
+# Create a superadmin user
 RUN python manage.py createsuperadmin --username admin --password admin --noinput --email 'admin@admin.com'
 
 # Expose port 8000 for the application
 EXPOSE 8000
 
 # Start the application
-CMD [ "python", "run.py", "--quick", "--start-simulation", "1" ]
+CMD ["daphne", "simulateur.asgi:application", "-b", "0.0.0.0", "-p", "8000"]
