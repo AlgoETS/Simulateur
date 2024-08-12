@@ -189,10 +189,11 @@
 
                     // Update the price input with the fetched price
                     document.getElementById('price').value = formattedPrice;
-                    updateOrderHistory();
+                    
                 } else {
                     alert('Failed to fetch stock price');
                 }
+                updateOrderHistory();
             })
             .catch(error => console.error('Error fetching stock price:', error));
     }

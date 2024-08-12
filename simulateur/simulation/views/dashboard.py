@@ -247,7 +247,7 @@ class PortfolioDetailView(View):
         return render(request, "portfolio/portfolio_detail.html", context)
 
 class PortfolioUserDetailView(View):
-    @method_decorator(cache_page(CACHE_TTL))
+    # @method_decorator(cache_page(CACHE_TTL))
     def get(self, request):
         try:
             user_profile = UserProfile.objects.get(user=request.user)
