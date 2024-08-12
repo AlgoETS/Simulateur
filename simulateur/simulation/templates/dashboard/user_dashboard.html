@@ -97,18 +97,18 @@
 </div>
     <script>
     function updatePrice() {
-        
+
         const companySelect = document.getElementById('company');
-    
+
         // Get the selected option using selectedIndex
         const selectedOption = companySelect.options[companySelect.selectedIndex];
-        
+
         // Retrieve the value of the selected option (stock.id in your case)
         const stockId = selectedOption.value;
 
         // If you need the ticker or any other text, you can use selectedOption.text or selectedOption.innerHTML
         const tickerText = selectedOption.text;
-        
+
         // Fetch the stock price from the server
         fetch(`/api/stock/price/${stockId}/`)
             .then(response => response.json())

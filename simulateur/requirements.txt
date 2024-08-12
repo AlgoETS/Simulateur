@@ -70,3 +70,5 @@ kombu
 influxdb-client
 django-sslserver
 django-timescaledb
+psycopg
+psycopg2-binary

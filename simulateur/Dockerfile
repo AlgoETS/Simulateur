@@ -37,4 +37,4 @@ RUN python manage.py createsuperadmin --username admin --password admin --noinpu
 EXPOSE 8000
 
 # Start the application
-CMD ["daphne", "simulateur.asgi:application", "-b", "0.0.0.0", "-p", "8000"]
+CMD ["python", "run.py", "--start-simulation", "1"]
