@@ -42,23 +42,26 @@ class BuyStock(View):
                 return JsonResponse({'status': 'error', 'message': 'Insufficient funds'}, status=400)
 
             with transaction.atomic():
-                # Create an order in the broker's queue
-                broker.add_to_buysell_queue(user_profile, stock.ticker, amount, price, "buy")
-
                 # Create an order
                 order = Order.objects.create(
                     user=user_profile,
                     stock=stock,
+                    # scenario=scenario,
                     quantity=amount,
                     price=price,
                     transaction_type='BUY'
                 )
 
-                # Create or get a transaction history record
-                transaction_history = TransactionHistory.objects.get(
-                    scenario=scenario
-                )
-                transaction_history.orders.add(order)
+                # Logic to buy stock
+                buy_sell_queue.add_to_buy_queue(user_profile, stock, amount, price, scenario)
+
+               # Deduct the amount from the user's balance
+                user_profile.portfolio.balance -= total_cost
+                user_profile.portfolio.save()
+
+                # Create a transaction history record
+                transaction_history = TransactionHistory.objects.create()
+                transaction_history.orders.set([order])
 
             return JsonResponse({'status': 'success', 'order_id': order.id})
         except json.JSONDecodeError:
@@ -90,23 +93,26 @@ class SellStock(View):
                 return JsonResponse({'status': 'error', 'message': 'Insufficient stock holdings'}, status=400)
 
             with transaction.atomic():
-                # Create an order in the broker's queue
-                broker.add_to_buysell_queue(user_profile, stock.ticker, amount, price, "sell")
-
                 # Create an order
                 order = Order.objects.create(
                     user=user_profile,
                     stock=stock,
+                    # scenario=scenario,
                     quantity=amount,
                     price=price,
                     transaction_type='SELL'
                 )
 
-                # Create or get a transaction history record
-                transaction_history = TransactionHistory.objects.get(
-                    scenario=scenario
-                )
-                transaction_history.orders.add(order)
+                # Logic to sell stock
+                buy_sell_queue.add_to_sell_queue(user_profile, stock, amount, price)
+
+                # Add the amount to the user's balance
+                user_profile.portfolio.balance += amount * price
+                user_profile.portfolio.save()
+
+                # Create a transaction history record
+                transaction_history = TransactionHistory.objects.create()
+                transaction_history.orders.set([order])
 
             return JsonResponse({'status': 'success', 'order_id': order.id})
         except json.JSONDecodeError:
