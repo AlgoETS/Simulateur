@@ -1,6 +1,6 @@
 anyio
 asgiref
-attrs
+attrs>=21.3.0
 bleach
 channels
 channels-redis
@@ -24,7 +24,7 @@ redis
 requests
 sqlparse
 traitlets
-urllib3
+urllib3<2.0.0
 noise
 daphne
 whitenoise

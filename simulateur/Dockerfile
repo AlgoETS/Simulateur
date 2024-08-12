@@ -4,9 +4,9 @@ FROM python:3.10-slim
 # Set the working directory
 WORKDIR /workspace
 
-# Install GCC and other necessary build tools
+# Install GCC, PostgreSQL client, and other necessary build tools
 RUN apt-get update && \
-    apt-get install -y gcc build-essential && \
+    apt-get install -y gcc build-essential postgresql-client && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
