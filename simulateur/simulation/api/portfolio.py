@@ -124,29 +124,21 @@ class SellStock(View):
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
-# TODO add the two new urls to the simulator
-# class BuyStocKDynamic:
+class StockPrice(View):
+    
+    def get(self, request, stock_id):
+        try:
+            stock = Stock.objects.filter(id=stock_id)
+            if stock.exists():
+                return JsonResponse({'price': stock.first().price})
+            
+        except Stock.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Stock not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    
 
-#     def post(self,request):
 
-#         data = json.loads(request.body)
-#         user_profile = request.user.userprofile
-#         stock = Stock.objects.get(id=data['stock_id'])
-#         scenario = Scenario.objects.get(id=data['scenario_id'])
-#         amount = int(data['amount'])
-#         price = Decimal(data.get('price', stock.price))  # Default to stock price if price not provided
 
-#         broker.add_to_buysell_queue(user_profile,stock,amount,price,"buy")
+# TODO add the two new urls for the dynamic picing.
 
-# class SellStockDynamic:
-
-#     def post(self,request):
-
-#         data = json.loads(request.body)
-#         user_profile = request.user.userprofile
-#         stock = Stock.objects.get(id=data['stock_id'])
-#         scenario = Scenario.objects.get(id=data['scenario_id'])
-#         amount = int(data['amount'])
-#         price = Decimal(data.get('price', stock.price))  # Default to stock price if price not provided
-
-#         broker.add_to_buysell_queue(user_profile,stock,amount,price,"sell")
