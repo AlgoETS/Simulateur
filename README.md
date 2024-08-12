@@ -37,6 +37,16 @@ Use pycharm professional or community
 
 ### Backend (Django)
 
+## Run the Complete System
+
+To run the complete system, you can use Docker Compose for setting up the entire environment with one command:
+
+```bash
+docker compose --profile all down
+docker compose --profile all up -d --build
+```
+
+
 1. **Install Dependencies**:
 
     ```bash
@@ -57,18 +67,10 @@ Use pycharm professional or community
 To create a superadmin, use the Django management command:
 
 ```bash
-python3 manage.py createsuperuser
+python3 manage.py createsuperadmin --username=admin --password=admin --email=admin@admin.com
 ```
 
 Follow the prompts to set up the superadmin credentials.
-
-### Running Projects
-
-To run the Daphne server with the ASGI application, use the following command:
-
-```bash
-python3 -m run.py
-```
 
 ## Contributing
 
@@ -122,12 +124,4 @@ Here is a brief overview of the project file structure:
 │   ├── tests.py
 │   ├── urls.py
 │   └── views
-```
-
-## Run the Complete System
-
-To run the complete system, you can use Docker Compose for setting up the entire environment with one command:
-
-```bash
-docker-compose up --build
 ```
