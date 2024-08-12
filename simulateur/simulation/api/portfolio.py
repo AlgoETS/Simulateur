@@ -10,8 +10,7 @@ from simulation.models import Portfolio, Stock, Order, TransactionHistory, Scena
 from simulation.logic.BuySellQueue import buy_sell_queue
 from simulation.logic.broker import broker
 from simulation.serializers import PortfolioSerializer
-
-from simulateur.simulation.models import UserProfile
+from simulation.models import UserProfile
 
 
 class PortfolioView(View):

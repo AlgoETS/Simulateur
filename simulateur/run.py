@@ -38,7 +38,8 @@ def create_superuser(username, password):
         subprocess.check_call([
             sys.executable, 'manage.py', 'createsuperadmin',
             f'--username={username}',
-            f'--password={password}'
+            f'--password={password}',
+            f'--email={username}@{password}.com'
         ])
     except subprocess.CalledProcessError as e:
         print(f"Failed to create superuser: {e}")
