@@ -11,6 +11,8 @@ from simulation.logic.BuySellQueue import buy_sell_queue
 from simulation.logic.broker import broker
 from simulation.serializers import PortfolioSerializer
 
+from simulateur.simulation.models import UserProfile
+
 
 class PortfolioView(View):
     @method_decorator(login_required)
@@ -125,7 +127,6 @@ class SellStock(View):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 class StockPrice(View):
-    
     def get(self, request, stock_id):
         try:
             stock = Stock.objects.filter(id=stock_id)
@@ -136,8 +137,26 @@ class StockPrice(View):
             return JsonResponse({'status': 'error', 'message': 'Stock not found'}, status=404)
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-    
 
+
+class UserOrders(View):
+    @method_decorator(login_required)
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            user_profile = request.user.userprofile
+            scenario = Scenario.objects.get(id=data['scenario_id'])
+            order = Order.objects.filter(user=user_profile, scenario=scenario).all()
+            if not order:
+                return JsonResponse({'status': 'error', 'message': 'Order already exists'}, status=400)
+
+            return JsonResponse({'status': 'success', 'orders': order})
+        except UserProfile.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'User profile does not exist'}, status=404)
+        except Scenario.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Scenario not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 
 # TODO add the two new urls for the dynamic picing.
