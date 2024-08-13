@@ -11,12 +11,12 @@
         <div class="col-span-1">
             <div class="bg-white shadow-lg rounded-lg p-6 mb-6">
                 <h2 class="text-2xl font-bold text-indigo-900 mb-4">Stocks List</h2>
-                <form id="stockForm" onchange="updateInterface()">
+                <form id="stockForm">
                     <div class="mb-4">
                         <label for="scenario" class="block text-sm font-medium text-gray-700 mb-2">Scenario</label>
                         <select id="scenario" name="scenario" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" onchange="updateScenario()">
                             {% for scenario in scenarios %}
-                            <option 
+                            <option
                                 value="{{ scenario.id }}"
                                 {% if scenario.id == scenario_id %}
                                 selected
@@ -55,7 +55,7 @@
         <div class="col-span-1 md:col-span-2">
             <div class="bg-white shadow-lg rounded-lg p-6 mb-6">
                 <h2 class="text-2xl font-bold text-indigo-900 mb-4">Order History</h2>
-                <ul class="divide-y divide-gray-200">
+                <ul class="divide-y divide-gray-200 order-history">
                     {% for order in orders %}
                     <li class="py-4">
                         <div class="flex justify-between">
@@ -71,6 +71,15 @@
                     {% endfor %}
                 </ul>
             </div>
+        </div>
+    </div>
+
+    <!-- Holding -->
+    <div class="col-span-1 md:col-span-2">
+        <div class="bg-white shadow-lg rounded-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold text-indigo-900 mb-4">Holding</h2>
+            <ul class="divide-y divide-gray-200 holding">
+            </ul>
         </div>
     </div>
 
@@ -95,19 +104,32 @@
         <div id="portfolio-chart" style="height: 400px;"></div>
     </div>
 </div>
-    <script>
-
-
+<script>
     document.addEventListener('DOMContentLoaded', function() {
         updateOrderHistory();
     });
 
-
     function updateScenario() {
         const scenarioId = document.getElementById('scenario').value;
-        const url = new URL(window.location.href);
-        url.searchParams.set('scenario', scenarioId);
-        window.location.href = url.toString();
+
+        fetch(`/api/scenario/update/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify({ scenario_id: scenarioId }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                updateOrderHistory();
+                // Additional updates like refreshing the stocks list or portfolio details can be added here
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => console.error('Error:', error));
     }
 
     function buyStock() {
@@ -115,13 +137,12 @@
         const amount = document.getElementById('amount').value;
         const price = document.getElementById('price').value;
         const scenarioId = document.getElementById('scenario').value;
-        const csrfToken = getCookie('csrftoken');
 
         fetch('/api/stock/buy/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken,
+                'X-CSRFToken': getCookie('csrftoken'),
             },
             body: JSON.stringify({ stock_id: stockId, amount: amount, price: price, scenario_id: scenarioId }),
         })
@@ -130,7 +151,6 @@
             if (data.status === 'success') {
                 alert('Stock bought successfully');
                 updateOrderHistory();
-                
             } else {
                 alert(data.message);
             }
@@ -143,13 +163,12 @@
         const amount = document.getElementById('amount').value;
         const price = document.getElementById('price').value;
         const scenarioId = document.getElementById('scenario').value;
-        const csrfToken = getCookie('csrftoken');
 
         fetch('/api/stock/sell/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken,
+                'X-CSRFToken': getCookie('csrftoken'),
             },
             body: JSON.stringify({ stock_id: stockId, amount: amount, price: price, scenario_id: scenarioId }),
         })
@@ -158,7 +177,6 @@
             if (data.status === 'success') {
                 alert('Stock sold successfully');
                 updateOrderHistory();
-                
             } else {
                 alert(data.message);
             }
@@ -167,79 +185,58 @@
     }
 
     function updateInterface() {
+        const stockId = document.getElementById('company').value;
 
-        const companySelect = document.getElementById('company');
-
-        // Get the selected option using selectedIndex
-        const selectedOption = companySelect.options[companySelect.selectedIndex];
-
-        // Retrieve the value of the selected option (stock.id in your case)
-        const stockId = selectedOption.value;
-
-        // If you need the ticker or any other text, you can use selectedOption.text or selectedOption.innerHTML
-        const tickerText = selectedOption.text;
-
-        // Fetch the stock price from the server
         fetch(`/api/stock/price/${stockId}/`)
             .then(response => response.json())
             .then(data => {
                 if (data.price) {
-                    // Format the price to two decimal places
-                    const formattedPrice = parseFloat(data.price).toFixed(2);
-
-                    // Update the price input with the fetched price
-                    document.getElementById('price').value = formattedPrice;
-                    
+                    document.getElementById('price').value = parseFloat(data.price).toFixed(2);
                 } else {
                     alert('Failed to fetch stock price');
                 }
-                updateOrderHistory();
             })
             .catch(error => console.error('Error fetching stock price:', error));
     }
 
     function updateOrderHistory() {
-    const scenarioId = document.getElementById('scenario').value;
-    const csrfToken = getCookie('csrftoken');
+        const scenarioId = document.getElementById('scenario').value;
 
-    fetch('/api/user/orders/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken,
-        },
-        body: JSON.stringify({ scenario_id: scenarioId }),
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'success') {
-            const orderHistory = document.querySelector('.order-history ul');
-            orderHistory.innerHTML = ''; // Clear current orders
+        fetch('/api/user/orders/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify({ scenario_id: scenarioId }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const orderHistory = document.querySelector('.order-history');
+                orderHistory.innerHTML = ''; // Clear current orders
 
-            data.orders.forEach(order => {
-                const orderItem = `
-                    <li class="py-4">
-                        <div class="flex justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-gray-900">${order.transaction_type} ${order.quantity} shares of ${order.ticker}</p>
-                                <p class="text-sm text-gray-500">${order.timestamp}</p>
+                data.orders.forEach(order => {
+                    const orderItem = `
+                        <li class="py-4">
+                            <div class="flex justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">${order.transaction_type} ${order.quantity} shares of ${order.ticker}</p>
+                                    <p class="text-sm text-gray-500">${order.timestamp}</p>
+                                </div>
+                                <div class="text-sm text-gray-900">
+                                    $${order.price.toFixed(2)}
+                                </div>
                             </div>
-                            <div class="text-sm text-gray-900">
-                                $${order.price.toFixed(2)}
-                            </div>
-                        </div>
-                    </li>
-                `;
-                orderHistory.innerHTML += orderItem;
-            });
-        } else {
-            alert(data.message);
-        }
-    })
-    .catch(error => console.error('Error fetching order history:', error));
-}
-
-
-
+                        </li>
+                    `;
+                    orderHistory.innerHTML += orderItem;
+                });
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => console.error('Error fetching order history:', error));
+    }
 </script>
 {% endblock %}

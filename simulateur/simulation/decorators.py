@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import redirect
 
-from simulateur.simulation.models import UserProfile
+from simulation.models import UserProfile
 
 def admin_required(view_func):
     return user_passes_test(

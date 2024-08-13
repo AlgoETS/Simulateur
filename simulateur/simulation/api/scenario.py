@@ -91,3 +91,69 @@ class CreateTrigger(APIView):
             {"status": "success", "message": "Trigger created successfully"},
             status=status.HTTP_201_CREATED,
 )
+
+class CreateScenarioView(APIView):
+    def post(self, request):
+        serializer = ScenarioSerializer(data=request.data)
+        if serializer.is_valid():
+            scenario = serializer.save()
+            return Response({"scenario_id": scenario.id}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class AddCompanyStockView(APIView):
+    def post(self, request):
+        scenario_id = request.data.get('scenario_id')
+        scenario = Scenario.objects.get(id=scenario_id)
+        companies_data = request.data.get('companies', [])
+
+        for company_data in companies_data:
+            company = Company.objects.create(**company_data)
+            scenario.companies.add(company)
+            if 'stock' in company_data:
+                stock = Stock.objects.create(company=company, **company_data['stock'])
+                scenario.stocks.add(stock)
+
+        return Response({"scenario_id": scenario.id}, status=status.HTTP_200_OK)
+
+class AddTeamsView(APIView):
+    def post(self, request):
+        scenario_id = request.data.get('scenario_id')
+        scenario = Scenario.objects.get(id=scenario_id)
+        teams_data = request.data.get('teams', [])
+
+        for team_data in teams_data:
+            team = Team.objects.create(**team_data)
+            scenario.teams.add(team)
+
+        return Response({"scenario_id": scenario.id}, status=status.HTTP_200_OK)
+
+class AddEventsNewsTriggersView(APIView):
+    def post(self, request):
+        scenario_id = request.data.get('scenario_id')
+        scenario = Scenario.objects.get(id=scenario_id)
+
+        events_data = request.data.get('events', [])
+        for event_data in events_data:
+            event = Event.objects.create(**event_data)
+            scenario.events.add(event)
+
+        news_data = request.data.get('news', [])
+        for news_item in news_data:
+            news = News.objects.create(**news_item)
+            scenario.news.add(news)
+
+        triggers_data = request.data.get('triggers', [])
+        for trigger_data in triggers_data:
+            trigger = Trigger.objects.create(**trigger_data)
+            scenario.triggers.add(trigger)
+
+        return Response({"scenario_id": scenario.id}, status=status.HTTP_200_OK)
+
+
+class ReviewSubmitScenarioView(APIView):
+    def post(self, request):
+        scenario_id = request.data.get('scenario_id')
+        scenario = Scenario.objects.get(id=scenario_id)
+        # Any additional logic for final submission can be added here
+        return Response({"message": "Scenario submitted successfully", "scenario_id": scenario.id},
+                        status=status.HTTP_200_OK)

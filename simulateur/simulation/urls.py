@@ -1,17 +1,69 @@
-# urls.py
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from simulation.api.scenario import CreateScenario, PublishScenario
+from simulation.api.scenario import (
+    CreateScenario,
+    PublishScenario,
+    ScenarioStocks,
+    StockHistory,
+    GetPublishedScenarios,
+    CreateCompanyAndStock,
+    CreateNews,
+    CreateEvent,
+    CreateTrigger,
+    CreateScenarioView,
+    AddCompanyStockView,
+    AddTeamsView,
+    AddEventsNewsTriggersView,
+    ReviewSubmitScenarioView,
+)
 
 # Importing HTML views
-from simulation.views.dashboard import GameDashboardView, HomeView, PortfolioDetailView, PortfolioUserDetailView, UserDashboardView, AdminDashboardView, TeamDashboardView, MarketOverviewView
-from simulation.views.auth import ForgotPasswordView, LogoutView, PasswordResetConfirmView, PrivateProfileView, PublicProfileView, SettingsView, SignupView, LoginView, JoinTeamView
+from simulation.views.dashboard import (
+    GameDashboardView,
+    HomeView,
+    PortfolioDetailView,
+    PortfolioUserDetailView,
+    UserDashboardView,
+    AdminDashboardView,
+    TeamDashboardView,
+    MarketOverviewView,
+)
+from simulation.views.auth import (
+    ForgotPasswordView,
+    LogoutView,
+    PasswordResetConfirmView,
+    PrivateProfileView,
+    PublicProfileView,
+    SettingsView,
+    SignupView,
+    LoginView,
+    JoinTeamView,
+)
 from simulation.views.simulation import SimulationGraphView
 # Importing API views
-from simulation.api.simulation import SimulationSettingsView, StartSimulation, PauseSimulation, StopSimulation, FastForwardSimulation, RewindSimulation
-from simulation.api.portfolio import BuyStock, PortfolioView, SellStock, StockPrice, UserOrders
-from simulation.api.scenario import ScenarioStocks, StockHistory, GetPublishedScenarios, CreateCompanyAndStock, CreateNews, CreateEvent, CreateTrigger
-from simulation.api.ai_llm import InteractWithOllama, CreateNewsAI, CreateEventAI, CreateTriggerAI, CreateCompanyAndStockAI, CreateScenarioAI
+from simulation.api.simulation import (
+    SimulationSettingsView,
+    StartSimulation,
+    PauseSimulation,
+    StopSimulation,
+    FastForwardSimulation,
+    RewindSimulation,
+)
+from simulation.api.portfolio import (
+    BuyStock,
+    PortfolioView,
+    SellStock,
+    StockPrice,
+    UserOrders,
+)
+from simulation.api.ai_llm import (
+    InteractWithOllama,
+    CreateNewsAI,
+    CreateEventAI,
+    CreateTriggerAI,
+    CreateCompanyAndStockAI,
+    CreateScenarioAI,
+)
 from simulation.api.auth import UpdateMemberRole
 from simulation.api.teams import GenerateJoinLink, JoinTeam, RemoveTeamMember, UpdateTeamName
 
@@ -27,14 +79,14 @@ html_patterns = [
     path('signup/', SignupView.as_view(), name='signup'),
     path('login/', LoginView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
-    path('profile/', PrivateProfileView.as_view(), name='private_profile'),  # Private profile
-    path('profile/<int:user_id>/', PublicProfileView.as_view(), name='public_profile'),  # Public profile
+    path('profile/', PrivateProfileView.as_view(), name='private_profile'),
+    path('profile/<int:user_id>/', PublicProfileView.as_view(), name='public_profile'),
     path('settings/', SettingsView.as_view(), name='settings'),
     path('forgot-password/', ForgotPasswordView.as_view(), name='forgot_password'),
     path('reset-password/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('join_team/', JoinTeamView.as_view(), name='join_team'),
-    path('portfolio/<int:portfolio_id>/', PortfolioDetailView.as_view(), name='portfolio_detail'),  # Portfolio detail view
-    path('portfolio/', PortfolioUserDetailView.as_view(), name='portfolio_detail'),  # Portfolio detail view
+    path('portfolio/<int:portfolio_id>/', PortfolioDetailView.as_view(), name='portfolio_detail'),
+    path('portfolio/', PortfolioUserDetailView.as_view(), name='portfolio_detail'),
 ]
 
 api_patterns = [
@@ -46,22 +98,20 @@ api_patterns = [
     path('portfolio/<int:user_id>/', PortfolioView.as_view(), name='portfolio_view'),
     path('stock/buy/', BuyStock.as_view(), name='buy_stock'),
     path('stock/sell/', SellStock.as_view(), name='sell_stock'),
-    #new path to fetch stock price
     path('stock/price/<stock_id>/', StockPrice.as_view(), name='stock_price'),
     path('user/orders/', UserOrders.as_view(), name='user_orders'),
-
     path('graph/', SimulationGraphView.as_view(), name='simulation_graph'),
     path('settings/', SimulationSettingsView.as_view(), name='simulation_settings'),
     path('join_team/<int:team_id>/<str:key>/', JoinTeam.as_view(), name='join_team'),
     path('team/remove-member/<int:team_id>/<int:user_id>/', RemoveTeamMember.as_view(), name='remove_team_member'),
     path('team/update-name/<int:team_id>/', UpdateTeamName.as_view(), name='change_team_name'),
     path('team/update-role/<int:team_id>/<int:user_id>/', UpdateMemberRole.as_view(), name='update_member_role'),
-    path('scenario/create/', CreateScenario.as_view(), name='create_scenario'),
+    path('scenario/create/', CreateScenarioView.as_view(), name='create_scenario'),
     path('scenario/publish/<int:scenario_id>/', PublishScenario.as_view(), name='publish_scenario'),
     path('scenarios/published/', GetPublishedScenarios.as_view(), name='get_published_scenarios'),
     path('scenarios/<int:scenario_id>/stocks/', ScenarioStocks.as_view(), name='scenario_stocks'),
     path('stocks/<int:stock_id>/history/', StockHistory.as_view(), name='stock_history'),
-    path('scenario/company-and-stock/', CreateCompanyAndStock.as_view(), name='create_company_and_stock'),
+    path('scenario/company-and-stock/', AddCompanyStockView.as_view(), name='create_company_and_stock'),
     path('scenario/news/', CreateNews.as_view(), name='create_news'),
     path('scenario/event/', CreateEvent.as_view(), name='create_event'),
     path('scenario/trigger/', CreateTrigger.as_view(), name='create_trigger'),
@@ -71,6 +121,10 @@ api_patterns = [
     path('create-trigger-ai/', CreateTriggerAI.as_view(), name='create-trigger-ai'),
     path('create-company-stock-ai/', CreateCompanyAndStockAI.as_view(), name='create-company-stock-ai'),
     path('create-scenario-ai/', CreateScenarioAI.as_view(), name='create-scenario-ai'),
+    path('scenario/add-company-stock/', AddCompanyStockView.as_view(), name='add_company_stock'),
+    path('scenario/add-teams/', AddTeamsView.as_view(), name='add_teams'),
+    path('scenario/add-events-news-triggers/', AddEventsNewsTriggersView.as_view(), name='add_events_news_triggers'),
+    path('scenario/review-submit/', ReviewSubmitScenarioView.as_view(), name='review_submit_scenario'),
     path('team/generate-join-link/<int:team_id>/', GenerateJoinLink.as_view(), name='generate_join_link'),
 ]
 

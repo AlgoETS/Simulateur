@@ -27,8 +27,6 @@ class SimulationSettings(models.Model):
         ('static', 'Static')
     ]
 
-    max_users = models.IntegerField(default=100)
-    max_companies = models.IntegerField(default=50)
     timer_step = models.IntegerField(default=10)
     timer_step_unit = models.CharField(max_length=20, choices=TIME_UNIT_CHOICES, default='second')
     interval = models.IntegerField(default=20)

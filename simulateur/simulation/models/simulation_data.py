@@ -1,8 +1,11 @@
 from django.db import models
 from datetime import datetime, timezone, timedelta
 
+from simulation.models.simulation_manager import ScenarioManager
+
+
 class SimulationData(models.Model):
-    scenario = models.ForeignKey('Scenario', on_delete=models.CASCADE)
+    scenario_manager = models.ForeignKey(ScenarioManager, on_delete=models.CASCADE)
     start_time = models.DateTimeField(auto_now_add=True)
     end_time = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
