@@ -161,8 +161,7 @@ api_patterns = [
     path('stock/<int:stock_id>/', StockManagement.as_view(), name='manage_stock'),
 
     path('stock/price-history/', StockPriceHistoryManagement.as_view(), name='price_history_list'),
-    path('stock/price-history/<int:price_history_id>/', StockPriceHistoryManagement.as_view(),
-         name='price_history_detail'),  # GET single price history
+    path('stock/price-history/<int:price_history_id>/', StockPriceHistoryManagement.as_view(),name='price_history_detail'),
 ]
 
 urlpatterns = [

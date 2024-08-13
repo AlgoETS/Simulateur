@@ -1,6 +1,5 @@
 import logging
 import time
-
 from channels.layers import get_channel_layer
 from django.conf import settings
 from django.core.cache import cache
@@ -12,7 +11,7 @@ from simulation.logic.noise_patterns.perlin import Perlin
 from simulation.logic.noise_patterns.random_candle import RandomCandle
 from simulation.logic.noise_patterns.random_walk import RandomWalk
 from simulation.logic.utils import is_market_open, send_ohlc_update, TIME_UNITS
-from simulation.models import Scenario, StockPriceHistory
+from simulation.models import ScenarioManager, StockPriceHistory
 
 logger = logging.getLogger(__name__)
 
@@ -20,32 +19,47 @@ CACHE_TTL = getattr(settings, "CACHE_TTL", 15)  # 15 minutes default
 
 
 class SimulationManager:
-    def __init__(self, scenario):
-        self.scenario = scenario
+    def __init__(self, scenario_manager):
+        self.scenario_manager = scenario_manager
+        self.scenario = scenario_manager.scenario
         self.channel_layer = get_channel_layer()
         self.running = False
         self.run_duration = 100000
         self.time_step = (
-                scenario.simulation_settings.timer_step
-                * TIME_UNITS[scenario.simulation_settings.timer_step_unit]
+            scenario_manager.simulation_settings.timer_step
+            * TIME_UNITS[scenario_manager.simulation_settings.timer_step_unit]
         )
         self.interval = (
-                scenario.simulation_settings.interval
-                * TIME_UNITS[scenario.simulation_settings.interval_unit]
+            scenario_manager.simulation_settings.interval
+            * TIME_UNITS[scenario_manager.simulation_settings.interval_unit]
         )
         self.close_stock_market_at_night = (
-            scenario.simulation_settings.close_stock_market_at_night
+            scenario_manager.simulation_settings.close_stock_market_at_night
         )
-        self.fluctuation_rate = scenario.simulation_settings.fluctuation_rate
-        self.noise_function = scenario.simulation_settings.noise_function.lower()
+        self.fluctuation_rate = scenario_manager.simulation_settings.fluctuation_rate
+        self.noise_function = scenario_manager.simulation_settings.noise_function.lower()
         self.time_index = 0
-        self.noise_strategy = BrownianMotion()
-        self.trading_strategy = self.scenario.simulation_settings.stock_trading_logic
+        self.noise_strategy = self.get_noise_strategy(self.noise_function)
+        self.trading_strategy = scenario_manager.simulation_settings.stock_trading_logic
         self.broker = broker
 
         logger.info(
             f"Starting simulation for scenario {self.scenario} with time step {self.time_step} seconds"
         )
+
+    def get_noise_strategy(self, noise_function):
+        if noise_function == "brownian":
+            return BrownianMotion()
+        elif noise_function == "perlin":
+            return Perlin()
+        elif noise_function == "random_walk":
+            return RandomWalk()
+        elif noise_function == "fbm":
+            return Fbm()
+        elif noise_function == "random":
+            return RandomCandle()
+        else:
+            raise ValueError(f"Unsupported noise function: {noise_function}")
 
     def start_simulation(self):
         self.running = True
@@ -59,9 +73,7 @@ class SimulationManager:
                     logger.info("Run duration reached, stopping simulation")
                     break
 
-                if self.close_stock_market_at_night and not is_market_open(
-                        current_time
-                ):
+                if self.close_stock_market_at_night and not is_market_open(current_time):
                     logger.info("Stock market is closed")
                 else:
                     if self.trading_strategy == "static":
@@ -103,29 +115,16 @@ class SimulationManager:
             self.broadcast_update(stock, current_time)
 
     def get_stocks(self):
-        cache_key = f"stocks_for_scenario_{self.scenario.id}"
+        cache_key = f"stocks_for_scenario_{self.scenario_manager.id}"
         stocks = cache.get(cache_key)
 
         if not stocks:
-            stocks = list(self.scenario.stocks.all())
+            stocks = list(self.scenario_manager.stocks.all())
             cache.set(cache_key, stocks, timeout=CACHE_TTL)
 
         return stocks
 
     def apply_changes(self, stock, current_time):
-        if self.noise_function == "brownian":
-            self.noise_strategy = BrownianMotion()
-        elif self.noise_function == "perlin":
-            self.noise_strategy = Perlin()
-        elif self.noise_function == "random_walk":
-            self.noise_strategy = RandomWalk()
-        elif self.noise_function == "fbm":
-            self.noise_strategy = Fbm()
-        elif self.noise_function == "random":
-            self.noise_strategy = RandomCandle()
-        else:
-            raise ValueError(f"Unsupported noise function: {self.noise_function}")
-
         change = self.noise_strategy.generate_noise(
             stock.price, self.fluctuation_rate, self.time_index
         )
@@ -171,13 +170,13 @@ class SimulationManagerSingleton:
     _instances = {}
 
     @classmethod
-    def get_instance(cls, scenario_id):
-        if scenario_id not in cls._instances:
-            scenario = Scenario.objects.get(id=scenario_id)
-            cls._instances[scenario_id] = SimulationManager(scenario)
-        return cls._instances[scenario_id]
+    def get_instance(cls, scenario_manager_id):
+        if scenario_manager_id not in cls._instances:
+            scenario_manager = ScenarioManager.objects.get(id=scenario_manager_id)
+            cls._instances[scenario_manager_id] = SimulationManager(scenario_manager)
+        return cls._instances[scenario_manager_id]
 
     @classmethod
-    def remove_instance(cls, scenario_id):
-        if scenario_id in cls._instances:
-            del cls._instances[scenario_id]
+    def remove_instance(cls, scenario_manager_id):
+        if scenario_manager_id in cls._instances:
+            del cls._instances[scenario_manager_id]

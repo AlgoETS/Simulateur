@@ -1,2 +1,3 @@
-owner,team,stocks,balance
-johndoe,TeamA;,Air Munegu International;B&C Laser, 10000
+owner,balance,scenario_manager
+johndoe,10000.00,1
+janedoe,15000.00,2

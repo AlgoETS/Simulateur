@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
 from simulation.models import TransactionHistory, Order, ScenarioManager, Stock, UserProfile, Company, Scenario, \
-    SimulationSettings, SimulationData
+    SimulationSettings
 
 
 class OrderModelTest(TestCase):
@@ -98,7 +98,6 @@ class TransactionHistoryModelTest(TestCase):
         self.scenario_manager = ScenarioManager.objects.create(
             scenario=self.scenario,
             simulation_settings=SimulationSettings.objects.create(),
-            simulation_data=SimulationData.objects.create()
         )
 
         # Create a TransactionHistory instance and add the Order

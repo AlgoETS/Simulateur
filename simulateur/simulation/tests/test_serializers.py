@@ -80,6 +80,7 @@ class SerializerTests(TestCase):
     def test_stock_price_history_serializer(self):
         company = Company.objects.create(**self.company_data)
         stock = Stock.objects.create(**self.stock_data)
+        stock.company_id = company.id
         self.stock_data["company"] = company.id
         self.stock_price_history_data["stock"] = stock.id
         serializer = StockPriceHistorySerializer(data=self.stock_price_history_data)

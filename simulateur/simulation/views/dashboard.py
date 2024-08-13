@@ -1,5 +1,4 @@
 import logging
-
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
@@ -9,23 +8,12 @@ from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.cache import cache_page
-from simulation.models import StockPriceHistory
 from simulation.models import (
-    UserProfile,
-    Stock,
-    Portfolio,
-    TransactionHistory,
-    StockPortfolio,
-    Team,
-    News,
-    Company,
-    Event,
-    Scenario,
-    Trigger,
+    UserProfile, Stock, Portfolio, TransactionHistory, StockPortfolio, Team,
+    News, Company, Event, Scenario, Trigger, StockPriceHistory
 )
 
 logger = logging.getLogger(__name__)
-
 CACHE_TTL = getattr(settings, 'CACHE_TTL', 30)  # 30 seconds
 
 
@@ -74,12 +62,16 @@ class UserDashboardView(View):
             return redirect(reverse("home"))
 
         # Fetch necessary data
-        transactions, created = TransactionHistory.objects.get_or_create(scenario=current_scenario)
+        scenario_manager = current_scenario.scenario_manager.first()  # Assuming a one-to-one relationship
+        if not scenario_manager:
+            messages.error(request, "Scenario Manager for the selected scenario does not exist.")
+            return redirect(reverse("home"))
+
+        transactions, _ = TransactionHistory.objects.get_or_create(scenario=current_scenario)
         orders = transactions.orders.all()
         stocks = Stock.objects.filter(scenarios_stocks__id=current_scenario_id).select_related('company')
 
         # Get the user's portfolio
-        portfolio = user_profile.portfolio
         stocks_data = StockPortfolio.objects.filter(portfolio=portfolio, stock__in=stocks)
 
         # Get the user's balance
@@ -87,8 +79,8 @@ class UserDashboardView(View):
 
         # Get the user's total stock value
         total_stock_value = stocks_data.aggregate(
-            total_stock_value=Sum('stock__price') * Sum('quantity')
-        )['total_stock_value']
+            total_stock_value=Sum(F('stock__price') * F('quantity'))
+        )['total_stock_value'] or 0  # Fix possible NoneType error
 
         # Fetch historical price data for the stocks in the portfolio
         price_history = StockPriceHistory.objects.filter(
@@ -106,11 +98,10 @@ class UserDashboardView(View):
             "stocks_data": stocks_data,
             "balance": balance,
             "total_stock_value": total_stock_value,
-            "price_history": price_history,  # Add this to the context
+            "price_history": price_history,
         }
 
         return render(request, "dashboard/user_dashboard.html", context)
-
 
 class AdminDashboardView(AdminOnlyMixin, View):
     @method_decorator(cache_page(CACHE_TTL))
@@ -209,7 +200,6 @@ class GameDashboardView(View):
             "scenarios": scenarios,
         }
 
-        # Set client-side cache headers
         response = render(request, "dashboard/game_dashboard.html", context)
         response['Cache-Control'] = f'public, max-age={CACHE_TTL}'
         return response
@@ -255,7 +245,6 @@ class PortfolioDetailView(View):
 
 
 class PortfolioUserDetailView(View):
-    # @method_decorator(cache_page(CACHE_TTL))
     def get(self, request):
         try:
             user_profile = UserProfile.objects.get(user=request.user)

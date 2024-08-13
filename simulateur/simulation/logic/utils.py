@@ -29,13 +29,13 @@ def is_market_open(current_time):
     return current_time.weekday() < 5
 
 
-def send_ohlc_update(channel_layer, update, stock_type):
+def send_ohlc_update(channel_layer, update, simulation_id):
     """Send an OHLC update to the specified WebSocket channel."""
     data = {
         'id': update['id'],
         'ticker': update['ticker'],
         'name': update['name'],
-        'type': stock_type,
+        'type': simulation_id,
         'open': update['open'],
         'high': update['high'],
         'low': update['low'],
@@ -44,7 +44,7 @@ def send_ohlc_update(channel_layer, update, stock_type):
         'timestamp': timezone.now().isoformat()
     }
     async_to_sync(channel_layer.group_send)(
-        f'simulation_{stock_type}',
+        f'simulation_{simulation_id}',
         {
             'type': 'simulation_update',
             'message': data

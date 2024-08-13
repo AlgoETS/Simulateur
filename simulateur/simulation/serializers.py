@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import (
-    Company, SimulationData, Stock, UserProfile, Event, SimulationSettings,
+    Company, Stock, UserProfile, Event, SimulationSettings,
     Scenario, Team, Portfolio, TransactionHistory, Trigger, News, StockPriceHistory, ScenarioManager
 )
 
@@ -86,17 +86,6 @@ class ScenarioSerializer(serializers.ModelSerializer):
             'id', 'name', 'description', 'backstory', 'duration',
         ]
 
-
-class SimulationDataSerializer(serializers.ModelSerializer):
-    scenario = ScenarioSerializer()
-    portfolio = PortfolioSerializer()
-    transactions = TransactionHistorySerializer(many=True)
-
-    class Meta:
-        model = SimulationData
-        fields = '__all__'
-
-
 class ScenarioManagerSerializer(serializers.ModelSerializer):
     scenario = ScenarioSerializer()
     stocks = StockSerializer(many=True)
@@ -105,13 +94,12 @@ class ScenarioManagerSerializer(serializers.ModelSerializer):
     triggers = TriggerSerializer(many=True)
     news = NewsSerializer(many=True)
     simulation_settings = SimulationSettingsSerializer()
-    simulation_data = SimulationDataSerializer()
 
     class Meta:
         model = ScenarioManager
         fields = [
             'scenario', 'stocks', 'teams', 'events', 'triggers', 'news',
-            'simulation_settings', 'simulation_data', 'state', 'timestamp', 'published_date'
+            'simulation_settings', 'state', 'timestamp', 'published_date'
         ]
 
 

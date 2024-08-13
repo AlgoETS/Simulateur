@@ -29,6 +29,10 @@ class DecoratorTests(TestCase):
         self.normal_user = User.objects.create_user(username='user', password='password')
         self.team = Team.objects.create(name="Test Team")
         self.user_profile, _ = UserProfile.objects.get_or_create(user=self.normal_user)
+
+        # Ensure the UserProfile is saved before accessing many-to-many fields
+        self.user_profile.save()
+
         self.user_profile.teams.set([self.team])
         self.team.members.set([self.user_profile])
         self.anonymous_user = AnonymousUser()

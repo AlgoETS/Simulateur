@@ -3,8 +3,7 @@ from decimal import Decimal
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.utils import timezone
-from simulation.models import Portfolio, ScenarioManager, UserProfile, Stock, Scenario, SimulationSettings, \
-    SimulationData, StockPortfolio, StockPriceHistory, Company
+from simulation.models import Portfolio, ScenarioManager, UserProfile, Stock, Scenario, SimulationSettings, StockPortfolio, StockPriceHistory, Company
 
 
 class PortfolioModelTest(TestCase):
@@ -21,18 +20,10 @@ class PortfolioModelTest(TestCase):
         # Create SimulationSettings instance
         self.simulation_settings = SimulationSettings.objects.create()
 
-        # Create SimulationData instance
-        self.simulation_data = SimulationData.objects.create(
-            is_active=True,
-            price_changes=[],
-            transactions=[]
-        )
-
-        # Create ScenarioManager instance and link to SimulationData
+        # Create ScenarioManager instance
         self.scenario_manager = ScenarioManager.objects.create(
             scenario=self.scenario,
             simulation_settings=self.simulation_settings,
-            simulation_data=self.simulation_data
         )
 
         # Create multiple UserProfiles with unique Users
@@ -91,7 +82,6 @@ class PortfolioModelTest(TestCase):
             self.user_profile1.delete()
             self.user_profile2.delete()
             self.scenario_manager.delete()
-            self.simulation_data.delete()
             self.simulation_settings.delete()
             self.scenario.delete()
         except Exception as e:

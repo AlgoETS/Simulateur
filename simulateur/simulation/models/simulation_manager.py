@@ -17,7 +17,6 @@ class ScenarioManager(models.Model):
     triggers = models.ManyToManyField('Trigger', related_name='scenarios_triggers')
     news = models.ManyToManyField('News', related_name='scenarios_news')
     simulation_settings = models.OneToOneField('SimulationSettings', on_delete=models.CASCADE)
-    simulation_data = models.OneToOneField('SimulationData', on_delete=models.CASCADE)
     state = models.CharField(
         max_length=20,
         choices=ScenarioState.choices,

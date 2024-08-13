@@ -5,8 +5,29 @@ from simulation.api.portfolio import (
     BuyStock,
     SellStock,
     StockPrice,
+    PortfolioView,
 )
-from simulation.api.teams import GenerateJoinLink
+from simulation.api.teams import GenerateJoinLink, JoinTeam, RemoveTeamMember, UpdateTeamName
+from simulation.api.ai_llm import (
+    InteractWithOllama,
+    CreateNewsAI,
+    CreateEventAI,
+    CreateTriggerAI,
+    CreateCompanyAndStockAI,
+    CreateScenarioAI,
+)
+from simulation.api.company import CompanyManagement
+from simulation.api.scenario import ScenarioManagement
+from simulation.api.scenario_manager import (
+    ScenarioManagerManagement, ChangeScenarioManagerState, ScenarioManagerNews,
+    ScenarioManagerTriggers, ScenarioManagerEvents, ScenarioManagerStocks, ScenarioManagerTeams
+)
+from simulation.api.event import EventManagement
+from simulation.api.news import NewsManagement
+from simulation.api.trigger import TriggerManagement
+from simulation.api.transaction import UserOrders
+from simulation.api.stock import StockManagement, StockPriceHistoryManagement
+
 from simulation.views.auth import (
     ForgotPasswordView,
     LogoutView,
@@ -28,9 +49,6 @@ from simulation.views.dashboard import (
     TeamDashboardView,
     MarketOverviewView,
 )
-
-from simulation.api.transaction import UserOrders
-
 
 class UrlsTest(SimpleTestCase):
 
@@ -129,3 +147,115 @@ class UrlsTest(SimpleTestCase):
     def test_update_member_role_url_is_resolved(self):
         url = reverse('update_member_role', kwargs={'team_id': 1, 'user_id': 1})
         self.assertEqual(resolve(url).func.view_class, UpdateMemberRole)
+
+    def test_interact_with_ollama_url_is_resolved(self):
+        url = reverse('interact-with-ollama')
+        self.assertEqual(resolve(url).func.view_class, InteractWithOllama)
+
+    def test_create_news_ai_url_is_resolved(self):
+        url = reverse('create-news-ai')
+        self.assertEqual(resolve(url).func.view_class, CreateNewsAI)
+
+    def test_create_event_ai_url_is_resolved(self):
+        url = reverse('create-event-ai')
+        self.assertEqual(resolve(url).func.view_class, CreateEventAI)
+
+    def test_create_trigger_ai_url_is_resolved(self):
+        url = reverse('create-trigger-ai')
+        self.assertEqual(resolve(url).func.view_class, CreateTriggerAI)
+
+    def test_create_company_stock_ai_url_is_resolved(self):
+        url = reverse('create-company-stock-ai')
+        self.assertEqual(resolve(url).func.view_class, CreateCompanyAndStockAI)
+
+    def test_create_scenario_ai_url_is_resolved(self):
+        url = reverse('create-scenario-ai')
+        self.assertEqual(resolve(url).func.view_class, CreateScenarioAI)
+
+    def test_company_management_create_url_is_resolved(self):
+        url = reverse('create_company')
+        self.assertEqual(resolve(url).func.view_class, CompanyManagement)
+
+    def test_company_management_manage_url_is_resolved(self):
+        url = reverse('manage_company', kwargs={'company_id': 1})
+        self.assertEqual(resolve(url).func.view_class, CompanyManagement)
+
+    def test_scenario_management_create_url_is_resolved(self):
+        url = reverse('create_scenario')
+        self.assertEqual(resolve(url).func.view_class, ScenarioManagement)
+
+    def test_scenario_management_manage_url_is_resolved(self):
+        url = reverse('manage_scenario', kwargs={'scenario_id': 1})
+        self.assertEqual(resolve(url).func.view_class, ScenarioManagement)
+
+    def test_scenario_manager_management_create_url_is_resolved(self):
+        url = reverse('create_scenario_manager')
+        self.assertEqual(resolve(url).func.view_class, ScenarioManagerManagement)
+
+    def test_scenario_manager_management_manage_url_is_resolved(self):
+        url = reverse('manage_scenario_manager', kwargs={'scenario_manager_id': 1})
+        self.assertEqual(resolve(url).func.view_class, ScenarioManagerManagement)
+
+    def test_scenario_manager_stocks_url_is_resolved(self):
+        url = reverse('scenario_manager_stocks', kwargs={'scenario_manager_id': 1})
+        self.assertEqual(resolve(url).func.view_class, ScenarioManagerStocks)
+
+    def test_scenario_manager_teams_url_is_resolved(self):
+        url = reverse('scenario_manager_teams', kwargs={'scenario_manager_id': 1})
+        self.assertEqual(resolve(url).func.view_class, ScenarioManagerTeams)
+
+    def test_scenario_manager_events_url_is_resolved(self):
+        url = reverse('scenario_manager_events', kwargs={'scenario_manager_id': 1})
+        self.assertEqual(resolve(url).func.view_class, ScenarioManagerEvents)
+
+    def test_scenario_manager_triggers_url_is_resolved(self):
+        url = reverse('scenario_manager_triggers', kwargs={'scenario_manager_id': 1})
+        self.assertEqual(resolve(url).func.view_class, ScenarioManagerTriggers)
+
+    def test_scenario_manager_news_url_is_resolved(self):
+        url = reverse('scenario_manager_news', kwargs={'scenario_manager_id': 1})
+        self.assertEqual(resolve(url).func.view_class, ScenarioManagerNews)
+
+    def test_change_scenario_manager_state_url_is_resolved(self):
+        url = reverse('change_state', kwargs={'scenario_manager_id': 1})
+        self.assertEqual(resolve(url).func.view_class, ChangeScenarioManagerState)
+
+    def test_news_management_create_url_is_resolved(self):
+        url = reverse('create_news')
+        self.assertEqual(resolve(url).func.view_class, NewsManagement)
+
+    def test_news_management_manage_url_is_resolved(self):
+        url = reverse('manage_news', kwargs={'news_id': 1})
+        self.assertEqual(resolve(url).func.view_class, NewsManagement)
+
+    def test_event_management_create_url_is_resolved(self):
+        url = reverse('create_event')
+        self.assertEqual(resolve(url).func.view_class, EventManagement)
+
+    def test_event_management_manage_url_is_resolved(self):
+        url = reverse('manage_event', kwargs={'event_id': 1})
+        self.assertEqual(resolve(url).func.view_class, EventManagement)
+
+    def test_trigger_management_create_url_is_resolved(self):
+        url = reverse('create_trigger')
+        self.assertEqual(resolve(url).func.view_class, TriggerManagement)
+
+    def test_trigger_management_manage_url_is_resolved(self):
+        url = reverse('manage_trigger', kwargs={'trigger_id': 1})
+        self.assertEqual(resolve(url).func.view_class, TriggerManagement)
+
+    def test_stock_management_create_url_is_resolved(self):
+        url = reverse('create_stock')
+        self.assertEqual(resolve(url).func.view_class, StockManagement)
+
+    def test_stock_management_manage_url_is_resolved(self):
+        url = reverse('manage_stock', kwargs={'stock_id': 1})
+        self.assertEqual(resolve(url).func.view_class, StockManagement)
+
+    def test_stock_price_history_list_url_is_resolved(self):
+        url = reverse('price_history_list')
+        self.assertEqual(resolve(url).func.view_class, StockPriceHistoryManagement)
+
+    def test_stock_price_history_detail_url_is_resolved(self):
+        url = reverse('price_history_detail', kwargs={'price_history_id': 1})
+        self.assertEqual(resolve(url).func.view_class, StockPriceHistoryManagement)

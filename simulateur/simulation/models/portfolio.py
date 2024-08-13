@@ -11,7 +11,7 @@ class Portfolio(models.Model):
         related_name="portfolio",
     )
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    scenario_manager = models.ForeignKey("ScenarioManager", on_delete=models.CASCADE)
+    scenario_manager = models.ForeignKey("ScenarioManager", on_delete=models.CASCADE, related_name='portfolios')
 
     def __str__(self):
         return f"Portfolio for {self.owner}"

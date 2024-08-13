@@ -40,15 +40,6 @@ class Scenario {
     +IntegerField duration
 }
 
-class SimulationData {
-    +ForeignKey scenario_manager
-    +DateTimeField start_time
-    +DateTimeField end_time
-    +BooleanField is_active
-    +JSONField price_changes
-    +JSONField transactions
-}
-
 class ScenarioManager {
     +ForeignKey scenario
     +CharField state
@@ -132,13 +123,11 @@ Company "1" --> "0..*" Stock : "has many"
 Stock "1" --> "0..*" StockPriceHistory : "has many"
 ScenarioManager "1" --> "1" Scenario : "manages"
 ScenarioManager "1" --> "1" SimulationSettings : "configures"
-ScenarioManager "1" --> "1" SimulationData : "runs"
 ScenarioManager "1" --> "0..*" Stock : "manages"
 ScenarioManager "1" --> "0..*" Team : "manages"
 ScenarioManager "1" --> "0..*" Event : "triggers"
 ScenarioManager "1" --> "0..*" Trigger : "activates"
 ScenarioManager "1" --> "0..*" News : "broadcasts"
-SimulationData "1" --> "0..*" StockPriceHistory : "tracks"
 Team "1" --> "0..*" JoinLink : "has many"
 Portfolio "1" --> "0..*" StockPortfolio : "contains"
 UserProfile "1" --> "0..*" Order : "places"

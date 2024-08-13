@@ -2,7 +2,6 @@ from .company import Company
 from .event import Event
 from .news import News
 from .scenario import Scenario
-from .simulation_data import SimulationData
 from .simulation_manager import ScenarioManager
 from .simulation_settings import SimulationSettings
 from .stock import Stock, StockPriceHistory

@@ -1,2 +1,4 @@
-name,description,backstory,duration,stocks,teams,events,triggers,simulation_settings
-ScenarioA,Description for Scenario A,Backstory for Scenario A,3600,AMI;BCL;CCFC;COAK;CRYPTO;HEX;HRP;MINET;SMITH;NBOS;BBB;CHARGEX;CCEG;EVT;IND;PYRA;RD;SPHASE;SOLAR;WANG,TeamA,EventA,TriggerA,1
+name,description,backstory,duration
+ScenarioA,Description for Scenario A,Backstory for Scenario A,3600
+ScenarioB,Description for Scenario B,Backstory for Scenario B,5400
+ScenarioC,Description for Scenario C,Backstory for Scenario C,7200

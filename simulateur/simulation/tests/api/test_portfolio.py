@@ -8,7 +8,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 from simulation.models import (
     Portfolio, Stock, Order, TransactionHistory, Scenario, UserProfile,
-    StockPriceHistory, Company, ScenarioManager, SimulationSettings, SimulationData
+    StockPriceHistory, Company, ScenarioManager, SimulationSettings
 )
 
 class BuyStockTests(TestCase):
@@ -25,11 +25,9 @@ class BuyStockTests(TestCase):
         # Create necessary scenario-related models
         self.scenario = Scenario.objects.create(name="Test Scenario")
         self.simulation_settings = SimulationSettings.objects.create()
-        self.simulation_data = SimulationData.objects.create()
         self.scenario_manager = ScenarioManager.objects.create(
             scenario=self.scenario,
             simulation_settings=self.simulation_settings,
-            simulation_data=self.simulation_data
         )
 
         # Create the portfolio with scenario_manager
@@ -53,7 +51,6 @@ class BuyStockTests(TestCase):
         Scenario.objects.all().delete()
         ScenarioManager.objects.all().delete()
         SimulationSettings.objects.all().delete()
-        SimulationData.objects.all().delete()
         Stock.objects.all().delete()
         StockPriceHistory.objects.all().delete()
 
@@ -120,11 +117,9 @@ class SellStockTests(TestCase):
         # Create necessary scenario-related models
         self.scenario = Scenario.objects.create(name="Test Scenario")
         self.simulation_settings = SimulationSettings.objects.create()
-        self.simulation_data = SimulationData.objects.create()
         self.scenario_manager = ScenarioManager.objects.create(
             scenario=self.scenario,
             simulation_settings=self.simulation_settings,
-            simulation_data=self.simulation_data
         )
 
         # Create the portfolio with scenario_manager
@@ -148,7 +143,6 @@ class SellStockTests(TestCase):
         Scenario.objects.all().delete()
         ScenarioManager.objects.all().delete()
         SimulationSettings.objects.all().delete()
-        SimulationData.objects.all().delete()
         Stock.objects.all().delete()
         StockPriceHistory.objects.all().delete()
 
@@ -193,11 +187,9 @@ class UserOrdersTests(TestCase):
 
         self.scenario = Scenario.objects.create(name="Test Scenario")
         self.simulation_settings = SimulationSettings.objects.create()
-        self.simulation_data = SimulationData.objects.create()
         self.scenario_manager = ScenarioManager.objects.create(
             scenario=self.scenario,
             simulation_settings=self.simulation_settings,
-            simulation_data=self.simulation_data
         )
 
         self.company = Company.objects.create(name="Test Company")
@@ -216,7 +208,6 @@ class UserOrdersTests(TestCase):
         Scenario.objects.all().delete()
         ScenarioManager.objects.all().delete()
         SimulationSettings.objects.all().delete()
-        SimulationData.objects.all().delete()
         Company.objects.all().delete()
         Stock.objects.all().delete()
         TransactionHistory.objects.all().delete()

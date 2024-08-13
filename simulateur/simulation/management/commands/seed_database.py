@@ -1,12 +1,15 @@
 import csv
 from datetime import datetime
 
+import pytz
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.utils.timezone import make_aware
 from simulation.models import (
     Company, Stock, Team, UserProfile, Event, Trigger, SimulationSettings,
-    Scenario, Portfolio, TransactionHistory
+    Scenario, Portfolio, TransactionHistory, Order, ScenarioManager,
+    StockPortfolio, StockPriceHistory, News, JoinLink
 )
 
 
@@ -33,6 +36,11 @@ class Command(BaseCommand):
         self.seed_portfolios()
         self.seed_orders()
         self.seed_transactions()
+        self.seed_simulation_manager()
+        self.seed_stock_portfolios()
+        self.seed_stock_price_history()
+        self.seed_news()
+        self.seed_join_links()
 
     def seed_users(self):
         try:
@@ -48,7 +56,7 @@ class Command(BaseCommand):
                     )
                     UserProfile.objects.get_or_create(
                         user=user,
-                        defaults={'balance': float(row['balance'])}
+                        defaults={'role': 'member'}
                     )
             self.stdout.write(self.style.SUCCESS('Seeded users'))
         except Exception as e:
@@ -81,14 +89,9 @@ class Command(BaseCommand):
                     Stock.objects.get_or_create(
                         company=company,
                         ticker=row['ticker'],
-                        open_price=float(row['open_price']),
-                        high_price=float(row['high_price']),
-                        low_price=float(row['low_price']),
-                        close_price=float(row['close_price']),
                         defaults={
-                            'price': float(row['price']),
-                            'partial_share': float(row['partial_share']),
-                            'complete_share': int(row['complete_share'])
+                            'volatility': float(row['volatility']),
+                            'liquidity': float(row['liquidity'])
                         }
                     )
             self.stdout.write(self.style.SUCCESS('Seeded stocks'))
@@ -115,12 +118,14 @@ class Command(BaseCommand):
             with open('data/events.csv', newline='') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
+                    naive_datetime = datetime.strptime(row['date'], '%Y-%m-%d %H:%M:%S')
+                    aware_datetime = make_aware(naive_datetime, timezone=pytz.UTC)  # Assuming UTC
                     Event.objects.get_or_create(
                         name=row['name'],
                         defaults={
                             'description': row['description'],
                             'type': row['type'],
-                            'date': datetime.strptime(row['date'], '%Y-%m-%d %H:%M:%S')
+                            'date': aware_datetime
                         }
                     )
             self.stdout.write(self.style.SUCCESS('Seeded events'))
@@ -164,9 +169,8 @@ class Command(BaseCommand):
                             'max_interval': int(row['max_interval']),
                             'fluctuation_rate': float(row['fluctuation_rate']),
                             'close_stock_market_at_night': row['close_stock_market_at_night'].lower() == 'true',
-                            'noise_function': row['noise_function'] if 'noise_function' in row else 'brownian',
-                            'stock_trading_logic': row[
-                                'stock_trading_logic'] if 'stock_trading_logic' in row else 'static'
+                            'noise_function': row['noise_function'],
+                            'stock_trading_logic': row['stock_trading_logic']
                         }
                     )
             self.stdout.write(self.style.SUCCESS('Seeded simulation settings'))
@@ -178,27 +182,14 @@ class Command(BaseCommand):
             with open('data/scenarios.csv', newline='') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
-                    simulation_settings = SimulationSettings.objects.first()
                     scenario, created = Scenario.objects.get_or_create(
                         name=row['name'],
                         defaults={
                             'description': row['description'],
                             'backstory': row['backstory'],
-                            'duration': int(row['duration']),
-                            'simulation_settings': simulation_settings
+                            'duration': int(row['duration'])
                         }
                     )
-                    if created:
-                        stocks = Stock.objects.filter(ticker__in=row['stocks'].split(';'))
-                        users = UserProfile.objects.filter(user__username__in=row['users'].split(';'))
-                        teams = Team.objects.filter(name__in=row['teams'].split(';'))
-                        events = Event.objects.filter(name__in=row['events'].split(';'))
-                        triggers = Trigger.objects.filter(name__in=row['triggers'].split(';'))
-                        scenario.stocks.set(stocks)
-                        scenario.users.set(users)
-                        scenario.teams.set(teams)
-                        scenario.events.set(events)
-                        scenario.triggers.set(triggers)
             self.stdout.write(self.style.SUCCESS('Seeded scenarios'))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Error seeding scenarios: {e}'))
@@ -209,17 +200,10 @@ class Command(BaseCommand):
                 reader = csv.DictReader(csvfile)
                 for row in reader:
                     owner = UserProfile.objects.get(user__username=row['owner']) if row['owner'] else None
-                    team_names = row['team'].split(';') if row['team'] else []
-                    teams = Team.objects.filter(name__in=team_names)
                     portfolio, created = Portfolio.objects.get_or_create(
-                        owner=owner
+                        owner=owner,
+                        defaults={'balance': float(row['balance'])}
                     )
-                    if created:
-                        portfolio.teams.set(teams)
-                        stocks = Stock.objects.filter(ticker__in=row['stocks'].split(';'))
-                        portfolio.stocks.set(stocks)
-                        portfolio.balance = float(row['balance'])
-                        portfolio.save()
             self.stdout.write(self.style.SUCCESS('Seeded portfolios'))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Error seeding portfolios: {e}'))
@@ -231,13 +215,15 @@ class Command(BaseCommand):
                 for row in reader:
                     user_profile = UserProfile.objects.get(user__username=row['user'])
                     stock = Stock.objects.get(ticker=row['stock'])
+                    naive_datetime = datetime.strptime(row['timestamp'], '%Y-%m-%d %H:%M:%S')
+                    aware_datetime = make_aware(naive_datetime, timezone=pytz.UTC)  # Assuming UTC
                     Order.objects.create(
                         user=user_profile,
                         stock=stock,
                         quantity=int(row['quantity']),
                         price=float(row['price']),
                         transaction_type=row['transaction_type'],
-                        timestamp=datetime.strptime(row['timestamp'], '%Y-%m-%d %H:%M:%S')
+                        timestamp=aware_datetime
                     )
             self.stdout.write(self.style.SUCCESS('Seeded orders'))
         except Exception as e:
@@ -245,15 +231,126 @@ class Command(BaseCommand):
 
     def seed_transactions(self):
         try:
-            with open('data/transactions.csv', newline='') as csvfile:
+            with open('data/transaction_histories.csv', newline='') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
                     order_ids = row['orders'].split(';')
                     orders = Order.objects.filter(id__in=order_ids)
-                    scenario = Scenario.objects.get(name=row['scenario'])
-                    transaction_history = TransactionHistory.objects.create(scenario=scenario)
+                    scenario_manager = ScenarioManager.objects.get(id=row['scenario_manager'])
+                    transaction_history = TransactionHistory.objects.create(scenario_manager=scenario_manager)
                     transaction_history.orders.set(orders)
                     transaction_history.save()
             self.stdout.write(self.style.SUCCESS('Seeded transactions'))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Error seeding transactions: {e}'))
+
+    def seed_simulation_manager(self):
+        try:
+            with open('data/simulation_manager.csv', newline='') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    scenario = Scenario.objects.get(name=row['scenario'])
+                    simulation_settings = SimulationSettings.objects.get(id=row['simulation_settings'])
+
+                    scenario_manager, created = ScenarioManager.objects.get_or_create(
+                        scenario=scenario,
+                        defaults={
+                            'simulation_settings': simulation_settings,
+                            'state': row['state'],
+                        }
+                    )
+
+                    if created:
+                        stocks = Stock.objects.filter(ticker__in=row['stocks'].split(';'))
+                        teams = Team.objects.filter(name__in=row['teams'].split(';'))
+                        events = Event.objects.filter(name__in=row['events'].split(';'))
+                        triggers = Trigger.objects.filter(name__in=row['triggers'].split(';'))
+                        news = News.objects.filter(id__in=row['news'].split(';'))
+
+                        scenario_manager.stocks.set(stocks)
+                        scenario_manager.teams.set(teams)
+                        scenario_manager.events.set(events)
+                        scenario_manager.triggers.set(triggers)
+                        scenario_manager.news.set(news)
+            self.stdout.write(self.style.SUCCESS('Seeded simulation manager'))
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f'Error seeding simulation manager: {e}'))
+
+    def seed_stock_portfolios(self):
+        try:
+            with open('data/stock_portfolios.csv', newline='') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    portfolio = Portfolio.objects.get(id=row['portfolio'])
+                    stock = Stock.objects.get(ticker=row['stock'])
+                    StockPortfolio.objects.get_or_create(
+                        portfolio=portfolio,
+                        stock=stock,
+                        defaults={
+                            'quantity': int(row['quantity']),
+                            'latest_price_history': StockPriceHistory.objects.get(id=row['latest_price_history'])
+                        }
+                    )
+            self.stdout.write(self.style.SUCCESS('Seeded stock portfolios'))
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f'Error seeding stock portfolios: {e}'))
+
+    def seed_stock_price_history(self):
+        try:
+            with open('data/stock_price_history.csv', newline='') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    stock = Stock.objects.get(ticker=row['stock'])
+                    StockPriceHistory.objects.get_or_create(
+                        stock=stock,
+                        timestamp=datetime.strptime(row['timestamp'], '%Y-%m-%d %H:%M:%S'),
+                        defaults={
+                            'open_price': float(row['open_price']),
+                            'high_price': float(row['high_price']),
+                            'low_price': float(row['low_price']),
+                            'close_price': float(row['close_price']),
+                            'volatility': float(row['volatility']),
+                            'liquidity': float(row['liquidity'])
+                        }
+                    )
+            self.stdout.write(self.style.SUCCESS('Seeded stock price history'))
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f'Error seeding stock price history: {e}'))
+
+    def seed_news(self):
+        try:
+            with open('data/news.csv', newline='') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    naive_datetime = datetime.strptime(row['published_date'], '%Y-%m-%d %H:%M:%S')
+                    aware_datetime = make_aware(naive_datetime, timezone=pytz.UTC)  # Assuming UTC
+                    event = Event.objects.get(name=row['event']) if row['event'] else None
+                    News.objects.get_or_create(
+                        title=row['title'],
+                        defaults={
+                            'content': row['content'],
+                            'event': event,
+                            'published_date': aware_datetime
+                        }
+                    )
+            self.stdout.write(self.style.SUCCESS('Seeded news'))
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f'Error seeding news: {e}'))
+
+    def seed_join_links(self):
+        try:
+            with open('data/join_links.csv', newline='') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    team = Team.objects.get(name=row['team'])
+                    JoinLink.objects.get_or_create(
+                        team=team,
+                        key=row['key'],
+                        defaults={
+                            'created_at': datetime.strptime(row['created_at'], '%Y-%m-%d %H:%M:%S'),
+                            'expires_at': datetime.strptime(row['expires_at'], '%Y-%m-%d %H:%M:%S')
+                        }
+                    )
+            self.stdout.write(self.style.SUCCESS('Seeded join links'))
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f'Error seeding join links: {e}'))

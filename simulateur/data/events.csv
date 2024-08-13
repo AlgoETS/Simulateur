@@ -1,2 +1,16 @@
-name,description,impact,type,date,scenario
-EventA,Description for Event A,5.0,TypeA,2024-06-17 12:00:00, ScenarioA
+name,description,type,date
+EventA,Description for Event A,TypeA,2024-06-17 12:00:00
+EventB,Description for Event B,TypeB,2024-07-01 14:30:00
+EventC,Description for Event C,TypeC,2024-07-15 09:00:00
+EventD,Description for Event D,TypeA,2024-08-05 11:15:00
+EventE,Description for Event E,TypeB,2024-08-20 16:45:00
+EventF,Description for Event F,TypeC,2024-09-10 10:00:00
+EventG,Description for Event G,TypeA,2024-09-25 13:30:00
+EventH,Description for Event H,TypeB,2024-10-05 08:00:00
+EventI,Description for Event I,TypeC,2024-10-18 17:00:00
+EventJ,Description for Event J,TypeA,2024-11-01 12:00:00
+EventK,Description for Event K,TypeB,2024-11-15 14:30:00
+EventL,Description for Event L,TypeC,2024-12-01 09:45:00
+EventM,Description for Event M,TypeA,2024-12-10 11:00:00
+EventN,Description for Event N,TypeB,2024-12-25 16:00:00
+EventO,Description for Event O,TypeC,2025-01-05 10:30:00

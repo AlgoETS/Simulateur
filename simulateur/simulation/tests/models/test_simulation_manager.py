@@ -1,7 +1,6 @@
 from django.test import TestCase
 from django.utils import timezone
-from simulation.models import ScenarioManager, Scenario, Stock, Team, Event, Trigger, News, SimulationSettings, \
-    SimulationData, Company
+from simulation.models import ScenarioManager, Scenario, Stock, Team, Event, Trigger, News, SimulationSettings, Company
 
 
 class ScenarioManagerModelTest(TestCase):
@@ -26,22 +25,14 @@ class ScenarioManagerModelTest(TestCase):
         self.simulation_settings = SimulationSettings.objects.create(
         )
 
-        self.simulation_data = SimulationData.objects.create(
-            is_active=True,
-            price_changes=[],
-            transactions=[]
-        )
-
         # Create ScenarioManager instance
         self.scenario_manager = ScenarioManager.objects.create(
             scenario=self.scenario,
-            simulation_settings=self.simulation_settings,
-            simulation_data=self.simulation_data,
+            simulation_settings=self.simulation_settings
         )
 
     def tearDown(self):
         self.scenario_manager.delete()
-        self.simulation_data.delete()
         self.simulation_settings.delete()
         self.scenario.delete()
         self.company.delete()
@@ -50,7 +41,6 @@ class ScenarioManagerModelTest(TestCase):
         # Test if the ScenarioManager object was created successfully
         self.assertEqual(self.scenario_manager.scenario, self.scenario)
         self.assertEqual(self.scenario_manager.simulation_settings, self.simulation_settings)
-        self.assertEqual(self.scenario_manager.simulation_data, self.simulation_data)
         self.assertEqual(self.scenario_manager.state, ScenarioManager.ScenarioState.INITIALIZED)
         self.assertIsNotNone(self.scenario_manager.timestamp)
         self.assertIsNotNone(self.scenario_manager.published_date)

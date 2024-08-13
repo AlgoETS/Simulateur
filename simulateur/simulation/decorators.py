@@ -29,6 +29,8 @@ def team_required(view_func):
             return redirect('/login/')
         try:
             user_profile = request.user.userprofile
+            if not user_profile.id:  # Ensure the UserProfile has been saved
+                return JsonResponse({'error': 'User profile does not exist'}, status=403)
             if not user_profile.teams.exists():  # Check if the user is in any team
                 return JsonResponse({'error': 'User is not part of a team'}, status=403)
         except UserProfile.DoesNotExist:
@@ -36,3 +38,4 @@ def team_required(view_func):
         return view_func(request, *args, **kwargs)
 
     return _wrapped_view
+

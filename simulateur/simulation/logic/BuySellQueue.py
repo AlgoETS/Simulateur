@@ -1,9 +1,7 @@
 from collections import deque
-
 from django.db import transaction
 from django.utils import timezone
-from simulation.models import Stock, Order
-from simulation.models import TransactionHistory
+from simulation.models import Stock, Order, TransactionHistory
 
 
 class BuySellQueue:
@@ -22,9 +20,6 @@ class BuySellQueue:
         while self.buy_queue and self.sell_queue:
             buy_order = self.buy_queue.popleft()
             sell_order = self.sell_queue.popleft()
-
-            # check current price
-            # if the
 
             if buy_order[3] >= sell_order[3]:  # Buy price >= Sell price
                 matched_price = (buy_order[3] + sell_order[3]) / 2
@@ -53,7 +48,7 @@ class BuySellQueue:
         return {
             "buyer": buyer.user.username,
             "seller": seller.user.username,
-            "asset": asset.name,
+            "asset": asset.ticker,
             "amount": amount,
             "price": price,
             "timestamp": timezone.now().isoformat(),
@@ -61,8 +56,6 @@ class BuySellQueue:
 
     def complete_transaction(self, buyer, seller, asset, amount, price, scenario):
         if scenario.simulation_settings.stock_trading_logic == "dynamic":
-            # Modify stock price based on most recent transaction
-            # scenario.stocks.get(ticker=asset)
             stock = Stock.objects.get(ticker=asset)
             stock.price = price
             stock.save()
@@ -70,34 +63,36 @@ class BuySellQueue:
         # Exchange the assets between seller and buyer
         seller.portfolio.stocks.remove(asset)
         buyer.portfolio.stocks.add(asset)
-        # Add the amount to the user's balance
+
+        # Adjust the users' balances
         seller.portfolio.balance += price * amount
         buyer.portfolio.balance -= price * amount
         seller.save()
         buyer.save()
-        self.log_transaction(buyer, asset, "buy", amount, price)
-        self.log_transaction(seller, asset, "sell", amount, price)
+
+        self.log_transaction(buyer, asset, "BUY", amount, price)
+        self.log_transaction(seller, asset, "SELL", amount, price)
 
     def partial_transaction(self, buyer, seller, asset, sell_amount, price, scenario):
         if scenario.simulation_settings.stock_trading_logic == "dynamic":
-            # Modify stock price based on most recent transaction
-            # scenario.stocks.get(ticker=asset)
             stock = Stock.objects.get(ticker=asset)
             stock.price = price
             stock.save()
+
         # Exchange the assets between seller and buyer
         seller.portfolio.stocks.remove(asset)
         buyer.portfolio.stocks.add(asset)
-        # Add the amount to the user's balance
+
+        # Adjust the users' balances
         seller.portfolio.balance += price * sell_amount
         buyer.portfolio.balance -= price * sell_amount
         seller.save()
         buyer.save()
-        self.log_transaction(buyer, asset, "buy", sell_amount, price)
-        self.log_transaction(seller, asset, "sell", sell_amount, price)
+
+        self.log_transaction(buyer, asset, "BUY", sell_amount, price)
+        self.log_transaction(seller, asset, "SELL", sell_amount, price)
 
     def log_transaction(self, user, asset, transaction_type, amount, price):
-        # Create an order
         order = Order.objects.create(
             user=user,
             stock=asset,
@@ -105,11 +100,11 @@ class BuySellQueue:
             price=price,
             transaction_type=transaction_type,
         )
-        # Create a transaction history record
-        transaction_history = TransactionHistory.objects.get_or_create(
-            scenario__id=user.portfolio.scenario.id
+
+        transaction_history, _ = TransactionHistory.objects.get_or_create(
+            scenario_manager=user.portfolio.scenario_manager
         )
-        transaction_history.orders.set([order])
+        transaction_history.orders.add(order)
 
 
 buy_sell_queue = BuySellQueue()

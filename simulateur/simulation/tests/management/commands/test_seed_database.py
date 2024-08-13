@@ -1,10 +1,11 @@
 from io import StringIO
 from unittest.mock import patch, mock_open
 
+from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.test import TestCase
 from simulation.models import Company, Stock, UserProfile, Event, Team, Trigger, SimulationSettings, Scenario, \
-    Portfolio, TransactionHistory
+    Portfolio, TransactionHistory, UserProfile
 
 
 class SeedDatabaseCommandTest(TestCase):
