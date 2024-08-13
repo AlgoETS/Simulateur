@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from django.db import transaction
 from simulation.models import (
     Company, Stock, Team, UserProfile, Event, Trigger, SimulationSettings,
-    Scenario, Portfolio, TransactionHistory
+    Scenario, Portfolio, TransactionHistory, Order
 )
 
 class Command(BaseCommand):
@@ -247,7 +247,7 @@ class Command(BaseCommand):
 
     def seed_transactions(self):
         try:
-            with open('data/transactions.csv', newline='') as csvfile:
+            with open('data/transaction_history.csv', newline='') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
                     order_ids = row['orders'].split(';')

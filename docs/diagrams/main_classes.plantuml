@@ -77,6 +77,10 @@ class Trigger {
 
 class StockPortfolio {
     +stocks: List<Stock>
+    +portfolio: Portfolio
+    +average_stock_price: Float
+    +quantity: Int
+    +market_value: Float
 }
 
 class Order {

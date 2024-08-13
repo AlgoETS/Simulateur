@@ -3,11 +3,15 @@ from django.dispatch import receiver
 from django.contrib.auth.models import User
 from allauth.account.signals import user_signed_up
 from simulation.models import UserProfile
+from simulation.models import Portfolio
 
 @receiver(post_save, sender=User)
 def create_or_update_user_profile(sender, instance, created, **kwargs):
     if created:
-        UserProfile.objects.get_or_create(user=instance)
+        user_profile, _ = UserProfile.objects.get_or_create(user=instance)
+        # Create a Portfolio for the new UserProfile
+        Portfolio.objects.get_or_create(owner=user_profile)
+        
     else:
         instance.userprofile.save()
 

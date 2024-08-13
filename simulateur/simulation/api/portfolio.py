@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from simulation.models import Portfolio, Stock, Order, TransactionHistory, Scenario
+from simulation.models import Portfolio, Stock, Order, TransactionHistory, Scenario,StockPortfolio
 from simulation.logic.BuySellQueue import buy_sell_queue
 from simulation.logic.broker import broker
 from simulation.serializers import PortfolioSerializer
@@ -52,6 +52,22 @@ class BuyStock(View):
                     price=price,
                     transaction_type='BUY'
                 )
+
+                stock_portfolio, created = StockPortfolio.objects.get_or_create(
+                    portfolio=user_profile.portfolio,
+                    stock=stock,
+                    defaults={'quantity': 0, 'average_stock_price': 0}
+                )
+
+                # Update the stock portfolio
+                new_total_quantity = stock_portfolio.quantity + amount
+                new_average_price = (
+                    (stock_portfolio.quantity * stock_portfolio.average_holding_price) + (amount * price)
+                ) / new_total_quantity
+
+                stock_portfolio.quantity = new_total_quantity
+                stock_portfolio.average_holding_price = new_average_price
+                stock_portfolio.save()
 
                 # Logic to buy stock
                 buy_sell_queue.add_to_buy_queue(user_profile, stock, amount, price, scenario)
@@ -104,6 +120,14 @@ class SellStock(View):
                     price=price,
                     transaction_type='SELL'
                 )
+
+                # Update the stock portfolio
+                stock_portfolio.quantity -= amount
+                stock_portfolio.market_value = stock_portfolio.quantity * price
+                stock_portfolio.save()
+
+                if stock_portfolio.quantity == 0:
+                    stock_portfolio.delete()
 
                 # Logic to sell stock
                 buy_sell_queue.add_to_sell_queue(user_profile, stock, amount, price)
