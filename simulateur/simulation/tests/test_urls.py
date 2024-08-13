@@ -5,7 +5,6 @@ from simulation.api.portfolio import (
     BuyStock,
     SellStock,
     StockPrice,
-    UserOrders,
 )
 from simulation.api.teams import GenerateJoinLink
 from simulation.views.auth import (
@@ -29,6 +28,8 @@ from simulation.views.dashboard import (
     TeamDashboardView,
     MarketOverviewView,
 )
+
+from simulation.api.transaction import UserOrders
 
 
 class UrlsTest(SimpleTestCase):

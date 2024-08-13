@@ -61,22 +61,6 @@ class SimulationSettingsForm(forms.ModelForm):
         ]
 
 
-class ScenarioForm(forms.ModelForm):
-    companies = forms.ModelMultipleChoiceField(queryset=Company.objects.all(), required=False)
-    stocks = forms.ModelMultipleChoiceField(queryset=Stock.objects.all(), required=False)
-    users = forms.ModelMultipleChoiceField(queryset=UserProfile.objects.all(), required=False)
-    teams = forms.ModelMultipleChoiceField(queryset=Team.objects.all(), required=False)
-    events = forms.ModelMultipleChoiceField(queryset=Event.objects.all(), required=False)
-    triggers = forms.ModelMultipleChoiceField(queryset=Trigger.objects.all(), required=False)
-
-    class Meta:
-        model = Scenario
-        fields = [
-            'name', 'description', 'backstory', 'difficulty_level', 'duration',
-            'companies', 'stocks', 'users', 'teams', 'events', 'triggers', 'simulation_settings'
-        ]
-
-
 class PortfolioForm(forms.ModelForm):
     class Meta:
         model = Portfolio
