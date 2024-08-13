@@ -38,7 +38,6 @@ class SimulationSettings(models.Model):
     stock_trading_logic = models.CharField(max_length=20, choices=STOCK_TRADING_CHOICES, default='static')
 
     def __str__(self):
-        return f'Simulation Settings: Max users: {self.max_users}, Max companies: {self.max_companies}'
-
+        return f'Simulation Settings: {self.id}'
     class Meta:
         verbose_name_plural = "Simulation Settings"

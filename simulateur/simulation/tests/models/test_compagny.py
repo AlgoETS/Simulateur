@@ -4,7 +4,6 @@ from simulation.models import Company
 class CompanyModelTest(TestCase):
 
     def setUp(self):
-        # This method will run before each test case
         self.company = Company.objects.create(
             name="TechCorp",
             backstory="A leading technology company.",
@@ -12,6 +11,9 @@ class CompanyModelTest(TestCase):
             country="USA",
             industry="Software"
         )
+
+    def tearDown(self):
+        self.company.delete()
 
     def test_company_creation(self):
         # Test if the company object was created successfully

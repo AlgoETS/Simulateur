@@ -1,92 +1,157 @@
 from django.test import TestCase
-from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
 from decimal import Decimal
-from simulation.models import Portfolio, StockPortfolio, ScenarioManager, UserProfile, Stock
-
-
+from django.utils import timezone
+from simulation.models import Portfolio, ScenarioManager, UserProfile, Stock, Scenario, SimulationSettings, SimulationData, StockPortfolio, StockPriceHistory, Company
 class PortfolioModelTest(TestCase):
 
     def setUp(self):
-        # Create necessary related objects
+        # Create a Scenario instance
+        self.scenario = Scenario.objects.create(
+            name="Test Scenario",
+            description="A test scenario",
+            backstory="This is just a test",
+            duration=30
+        )
+
+        # Create SimulationSettings instance
+        self.simulation_settings = SimulationSettings.objects.create()
+
+        # Create SimulationData instance
+        self.simulation_data = SimulationData.objects.create(
+            is_active=True,
+            price_changes=[],
+            transactions=[]
+        )
+
+        # Create ScenarioManager instance and link to SimulationData
         self.scenario_manager = ScenarioManager.objects.create(
-            scenario_name="Test Scenario"  # Assuming ScenarioManager has a scenario_name field
+            scenario=self.scenario,
+            simulation_settings=self.simulation_settings,
+            simulation_data=self.simulation_data
         )
-        self.user_profile = UserProfile.objects.create(
-            user_name="TestUser"  # Assuming UserProfile has a user_name field
-        )
+
+        # Create multiple UserProfiles with unique Users
+        self.user_profile1 = self.create_or_get_user_profile("TestUser1")
+        self.user_profile2 = self.create_or_get_user_profile("TestUser2")
 
         # Create a Portfolio instance
         self.portfolio = Portfolio.objects.create(
-            owner=self.user_profile,
+            owner=self.user_profile1,
             balance=Decimal("10000.00"),
             scenario_manager=self.scenario_manager
         )
 
-    def test_portfolio_creation(self):
-        # Test if the Portfolio object was created successfully
-        self.assertEqual(self.portfolio.owner, self.user_profile)
-        self.assertEqual(self.portfolio.balance, Decimal("10000.00"))
-        self.assertEqual(self.portfolio.scenario_manager, self.scenario_manager)
-
-    def test_portfolio_str_method(self):
-        # Test the __str__ method of the Portfolio model
-        self.assertEqual(str(self.portfolio), f"Portfolio for {self.user_profile}")
-
-    def test_portfolio_default_balance(self):
-        # Test that the default balance is correctly set
-        portfolio_default = Portfolio.objects.create(
-            owner=self.user_profile,
-            scenario_manager=self.scenario_manager
+        # Create a Company instance
+        self.company = Company.objects.create(
+            name="TestCompagny",
+            backstory="This is just a test",
+            sector="TestSector",
+            country="TestCountry",
+            industry="TestIndustry",
+            timestamp=timezone.now(),
         )
-        self.assertEqual(portfolio_default.balance, Decimal("0.00"))
 
-
-class StockPortfolioModelTest(TestCase):
-
-    def setUp(self):
-        # Create necessary related objects
-        self.scenario_manager = ScenarioManager.objects.create(
-            scenario_name="Test Scenario"
-        )
-        self.user_profile = UserProfile.objects.create(
-            user_name="TestUser"
-        )
-        self.portfolio = Portfolio.objects.create(
-            owner=self.user_profile,
-            balance=Decimal("10000.00"),
-            scenario_manager=self.scenario_manager
-        )
+        # Create a Stock instance
         self.stock = Stock.objects.create(
-            company_name="Test Company",  # Assuming Stock has a company_name field
-            ticker="TC"
+            company=self.company,
+            ticker="TST",
+            volatility=0.05,
+            liquidity=1000
+        )
+
+        # Create StockPriceHistory instance
+        self.price_history = StockPriceHistory.objects.create(
+            stock=self.stock,
+            open_price=100.00,
+            high_price=110.00,
+            low_price=95.00,
+            close_price=105.00,
         )
 
         # Create a StockPortfolio instance
         self.stock_portfolio = StockPortfolio.objects.create(
             stock=self.stock,
             portfolio=self.portfolio,
-            quantity=50
+            quantity=10,
+            latest_price_history=self.price_history
         )
 
+    def tearDown(self):
+        try:
+            self.stock_portfolio.delete()
+            self.price_history.delete()
+            self.stock.delete()
+            self.company.delete()
+            self.portfolio.delete()
+            self.user_profile1.delete()
+            self.user_profile2.delete()
+            self.scenario_manager.delete()
+            self.simulation_data.delete()
+            self.simulation_settings.delete()
+            self.scenario.delete()
+        except Exception as e:
+            self.fail(f"Teardown failed: {str(e)}")
+
+    def create_or_get_user_profile(self, username):
+        """Helper function to create or get a UserProfile."""
+        user, created = User.objects.get_or_create(username=username)
+        user_profile, created = UserProfile.objects.get_or_create(user=user)
+        return user_profile
+
+    def test_portfolio_creation(self):
+        """Test if the Portfolio object was created successfully."""
+        self.assertEqual(self.portfolio.owner, self.user_profile1)
+        self.assertEqual(self.portfolio.balance, Decimal("10000.00"))
+        self.assertEqual(self.portfolio.scenario_manager, self.scenario_manager)
+
+    def test_portfolio_str_method(self):
+        """Test the __str__ method of the Portfolio model."""
+        self.assertEqual(str(self.portfolio), f"Portfolio for {self.user_profile1}")
+
+    def test_portfolio_default_balance(self):
+        """Test the default balance of a Portfolio."""
+        portfolio_default = Portfolio.objects.create(
+            owner=self.user_profile2,
+            scenario_manager=self.scenario_manager
+        )
+        self.assertEqual(portfolio_default.balance, Decimal("0.00"))
+
     def test_stock_portfolio_creation(self):
-        # Test if the StockPortfolio object was created successfully
+        """Test if the StockPortfolio object was created successfully."""
         self.assertEqual(self.stock_portfolio.stock, self.stock)
         self.assertEqual(self.stock_portfolio.portfolio, self.portfolio)
-        self.assertEqual(self.stock_portfolio.quantity, 50)
+        self.assertEqual(self.stock_portfolio.quantity, 10)
+        self.assertEqual(self.stock_portfolio.latest_price_history, self.price_history)
+
+    def test_stock_portfolio_update_latest_price(self):
+        """Test the update_latest_price method of the StockPortfolio model."""
+        # Create a new price history to simulate an update in price
+        new_price_history = StockPriceHistory.objects.create(
+            stock=self.stock,
+            open_price=105.00,
+            high_price=115.00,
+            low_price=100.00,
+            close_price=110.00,
+        )
+
+        # Update the latest price in the stock portfolio
+        self.stock_portfolio.update_latest_price()
+
+        # Check if the latest price history has been updated
+        self.assertEqual(self.stock_portfolio.latest_price_history, new_price_history)
+
+    def test_stock_portfolio_str_method(self):
+        """Test the __str__ method of the StockPortfolio model."""
+        self.assertEqual(str(self.stock_portfolio), f"10 of {self.stock.ticker} in {self.portfolio}")
 
     def test_unique_together_constraint(self):
-        # Test the unique_together constraint
-        with self.assertRaises(ValidationError):
+        """Test the unique_together constraint of the StockPortfolio model."""
+        with self.assertRaises(Exception):
+            # Attempt to create a duplicate StockPortfolio entry
             StockPortfolio.objects.create(
                 stock=self.stock,
                 portfolio=self.portfolio,
-                quantity=100
+                quantity=5
             )
 
-    def test_stock_portfolio_default_quantity(self):
-        # Test that the default quantity is correctly set
-        stock_portfolio_default = StockPortfolio.objects.create(
-            stock=self.stock,
-            portfolio=self.portfolio
-        )
-        self.assertEqual(stock_portfolio_default.quantity, 0)

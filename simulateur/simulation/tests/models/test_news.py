@@ -20,6 +20,9 @@ class NewsModelTest(TestCase):
             event=self.event
         )
 
+    def tearDown(self):
+        self.news.delete()
+
     def test_news_creation(self):
         # Test if the News object was created successfully
         self.assertEqual(self.news.title, "Tech Conference Announced")

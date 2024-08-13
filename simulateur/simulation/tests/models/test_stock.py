@@ -4,7 +4,6 @@ from simulation.models import Stock, StockPriceHistory, Company
 class StockModelTest(TestCase):
 
     def setUp(self):
-        # Create a Company instance
         self.company = Company.objects.create(
             name="Test Company",
             backstory="Test backstory",
@@ -20,6 +19,10 @@ class StockModelTest(TestCase):
             volatility=0.5,
             liquidity=1.0
         )
+
+    def tearDown(self):
+        self.company.delete()
+        self.stock.delete()
 
     def test_stock_creation(self):
         # Test if the Stock object was created successfully

@@ -1,6 +1,5 @@
 from django.db import models
 
-
 class Stock(models.Model):
     company = models.ForeignKey(
         "Company", on_delete=models.CASCADE, related_name="stocks"

@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
-from simulation.models import TransactionHistory, Order, ScenarioManager, Stock, UserProfile, Company
+from simulation.models import TransactionHistory, Order, ScenarioManager, Stock, UserProfile, Company, Scenario, SimulationSettings, SimulationData
+
 
 class OrderModelTest(TestCase):
 
@@ -22,7 +23,7 @@ class OrderModelTest(TestCase):
 
         # Create a User and UserProfile
         self.user = User.objects.create_user(username='testuser', password='password')
-        self.user_profile = UserProfile.objects.create(user=self.user)
+        self.user_profile, created = UserProfile.objects.get_or_create(user=self.user)
 
         # Create an Order instance
         self.order = Order.objects.create(
@@ -32,6 +33,13 @@ class OrderModelTest(TestCase):
             price=100.0,
             transaction_type='BUY'
         )
+
+    def tearDown(self):
+        self.order.delete()
+        self.company.delete()
+        self.stock.delete()
+        self.user.delete()
+        self.user_profile.delete()
 
     def test_order_creation(self):
         # Test if the Order object was created successfully
@@ -45,6 +53,7 @@ class OrderModelTest(TestCase):
     def test_order_str_method(self):
         # Test the __str__ method of Order
         self.assertEqual(str(self.order), f'Order for {self.stock.ticker} by {self.user.username}')
+
 
 class TransactionHistoryModelTest(TestCase):
 
@@ -66,7 +75,7 @@ class TransactionHistoryModelTest(TestCase):
 
         # Create a User and UserProfile
         self.user = User.objects.create_user(username='testuser', password='password')
-        self.user_profile = UserProfile.objects.create(user=self.user)
+        self.user_profile, created = UserProfile.objects.get_or_create(user=self.user)
 
         # Create an Order instance
         self.order = Order.objects.create(
@@ -77,10 +86,18 @@ class TransactionHistoryModelTest(TestCase):
             transaction_type='BUY'
         )
 
-        # Create a ScenarioManager instance
+        # Create a Scenario and ScenarioManager instance
+        self.scenario = Scenario.objects.create(
+            name="Test Scenario",
+            description="A test scenario",
+            backstory="Test backstory",
+            duration=10,
+        )
+
         self.scenario_manager = ScenarioManager.objects.create(
-            scenario_id=1,  # Assuming you have a scenario model with an ID of 1
-            # Initialize other necessary fields here
+            scenario=self.scenario,
+            simulation_settings=SimulationSettings.objects.create(),
+            simulation_data=SimulationData.objects.create()
         )
 
         # Create a TransactionHistory instance and add the Order
@@ -88,6 +105,15 @@ class TransactionHistoryModelTest(TestCase):
             scenario_manager=self.scenario_manager
         )
         self.transaction_history.orders.add(self.order)
+
+    def tearDown(self):
+        self.scenario_manager.delete()
+        self.company.delete()
+        self.stock.delete()
+        self.user.delete()
+        self.user_profile.delete()
+        self.order.delete()
+        self.scenario.delete()
 
     def test_transaction_history_creation(self):
         # Test if the TransactionHistory object was created successfully

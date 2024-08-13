@@ -5,6 +5,7 @@ from .user_profile import UserProfile
 from .event import Event
 from .trigger import Trigger
 from .simulation_settings import SimulationSettings
+from .simulation_manager import ScenarioManager
 from .scenario import Scenario
 from .portfolio import Portfolio, StockPortfolio
 from .transaction_history import TransactionHistory, Order

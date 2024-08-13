@@ -52,7 +52,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'django_json_widget',
-    'simulation',
     'django_check_seo',
     'easyaudit',
     'django_prometheus',
@@ -88,6 +87,8 @@ INSTALLED_APPS = [
     'health_check.contrib.rabbitmq',
     'health_check.contrib.redis',
     'storages',
+
+    'simulation',
 ]
 
 # Theme settings

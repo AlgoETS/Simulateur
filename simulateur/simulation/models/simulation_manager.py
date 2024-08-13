@@ -1,5 +1,5 @@
 from django.db import models
-from simulation.models import Scenario
+
 class ScenarioManager(models.Model):
     class ScenarioState(models.TextChoices):
         INITIALIZED = 'initialized', 'Initialized'
@@ -9,7 +9,7 @@ class ScenarioManager(models.Model):
         STOPPED = 'stopped', 'Stopped'
         FINISHED = 'finished', 'Finished'
 
-    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
+    scenario = models.ForeignKey('Scenario', on_delete=models.CASCADE, related_name='scenario_manager')
     stocks = models.ManyToManyField('Stock', related_name='scenarios_stocks')
     teams = models.ManyToManyField('Team', related_name='scenarios_teams')
     events = models.ManyToManyField('Event', related_name='scenarios_events')
@@ -24,3 +24,6 @@ class ScenarioManager(models.Model):
     )
     timestamp = models.DateTimeField(auto_now_add=True)
     published_date = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f'Scenario Manager: {self.scenario.name}'

@@ -6,9 +6,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from simulation.models import Portfolio, Stock, Order, TransactionHistory, Scenario
+from simulation.models import Portfolio, Stock, Order, TransactionHistory, Scenario, StockPriceHistory
 from simulation.logic.BuySellQueue import buy_sell_queue
-from simulation.logic.broker import broker
 from simulation.serializers import PortfolioSerializer
 from simulation.models import UserProfile
 
@@ -33,7 +32,15 @@ class BuyStock(View):
             stock = Stock.objects.get(id=data['stock_id'])
             scenario = Scenario.objects.get(id=data['scenario_id'])
             amount = int(data['amount'])
-            price = Decimal(data.get('price', stock.price))  # Default to stock price if price not provided
+
+            # Get the latest price from StockPriceHistory
+            latest_price_history = StockPriceHistory.objects.filter(stock=stock).order_by('-timestamp').first()
+            if not latest_price_history:
+                return JsonResponse({'status': 'error', 'message': 'No price history available for this stock'},
+                                    status=404)
+
+            price = Decimal(data.get('price',
+                                     latest_price_history.close_price))  # Default to the latest close price if price not provided
 
             if amount <= 0:
                 return JsonResponse({'status': 'error', 'message': 'Amount must be greater than zero'}, status=400)
@@ -47,7 +54,6 @@ class BuyStock(View):
                 order = Order.objects.create(
                     user=user_profile,
                     stock=stock,
-                    # scenario=scenario,
                     quantity=amount,
                     price=price,
                     transaction_type='BUY'
@@ -56,13 +62,13 @@ class BuyStock(View):
                 # Logic to buy stock
                 buy_sell_queue.add_to_buy_queue(user_profile, stock, amount, price, scenario)
 
-               # Deduct the amount from the user's balance
+                # Deduct the amount from the user's balance
                 user_profile.portfolio.balance -= total_cost
                 user_profile.portfolio.save()
 
-                # Create a transaction history record
-                transaction_history = TransactionHistory.objects.get(scenario=scenario)
-                ## how to add the order to the transaction history record:
+                # Retrieve or create the transaction history record and add the order
+                transaction_history, _ = TransactionHistory.objects.get_or_create(
+                    scenario_manager=scenario.scenario_manager)
                 transaction_history.orders.add(order)
 
             return JsonResponse({'status': 'success', 'order_id': order.id})
@@ -85,7 +91,15 @@ class SellStock(View):
             stock = Stock.objects.get(id=data['stock_id'])
             scenario = Scenario.objects.get(id=data['scenario_id'])
             amount = int(data['amount'])
-            price = Decimal(data.get('price', stock.price))  # Default to stock price if price not provided
+
+            # Get the latest price from StockPriceHistory
+            latest_price_history = StockPriceHistory.objects.filter(stock=stock).order_by('-timestamp').first()
+            if not latest_price_history:
+                return JsonResponse({'status': 'error', 'message': 'No price history available for this stock'},
+                                    status=404)
+
+            price = Decimal(data.get('price',
+                                     latest_price_history.close_price))  # Default to the latest close price if price not provided
 
             if amount <= 0:
                 return JsonResponse({'status': 'error', 'message': 'Amount must be greater than zero'}, status=400)
@@ -99,7 +113,6 @@ class SellStock(View):
                 order = Order.objects.create(
                     user=user_profile,
                     stock=stock,
-                    # scenario=scenario,
                     quantity=amount,
                     price=price,
                     transaction_type='SELL'
@@ -112,8 +125,9 @@ class SellStock(View):
                 user_profile.portfolio.balance += amount * price
                 user_profile.portfolio.save()
 
-                # Create a transaction history record
-                transaction_history = TransactionHistory.objects.get(scenario=scenario)
+                # Retrieve or create the transaction history record and add the order
+                transaction_history, _ = TransactionHistory.objects.get_or_create(
+                    scenario_manager=scenario.scenario_manager)
                 transaction_history.orders.add(order)
 
             return JsonResponse({'status': 'success', 'order_id': order.id})
@@ -126,13 +140,18 @@ class SellStock(View):
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
+
 class StockPrice(View):
     def get(self, request, stock_id):
         try:
-            stock = Stock.objects.filter(id=stock_id)
-            if stock.exists():
-                return JsonResponse({'price': stock.first().price})
-            
+            stock = Stock.objects.get(id=stock_id)
+            latest_price_history = StockPriceHistory.objects.filter(stock=stock).order_by('-timestamp').first()
+            if not latest_price_history:
+                return JsonResponse({'status': 'error', 'message': 'No price history available for this stock'},
+                                    status=404)
+
+            return JsonResponse({'price': latest_price_history.close_price})
+
         except Stock.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'Stock not found'}, status=404)
         except Exception as e:
@@ -146,10 +165,9 @@ class UserOrders(View):
             data = json.loads(request.body)
             user_profile = request.user.userprofile
             scenario = Scenario.objects.get(id=data['scenario_id'])
-            transaction_history = TransactionHistory.objects.filter(scenario=scenario).first()
+            transaction_history = TransactionHistory.objects.filter(scenario_manager=scenario.scenario_manager).first()
             orders = transaction_history.orders.filter(user=user_profile).order_by('-timestamp')
 
-            
             # Prepare the data to send to the frontend
             orders_data = [{
                 'transaction_type': order.transaction_type,
@@ -158,7 +176,6 @@ class UserOrders(View):
                 'price': order.price,
                 'timestamp': order.timestamp.strftime('%B %d, %Y, %I:%M %p')
             } for order in orders]
-            
 
             return JsonResponse({'status': 'success', 'orders': orders_data})
         except UserProfile.DoesNotExist:
@@ -167,7 +184,3 @@ class UserOrders(View):
             return JsonResponse({'status': 'error', 'message': 'Scenario not found'}, status=404)
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-
-
-# TODO add the two new urls for the dynamic picing.
-

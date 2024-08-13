@@ -8,7 +8,7 @@ services:
       - minio
       - influxdb
       - db
-      - timescaledb
+      - ollama
     ports:
       - "8000:8000"
     environment:
@@ -28,7 +28,6 @@ services:
       - INFLUXDB_TOKEN=${INFLUXDB_TOKEN:-my-token}
       - INFLUXDB_ORG=${INFLUXDB_ORG:-my-org}
       - INFLUXDB_BUCKET=${INFLUXDB_BUCKET:-my-bucket}
-      - TIMESCALEDB_URL=postgres://postgres:password@timescaledb:5432/postgres
     networks:
       - app-network
     profiles:
@@ -119,26 +118,21 @@ services:
       timeout: 10s
       retries: 5
 
-  timescaledb:
-    image: timescale/timescaledb:latest-pg13
-    volumes:
-      - timescaledb_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-postgres}
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+  ollama:
+    image: ollama/ollama:latest
     ports:
-      - "5433:5432"
-    networks:
-      - app-network
+      - 11434:11434
+    volumes:
+      - ./ollama/ollama:/root/.ollama
+      - ./entrypoint.sh:/entrypoint.sh
+    container_name: ollama
     profiles:
-      - timeseriesdb
       - all
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
+      - ollama
+    pull_policy: always
+    tty: true
+    restart: always
+    entrypoint: ["/usr/bin/bash", "/entrypoint.sh"]  # Use the custom entrypoint script
 
 volumes:
   minio_data:

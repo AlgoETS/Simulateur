@@ -156,8 +156,6 @@ class Command(BaseCommand):
                 reader = csv.DictReader(csvfile)
                 for row in reader:
                     SimulationSettings.objects.get_or_create(
-                        max_users=int(row['max_users']),
-                        max_companies=int(row['max_companies']),
                         timer_step=int(row['timer_step']),
                         timer_step_unit=row['timer_step_unit'],
                         interval=int(row['interval']),

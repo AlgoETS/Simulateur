@@ -13,6 +13,9 @@ class EventModelTest(TestCase):
             date=datetime(2024, 11, 15, 9, 0, 0)
         )
 
+    def tearDown(self):
+        self.event.delete()
+
     def test_event_creation(self):
         # Test if the Event object was created successfully
         self.assertEqual(self.event.name, "Tech Summit")

@@ -4,13 +4,15 @@ from simulation.models import Scenario
 class ScenarioModelTest(TestCase):
 
     def setUp(self):
-        # Create a Scenario instance that will be used in the tests
         self.scenario = Scenario.objects.create(
             name="Apocalyptic World",
             description="A scenario set in a post-apocalyptic world.",
             backstory="The world has been devastated by a global catastrophe.",
             duration=365
         )
+
+    def tearDown(self):
+        self.scenario.delete()
 
     def test_scenario_creation(self):
         # Test if the Scenario object was created successfully

@@ -4,7 +4,6 @@ from simulation.models import SimulationSettings
 class SimulationSettingsModelTest(TestCase):
 
     def setUp(self):
-        # Create a SimulationSettings instance
         self.simulation_settings = SimulationSettings.objects.create(
             timer_step=15,
             timer_step_unit='minute',
@@ -16,6 +15,9 @@ class SimulationSettingsModelTest(TestCase):
             noise_function='perlin',
             stock_trading_logic='dynamic'
         )
+
+    def tearDown(self):
+        self.simulation_settings.delete()
 
     def test_simulation_settings_creation(self):
         # Test if the SimulationSettings object was created successfully
@@ -44,5 +46,5 @@ class SimulationSettingsModelTest(TestCase):
 
     def test_simulation_settings_str_method(self):
         # Test the __str__ method
-        expected_str = 'Simulation Settings: Max users: None, Max companies: None'
+        expected_str = 'Simulation Settings: 1'
         self.assertEqual(str(self.simulation_settings), expected_str)

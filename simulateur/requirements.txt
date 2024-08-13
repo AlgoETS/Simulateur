@@ -67,8 +67,11 @@ psutil
 django-storages
 amqp
 kombu
-influxdb-client
+#influxdb-client
 django-sslserver
-django-timescaledb
+#django-timescaledb
 psycopg
 psycopg2-binary
+#django-influxdb-metrics
+django-storages==1.12.3
+boto3==1.9.152

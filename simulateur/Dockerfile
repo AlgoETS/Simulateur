@@ -10,11 +10,13 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+RUN pip install --upgrade pip
+
 # Copy the requirements file into the container
 COPY requirements.txt .
 
 # Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --use-feature=fast-deps -r requirements.txt
 
 # Copy the rest of the application code
 COPY . .

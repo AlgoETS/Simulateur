@@ -46,7 +46,7 @@ class SimulationSettingsForm(forms.ModelForm):
     class Meta:
         model = SimulationSettings
         fields = [
-            'max_users', 'max_companies', 'timer_step', 'timer_step_unit', 'interval',
+            'timer_step', 'timer_step_unit', 'interval',
             'interval_unit', 'max_interval', 'fluctuation_rate', 'time_unit',
             'close_stock_market_at_night', 'noise_function'
         ]

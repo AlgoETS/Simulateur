@@ -7,10 +7,10 @@ import os
 import ollama
 import json
 from simulation.models import Company, Stock, News, Scenario, SimulationSettings
-from simulation.serializers import CompanySerializer, NewsSerializer, ScenarioSerializer, StockSerializer
 import logging
 
 logger = logging.getLogger(__name__)
+
 
 class InteractWithOllama(APIView):
     def post(self, request):
@@ -23,6 +23,7 @@ class InteractWithOllama(APIView):
         except ollama.ResponseError as e:
             return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+
 class CreateNewsAI(APIView):
     def post(self, request):
         company_id = request.data.get('company_id')
@@ -33,7 +34,7 @@ class CreateNewsAI(APIView):
 
         prompt = (
             f"Generate a fake tweet about {company.name}, a company in the {company.sector} sector based in {company.country}. "
-            f"Mention their stock ticker {stock.ticker} and its current price of {stock.price}. Make it engaging and suitable for social media."
+            f"Mention their stock ticker {stock.ticker}. Make it engaging and suitable for social media."
         )
 
         model_name = os.environ.get('OLLAMA_MODEL', 'llama3')
@@ -45,12 +46,14 @@ class CreateNewsAI(APIView):
             news_data = {
                 'title': f"News about {company.name} ({stock.ticker})",
                 'content': tweet_content,
-                'company': company.id,
+                'company': company,
                 'published_date': timezone.now()
             }
+            News.objects.create(**news_data)
             return Response({'status': 'success', 'data': news_data})
         except ollama.ResponseError as e:
             return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class CreateEventAI(APIView):
     def post(self, request):
@@ -62,7 +65,7 @@ class CreateEventAI(APIView):
 
         prompt = (
             f"Generate a news headline about {company.name}, a company in the {company.sector} sector based in {company.country}. "
-            f"Mention their stock ticker {stock.ticker} and its current price of {stock.price}. Make it engaging and suitable for a news article."
+            f"Mention their stock ticker {stock.ticker}. Make it engaging and suitable for a news article."
         )
 
         model_name = os.environ.get('OLLAMA_MODEL', 'llama3')
@@ -72,12 +75,13 @@ class CreateEventAI(APIView):
             event_data = {
                 'title': f"Event about {company.name} ({stock.ticker})",
                 'description': response['message']['content'],
-                'company': company.id,
+                'company': company,
                 'published_date': timezone.now()
             }
             return Response({'status': 'success', 'data': event_data})
         except ollama.ResponseError as e:
             return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class CreateTriggerAI(APIView):
     def post(self, request):
@@ -89,7 +93,7 @@ class CreateTriggerAI(APIView):
 
         prompt = (
             f"Generate a trigger event for {company.name}, a company in the {company.sector} sector based in {company.country}. "
-            f"Mention their stock ticker {stock.ticker} and its current price of {stock.price}. Make it engaging and suitable for a trigger event."
+            f"Mention their stock ticker {stock.ticker}. Make it engaging and suitable for a trigger event."
         )
 
         model_name = os.environ.get('OLLAMA_MODEL', 'llama3')
@@ -99,19 +103,20 @@ class CreateTriggerAI(APIView):
             trigger_data = {
                 'title': f"Trigger event for {company.name} ({stock.ticker})",
                 'description': response['message']['content'],
-                'company': company.id,
+                'company': company,
                 'published_date': timezone.now()
             }
             return Response({'status': 'success', 'data': trigger_data})
         except ollama.ResponseError as e:
             return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+
 class CreateCompanyAndStockAI(APIView):
     def post(self, request):
         prompt = (
             "Generate a new company and stock with the following details:\n"
             "1. Company name, backstory, sector, country, and industry.\n"
-            "2. Stock details including ticker, price, open price, high price, low price, close price, partial share, and complete share.\n\n"
+            "2. Stock details including ticker\n\n"
             "@startuml\n"
             "class Company {\n"
             "  + CharField name(max_length=100, default='')\n"
@@ -146,15 +151,21 @@ class CreateCompanyAndStockAI(APIView):
             logger.info(f"AI Response: {ai_response}")
 
             company_data, stock_data = self.parse_company_stock_data(ai_response)
-            return Response({'status': 'success', 'company': company_data, 'stock': stock_data}, status=status.HTTP_201_CREATED)
+            company = Company.objects.create(**company_data)
+            stock_data['company'] = company
+            Stock.objects.create(**stock_data)
+            return Response({'status': 'success', 'company': company_data, 'stock': stock_data},
+                            status=status.HTTP_201_CREATED)
         except ollama.ResponseError as e:
             return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except json.JSONDecodeError as e:
             logger.error(f"JSON decode error: {str(e)}")
-            return Response({'status': 'error', 'message': 'Invalid JSON response from AI model'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'status': 'error', 'message': 'Invalid JSON response from AI model'},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         except Exception as e:
             logger.error(f"Unexpected error: {str(e)}")
-            return Response({'status': 'error', 'message': 'An unexpected error occurred'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'status': 'error', 'message': 'An unexpected error occurred'},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def parse_company_stock_data(self, ai_response):
         logger.debug(f"Raw AI Response: {ai_response}")
@@ -187,8 +198,6 @@ class CreateScenarioAI(APIView):
             "{\n"
             "  \"scenario_name\": \"<Scenario Name>\",\n"
             "  \"description\": \"<Description>\",\n"
-            "  \"max_users\": <Max Users>,\n"
-            "  \"max_companies\": <Max Companies>,\n"
             "  \"timer_step\": \"<Timer Step>\",\n"
             "  \"timer_step_unit\": \"<Timer Step Unit>\",\n"
             "  \"companies\": [\n"
@@ -225,16 +234,45 @@ class CreateScenarioAI(APIView):
             logger.info(f"AI Response: {ai_response}")
 
             scenario_details = self.extract_json_from_response(ai_response)
+            scenario = Scenario.objects.create(
+                scenario_name=scenario_details['scenario_name'],
+                description=scenario_details['description'],
+                timer_step=scenario_details['timer_step'],
+                timer_step_unit=scenario_details['timer_step_unit']
+            )
+
+            for company_data in scenario_details['companies']:
+                company = Company.objects.create(
+                    name=company_data['name'],
+                    backstory=company_data['backstory'],
+                    sector=company_data['sector'],
+                    country=company_data['country'],
+                    industry=company_data['industry'],
+                )
+                stock_data = company_data['stock']
+                Stock.objects.create(
+                    company=company,
+                    ticker=stock_data['ticker'],
+                    price=stock_data['price'],
+                    open_price=stock_data['open_price'],
+                    high_price=stock_data['high_price'],
+                    low_price=stock_data['low_price'],
+                    close_price=stock_data['close_price'],
+                    partial_share=stock_data['partial_share'],
+                    complete_share=stock_data['complete_share']
+                )
+                scenario.companies.add(company)
+
             return Response({'status': 'success', 'data': scenario_details}, status=status.HTTP_201_CREATED)
         except ollama.ResponseError as e:
             return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             logger.error(f"Unexpected error: {str(e)}")
-            return Response({'status': 'error', 'message': 'An unexpected error occurred'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'status': 'error', 'message': 'An unexpected error occurred'},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def extract_json_from_response(self, ai_response):
         try:
-            # Find the start and end of the JSON object in the response
             start_index = ai_response.find('{')
             end_index = ai_response.rfind('}') + 1
             if start_index != -1 and end_index != -1:
@@ -253,5 +291,8 @@ class CreateScenarioAI(APIView):
             return ''
 
     def parse_price(self, price_str):
-        price_str = price_str.replace('$', '').replace('€', '').replace('£', '').replace(',', '').replace('USD', '').replace('CAD', '').split(' ')[0]
+        price_str = \
+        price_str.replace('$', '').replace('€', '').replace('£', '').replace(',', '').replace('USD', '').replace('CAD',
+                                                                                                                 '').split(
+            ' ')[0]
         return float(price_str)

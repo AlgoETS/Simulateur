@@ -6,7 +6,7 @@ from datetime import timedelta
 
 class Team(models.Model):
     name = models.CharField(max_length=100, default='')
-    members = models.ManyToManyField('UserProfile', related_name='teams')
+    members = models.ManyToManyField('UserProfile', related_name='member_of_teams')
 
     def __str__(self):
         return self.name
@@ -28,6 +28,9 @@ class JoinLink(models.Model):
     key = models.CharField(max_length=32, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
+
+    def __str__(self):
+        return f"Join link for {self.team.name} {self.key}"
 
     def save(self, *args, **kwargs):
         if not self.expires_at:

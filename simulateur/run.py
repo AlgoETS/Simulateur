@@ -48,7 +48,7 @@ def create_superuser(username, password):
 def install_requirements_cms():
     try:
         # Change directory to cms
-        os.chdir('cms')
+        os.chdir('../cms')
         subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-r', 'requirements.txt'])
     except subprocess.CalledProcessError as e:
         print(f"Failed to install requirements: {e}")
@@ -64,7 +64,7 @@ def start_wagtail():
         os.environ['PYTHONPATH'] = pythonpath
         
         # Change directory to cms
-        os.chdir('cms')
+        os.chdir('../cms')
         subprocess.check_call([sys.executable, 'manage.py', 'runserver', '8001'])
     except subprocess.CalledProcessError as e:
         print(f"Failed to start Wagtail CMS: {e}")
@@ -80,7 +80,7 @@ def apply_migrations_cms():
         os.environ['PYTHONPATH'] = pythonpath
         
         # Change directory to cms
-        os.chdir('cms')
+        os.chdir('../cms')
         subprocess.check_call([sys.executable, 'manage.py', 'migrate'])
     except subprocess.CalledProcessError as e:
         print(f"Failed to apply CMS migrations: {e}")
@@ -96,7 +96,7 @@ def create_superuser_cms(username, password):
         os.environ['PYTHONPATH'] = pythonpath
         
         # Change directory to cms
-        os.chdir('cms')
+        os.chdir('../cms')
         subprocess.check_call([
             sys.executable, 'manage.py', 'createsuperuser',
             '--noinput',
