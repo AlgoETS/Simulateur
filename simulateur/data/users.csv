@@ -1,3 +1,7 @@
 username,email,password
 johndoe,johndoe@example.com,johndoe
 janedoe,janedoe@example.com,janedoe
+alice,alice@example.com,alice
+bob,bob@example.com,bob
+charlie,charlie@example.com,charlie
+david,david@example.com,david

@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.utils import timezone
 from simulation.models import Scenario, Stock, StockPriceHistory, SimulationSettings
 from simulation.logic.simulation_manager import SimulationManager
-from simulateur.simulation.models import Company
+from simulation.models import Company
 
 
 class SimulationManagerTests(TestCase):

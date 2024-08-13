@@ -1,2 +1,4 @@
-timer_step,timer_step_unit,interval,interval_unit,max_interval,fluctuation_rate,close_stock_market_at_night,noise_function,stock_trading_logic
-1,second,60,second,300,0.6,False,brownian,static
+id,timer_step,timer_step_unit,interval,interval_unit,max_interval,fluctuation_rate,close_stock_market_at_night,noise_function,stock_trading_logic
+1,1,second,60,second,300,0.6,False,brownian,static
+2,5,second,30,minute,120,0.3,True,monte_carlo,dynamic
+3,10,minute,15,minute,60,0.2,False,perlin,static
