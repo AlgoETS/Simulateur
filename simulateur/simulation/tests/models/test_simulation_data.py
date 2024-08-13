@@ -1,5 +1,4 @@
 from django.test import TestCase
-from datetime import timedelta
 from simulation.models import SimulationData, Scenario, SimulationSettings, ScenarioManager
 
 

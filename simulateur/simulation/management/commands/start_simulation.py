@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from simulation.models.scenario import Scenario
 from simulation.logic.simulation_manager import SimulationManagerSingleton
 
+
 class Command(BaseCommand):
     help = 'Start the simulation based on a scenario'
 

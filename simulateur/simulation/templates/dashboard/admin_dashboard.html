@@ -1,379 +1,425 @@
-{% extends 'includes/base_generic.html' %} {% block title %}Admin Dashboard{%endblock %} {% block content %}
-<div class="container mx-auto p-6">
-    <h1 class="text-4xl font-extrabold text-gray-900 mb-6">Admin Dashboard</h1>
+{% extends 'includes/base_generic.html' %} {% block title %}Admin Dashboard{% endblock %} {% block content %}
+    <div class="container mx-auto p-6">
+        <h1 class="text-4xl font-extrabold text-gray-900 mb-6">Admin Dashboard</h1>
 
-    <div id="loading" class="hidden">Loading...</div>
+        <div id="loading" class="hidden">Loading...</div>
 
-    <div class="grid grid-cols-1 gap-6 mb-6">
-        <div class="bg-white shadow-lg rounded-lg p-6 col-span-3">
-            <h3 class="text-2xl font-bold text-indigo-900 mb-4" id="formTitle">Create Scenario</h3>
-            <div class="w-full mb-4">
-                <div class="flex">
-                    <div class="flex-1 p-2 text-center border-b-4" id="step1" onclick="goToStep(1)">Step 1</div>
-                    <div class="flex-1 p-2 text-center border-b" id="step2" onclick="goToStep(2)">Step 2</div>
-                    <div class="flex-1 p-2 text-center border-b" id="step3" onclick="goToStep(3)">Step 3</div>
-                    <div class="flex-1 p-2 text-center border-b" id="step4" onclick="goToStep(4)">Step 4</div>
-                    <div class="flex-1 p-2 text-center border-b" id="step5" onclick="goToStep(5)">Step 5</div>
+        <div class="grid grid-cols-1 gap-6 mb-6">
+            <div class="bg-white shadow-lg rounded-lg p-6 col-span-3">
+                <h3 class="text-2xl font-bold text-indigo-900 mb-4" id="formTitle">Create Scenario</h3>
+                <div class="w-full mb-4">
+                    <div class="flex">
+                        <div class="flex-1 p-2 text-center border-b-4" id="step1" onclick="goToStep(1)">Step 1</div>
+                        <div class="flex-1 p-2 text-center border-b" id="step2" onclick="goToStep(2)">Step 2</div>
+                        <div class="flex-1 p-2 text-center border-b" id="step3" onclick="goToStep(3)">Step 3</div>
+                        <div class="flex-1 p-2 text-center border-b" id="step4" onclick="goToStep(4)">Step 4</div>
+                        <div class="flex-1 p-2 text-center border-b" id="step5" onclick="goToStep(5)">Step 5</div>
+                    </div>
                 </div>
+
+                <form id="scenarioForm" onsubmit="event.preventDefault(); submitScenario();">
+                    <!-- Step 1: Scenario Details -->
+                    <div class="step" id="step1Content">
+                        <div class="mb-4">
+                            <label for="scenarioName" class="block text-sm font-medium text-gray-700">Name</label>
+                            <input type="text" id="scenarioName" name="scenarioName"
+                                   class="block w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                                   required/>
+                        </div>
+                        <div class="mb-4">
+                            <label for="scenarioDescription"
+                                   class="block text-sm font-medium text-gray-700">Description</label>
+                            <textarea id="scenarioDescription" name="scenarioDescription"
+                                      class="block w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                                      required></textarea>
+                        </div>
+                        <div class="mb-4">
+                            <label for="maxUsers" class="block text-sm font-medium text-gray-700">Max Users</label>
+                            <input type="number" id="maxUsers" name="maxUsers"
+                                   class="block w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                                   required/>
+                        </div>
+                        <div class="mb-4">
+                            <label for="maxCompanies" class="block text-sm font-medium text-gray-700">Max
+                                Companies</label>
+                            <input type="number" id="maxCompanies" name="maxCompanies"
+                                   class="block w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                                   required/>
+                        </div>
+                        <div class="mb-4">
+                            <label for="timerStep" class="block text-sm font-medium text-gray-700">Timer Step</label>
+                            <input type="number" id="timerStep" name="timerStep"
+                                   class="block w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                                   required/>
+                        </div>
+                        <div class="mb-4">
+                            <label for="timerStepUnit" class="block text-sm font-medium text-gray-700">Timer Step
+                                Unit</label>
+                            <select id="timerStepUnit" name="timerStepUnit"
+                                    class="block w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                                    required>
+                                <option value="second">Second</option>
+                                <option value="minute">Minute</option>
+                                <option value="hour">Hour</option>
+                                <option value="day">Day</option>
+                                <option value="month">Month</option>
+                                <option value="year">Year</option>
+                            </select>
+                        </div>
+                        <button type="button" onclick="submitStep1()"
+                                class="bg-blue-500 text-white font-bold py-2 px-4 rounded">Next
+                        </button>
+                    </div>
+
+                    <!-- Step 2: Company and Stock Details -->
+                    <div class="step hidden" id="step2Content">
+                        <div class="flex justify-between mb-4">
+                            <h4 class="text-lg font-medium text-gray-900">Company and Stock Details</h4>
+                            <button type="button" onclick="generateCompanyAndStock()"
+                                    class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
+                                Generate with AI
+                            </button>
+                        </div>
+                        <div id="companiesContainer"></div>
+                        <button type="button" onclick="addCompanyAndStock()"
+                                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">Add
+                            Company
+                        </button>
+                        <button type="button" onclick="submitStep2()"
+                                class="bg-blue-500 text-white font-bold py-2 px-4 rounded">Next
+                        </button>
+                    </div>
+
+                    <!-- Step 3: Teams and Members -->
+                    <div class="step hidden" id="step3Content">
+                        <div class="flex justify-between mb-4">
+                            <h4 class="text-lg font-medium text-gray-900">Teams and Members</h4>
+                        </div>
+                        <div id="teamsContainer"></div>
+                        <button type="button" onclick="addTeam()"
+                                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">Add
+                            Team
+                        </button>
+                        <button type="button" onclick="submitStep3()"
+                                class="bg-blue-500 text-white font-bold py-2 px-4 rounded">Next
+                        </button>
+                    </div>
+
+                    <!-- Step 4: Stock and Event Details -->
+                    <div class="step hidden" id="step4Content">
+                        <div class="flex justify-between mb-4">
+                            <h4 class="text-lg font-medium text-gray-900">Stock and Event Details</h4>
+                            <button type="button" onclick="generateEventAndNews()"
+                                    class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
+                                Generate Events and News with AI
+                            </button>
+                        </div>
+                        <div id="eventsContainer"></div>
+                        <button type="button" onclick="addEvent()"
+                                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">Add
+                            Event
+                        </button>
+                        <div id="newsContainer"></div>
+                        <button type="button" onclick="addNews()"
+                                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">Add
+                            News
+                        </button>
+                        <div id="triggersContainer"></div>
+                        <button type="button" onclick="addTrigger()"
+                                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">Add
+                            Trigger
+                        </button>
+                        <button type="button" onclick="submitStep4()"
+                                class="bg-blue-500 text-white font-bold py-2 px-4 rounded">Next
+                        </button>
+                    </div>
+
+                    <!-- Step 5: Review and Submit -->
+                    <div class="step hidden" id="step5Content">
+                        <h4 class="text-xl font-bold text-gray-900 mb-4">Review Details</h4>
+                        <div id="reviewContainer"></div>
+                        <button type="button" onclick="submitScenario()"
+                                class="bg-green-500 text-white font-bold py-2 px-4 rounded">Submit
+                        </button>
+                    </div>
+                </form>
             </div>
-
-            <form id="scenarioForm" onsubmit="event.preventDefault(); submitScenario();">
-                <!-- Step 1: Scenario Details -->
-                <div class="step" id="step1Content">
-                    <div class="mb-4">
-                        <label for="scenarioName" class="block text-sm font-medium text-gray-700">Name</label>
-                        <input type="text" id="scenarioName" name="scenarioName" class="block w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required />
-                    </div>
-                    <div class="mb-4">
-                        <label for="scenarioDescription" class="block text-sm font-medium text-gray-700">Description</label>
-                        <textarea id="scenarioDescription" name="scenarioDescription" class="block w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required></textarea>
-                    </div>
-                    <div class="mb-4">
-                        <label for="maxUsers" class="block text-sm font-medium text-gray-700">Max Users</label>
-                        <input type="number" id="maxUsers" name="maxUsers" class="block w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required />
-                    </div>
-                    <div class="mb-4">
-                        <label for="maxCompanies" class="block text-sm font-medium text-gray-700">Max Companies</label>
-                        <input type="number" id="maxCompanies" name="maxCompanies" class="block w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required />
-                    </div>
-                    <div class="mb-4">
-                        <label for="timerStep" class="block text-sm font-medium text-gray-700">Timer Step</label>
-                        <input type="number" id="timerStep" name="timerStep" class="block w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required />
-                    </div>
-                    <div class="mb-4">
-                        <label for="timerStepUnit" class="block text-sm font-medium text-gray-700">Timer Step Unit</label>
-                        <select id="timerStepUnit" name="timerStepUnit" class="block w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required>
-                            <option value="second">Second</option>
-                            <option value="minute">Minute</option>
-                            <option value="hour">Hour</option>
-                            <option value="day">Day</option>
-                            <option value="month">Month</option>
-                            <option value="year">Year</option>
-                        </select>
-                    </div>
-                    <button type="button" onclick="submitStep1()" class="bg-blue-500 text-white font-bold py-2 px-4 rounded">Next</button>
-                </div>
-
-                <!-- Step 2: Company and Stock Details -->
-                <div class="step hidden" id="step2Content">
-                    <div class="flex justify-between mb-4">
-                        <h4 class="text-lg font-medium text-gray-900">Company and Stock Details</h4>
-                        <button type="button" onclick="generateCompanyAndStock()" class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">Generate with AI</button>
-                    </div>
-                    <div id="companiesContainer"></div>
-                    <button type="button" onclick="addCompanyAndStock()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">Add Company</button>
-                    <button type="button" onclick="submitStep2()" class="bg-blue-500 text-white font-bold py-2 px-4 rounded">Next</button>
-                </div>
-
-                <!-- Step 3: Teams and Members -->
-                <div class="step hidden" id="step3Content">
-                    <div class="flex justify-between mb-4">
-                        <h4 class="text-lg font-medium text-gray-900">Teams and Members</h4>
-                    </div>
-                    <div id="teamsContainer"></div>
-                    <button type="button" onclick="addTeam()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">Add Team</button>
-                    <button type="button" onclick="submitStep3()" class="bg-blue-500 text-white font-bold py-2 px-4 rounded">Next</button>
-                </div>
-
-                <!-- Step 4: Stock and Event Details -->
-                <div class="step hidden" id="step4Content">
-                    <div class="flex justify-between mb-4">
-                        <h4 class="text-lg font-medium text-gray-900">Stock and Event Details</h4>
-                        <button type="button" onclick="generateEventAndNews()" class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">Generate Events and News with AI</button>
-                    </div>
-                    <div id="eventsContainer"></div>
-                    <button type="button" onclick="addEvent()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">Add Event</button>
-                    <div id="newsContainer"></div>
-                    <button type="button" onclick="addNews()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">Add News</button>
-                    <div id="triggersContainer"></div>
-                    <button type="button" onclick="addTrigger()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">Add Trigger</button>
-                    <button type="button" onclick="submitStep4()" class="bg-blue-500 text-white font-bold py-2 px-4 rounded">Next</button>
-                </div>
-
-                <!-- Step 5: Review and Submit -->
-                <div class="step hidden" id="step5Content">
-                    <h4 class="text-xl font-bold text-gray-900 mb-4">Review Details</h4>
-                    <div id="reviewContainer"></div>
-                    <button type="button" onclick="submitScenario()" class="bg-green-500 text-white font-bold py-2 px-4 rounded">Submit</button>
-                </div>
-            </form>
         </div>
     </div>
-</div>
 
-<script>
-    let currentStep = 1;
-    let scenarioId = null;
+    <script>
+        let currentStep = 1;
+        let scenarioId = null;
 
-    function nextStep() {
-        if (currentStep < 5) {
+        function nextStep() {
+            if (currentStep < 5) {
+                document.getElementById(`step${currentStep}Content`).classList.add("hidden");
+                document.getElementById(`step${currentStep}`).classList.remove("border-b-4");
+                currentStep++;
+                document.getElementById(`step${currentStep}Content`).classList.remove("hidden");
+                document.getElementById(`step${currentStep}`).classList.add("border-b-4");
+            }
+        }
+
+        function previousStep() {
+            if (currentStep > 1) {
+                document.getElementById(`step${currentStep}Content`).classList.add("hidden");
+                document.getElementById(`step${currentStep}`).classList.remove("border-b-4");
+                currentStep--;
+                document.getElementById(`step${currentStep}Content`).classList.remove("hidden");
+                document.getElementById(`step${currentStep}`).classList.add("border-b-4");
+            }
+        }
+
+        function goToStep(step) {
             document.getElementById(`step${currentStep}Content`).classList.add("hidden");
             document.getElementById(`step${currentStep}`).classList.remove("border-b-4");
-            currentStep++;
+            currentStep = step;
             document.getElementById(`step${currentStep}Content`).classList.remove("hidden");
             document.getElementById(`step${currentStep}`).classList.add("border-b-4");
+            if (currentStep === 5) {
+                reviewDetails();
+            }
         }
-    }
 
-    function previousStep() {
-        if (currentStep > 1) {
-            document.getElementById(`step${currentStep}Content`).classList.add("hidden");
-            document.getElementById(`step${currentStep}`).classList.remove("border-b-4");
-            currentStep--;
-            document.getElementById(`step${currentStep}Content`).classList.remove("hidden");
-            document.getElementById(`step${currentStep}`).classList.add("border-b-4");
+        function submitStep1() {
+            const data = {
+                name: document.getElementById("scenarioName").value,
+                description: document.getElementById("scenarioDescription").value,
+                timer_step: document.getElementById("timerStep").value,
+                timer_step_unit: document.getElementById("timerStepUnit").value,
+            };
+
+            toggleLoading(true);
+            fetch("/api/scenario/create/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie("csrftoken"),
+                },
+                body: JSON.stringify(data),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    toggleLoading(false);
+                    if (data.scenario_id) {
+                        scenarioId = data.scenario_id;
+                        nextStep();
+                    } else {
+                        alert("Failed to create scenario: " + data.error);
+                    }
+                })
+                .catch(error => {
+                    toggleLoading(false);
+                    alert("Failed to create scenario: " + error.message);
+                });
         }
-    }
 
-    function goToStep(step) {
-        document.getElementById(`step${currentStep}Content`).classList.add("hidden");
-        document.getElementById(`step${currentStep}`).classList.remove("border-b-4");
-        currentStep = step;
-        document.getElementById(`step${currentStep}Content`).classList.remove("hidden");
-        document.getElementById(`step${currentStep}`).classList.add("border-b-4");
-        if (currentStep === 5) {
-            reviewDetails();
+        function submitStep2() {
+            const companies = [];
+            const companyElements = document.querySelectorAll("#companiesContainer .company");
+            companyElements.forEach(company => {
+                const companyData = {
+                    name: company.querySelector(".companyName").value,
+                    backstory: company.querySelector(".companyBackstory").value,
+                    sector: company.querySelector(".companySector").value,
+                    country: company.querySelector(".companyCountry").value,
+                    industry: company.querySelector(".companyIndustry").value,
+                    stock: {
+                        ticker: company.querySelector(".stockTicker").value,
+                        price: company.querySelector(".stockPrice").value,
+                        open_price: company.querySelector(".stockOpenPrice").value,
+                        high_price: company.querySelector(".stockHighPrice").value,
+                        low_price: company.querySelector(".stockLowPrice").value,
+                        close_price: company.querySelector(".stockClosePrice").value,
+                        partial_share: company.querySelector(".stockPartialShare").value,
+                        complete_share: company.querySelector(".stockCompleteShare").value,
+                    }
+                };
+                companies.push(companyData);
+            });
+
+            const data = {
+                scenario_id: scenarioId,
+                companies: companies,
+            };
+
+            toggleLoading(true);
+            fetch("/api/scenario/add-company-stock/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie("csrftoken"),
+                },
+                body: JSON.stringify(data),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    toggleLoading(false);
+                    if (data.scenario_id) {
+                        nextStep();
+                    } else {
+                        alert("Failed to add companies: " + data.error);
+                    }
+                })
+                .catch(error => {
+                    toggleLoading(false);
+                    alert("Failed to add companies: " + error.message);
+                });
         }
-    }
 
-    function submitStep1() {
-        const data = {
-            name: document.getElementById("scenarioName").value,
-            description: document.getElementById("scenarioDescription").value,
-            timer_step: document.getElementById("timerStep").value,
-            timer_step_unit: document.getElementById("timerStepUnit").value,
-        };
+        function submitStep3() {
+            const teams = [];
+            const teamElements = document.querySelectorAll("#teamsContainer .team");
+            teamElements.forEach(team => {
+                const teamData = {
+                    name: team.querySelector(".teamName").value,
+                    members: team.querySelector(".teamMembers").value,
+                };
+                teams.push(teamData);
+            });
 
-        toggleLoading(true);
-        fetch("/api/scenario/create/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": getCookie("csrftoken"),
-            },
-            body: JSON.stringify(data),
-        })
-        .then(response => response.json())
-        .then(data => {
-            toggleLoading(false);
-            if (data.scenario_id) {
-                scenarioId = data.scenario_id;
-                nextStep();
-            } else {
-                alert("Failed to create scenario: " + data.error);
-            }
-        })
-        .catch(error => {
-            toggleLoading(false);
-            alert("Failed to create scenario: " + error.message);
-        });
-    }
-
-    function submitStep2() {
-        const companies = [];
-        const companyElements = document.querySelectorAll("#companiesContainer .company");
-        companyElements.forEach(company => {
-            const companyData = {
-                name: company.querySelector(".companyName").value,
-                backstory: company.querySelector(".companyBackstory").value,
-                sector: company.querySelector(".companySector").value,
-                country: company.querySelector(".companyCountry").value,
-                industry: company.querySelector(".companyIndustry").value,
-                stock: {
-                    ticker: company.querySelector(".stockTicker").value,
-                    price: company.querySelector(".stockPrice").value,
-                    open_price: company.querySelector(".stockOpenPrice").value,
-                    high_price: company.querySelector(".stockHighPrice").value,
-                    low_price: company.querySelector(".stockLowPrice").value,
-                    close_price: company.querySelector(".stockClosePrice").value,
-                    partial_share: company.querySelector(".stockPartialShare").value,
-                    complete_share: company.querySelector(".stockCompleteShare").value,
-                }
+            const data = {
+                scenario_id: scenarioId,
+                teams: teams,
             };
-            companies.push(companyData);
-        });
 
-        const data = {
-            scenario_id: scenarioId,
-            companies: companies,
-        };
+            toggleLoading(true);
+            fetch("/api/scenario/add-teams/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie("csrftoken"),
+                },
+                body: JSON.stringify(data),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    toggleLoading(false);
+                    if (data.scenario_id) {
+                        nextStep();
+                    } else {
+                        alert("Failed to add teams: " + data.error);
+                    }
+                })
+                .catch(error => {
+                    toggleLoading(false);
+                    alert("Failed to add teams: " + error.message);
+                });
+        }
 
-        toggleLoading(true);
-        fetch("/api/scenario/add-company-stock/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": getCookie("csrftoken"),
-            },
-            body: JSON.stringify(data),
-        })
-        .then(response => response.json())
-        .then(data => {
-            toggleLoading(false);
-            if (data.scenario_id) {
-                nextStep();
-            } else {
-                alert("Failed to add companies: " + data.error);
-            }
-        })
-        .catch(error => {
-            toggleLoading(false);
-            alert("Failed to add companies: " + error.message);
-        });
-    }
+        function submitStep4() {
+            const events = [];
+            const eventElements = document.querySelectorAll("#eventsContainer .event");
+            eventElements.forEach(event => {
+                const eventData = {
+                    name: event.querySelector(".eventName").value,
+                    date: event.querySelector(".eventDate").value,
+                    description: event.querySelector(".eventDescription").value,
+                };
+                events.push(eventData);
+            });
 
-    function submitStep3() {
-        const teams = [];
-        const teamElements = document.querySelectorAll("#teamsContainer .team");
-        teamElements.forEach(team => {
-            const teamData = {
-                name: team.querySelector(".teamName").value,
-                members: team.querySelector(".teamMembers").value,
+            const news = [];
+            const newsElements = document.querySelectorAll("#newsContainer .news");
+            newsElements.forEach(newsItem => {
+                const newsData = {
+                    title: newsItem.querySelector(".newsTitle").value,
+                    content: newsItem.querySelector(".newsContent").value,
+                };
+                news.push(newsData);
+            });
+
+            const triggers = [];
+            const triggerElements = document.querySelectorAll("#triggersContainer .trigger");
+            triggerElements.forEach(trigger => {
+                const triggerData = {
+                    name: trigger.querySelector(".triggerName").value,
+                    condition: trigger.querySelector(".triggerCondition").value,
+                    action: trigger.querySelector(".triggerAction").value,
+                };
+                triggers.push(triggerData);
+            });
+
+            const data = {
+                scenario_id: scenarioId,
+                events: events,
+                news: news,
+                triggers: triggers,
             };
-            teams.push(teamData);
-        });
 
-        const data = {
-            scenario_id: scenarioId,
-            teams: teams,
-        };
+            toggleLoading(true);
+            fetch("/api/scenario/add-events-news-triggers/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie("csrftoken"),
+                },
+                body: JSON.stringify(data),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    toggleLoading(false);
+                    if (data.scenario_id) {
+                        nextStep();
+                    } else {
+                        alert("Failed to add events, news, and triggers: " + data.error);
+                    }
+                })
+                .catch(error => {
+                    toggleLoading(false);
+                    alert("Failed to add events, news, and triggers: " + error.message);
+                });
+        }
 
-        toggleLoading(true);
-        fetch("/api/scenario/add-teams/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": getCookie("csrftoken"),
-            },
-            body: JSON.stringify(data),
-        })
-        .then(response => response.json())
-        .then(data => {
-            toggleLoading(false);
-            if (data.scenario_id) {
-                nextStep();
-            } else {
-                alert("Failed to add teams: " + data.error);
-            }
-        })
-        .catch(error => {
-            toggleLoading(false);
-            alert("Failed to add teams: " + error.message);
-        });
-    }
+        function submitScenario() {
+            toggleLoading(true);
+            fetch("/api/scenario/review-submit/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie("csrftoken"),
+                },
+                body: JSON.stringify({scenario_id: scenarioId}),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    toggleLoading(false);
+                    if (data.message === "Scenario submitted successfully") {
+                        alert("Scenario created successfully");
+                        location.reload(); // Reload the page to update the list of scenarios
+                    } else {
+                        alert("Failed to submit scenario: " + data.error);
+                    }
+                })
+                .catch(error => {
+                    toggleLoading(false);
+                    alert("Failed to submit scenario: " + error.message);
+                });
+        }
 
-    function submitStep4() {
-        const events = [];
-        const eventElements = document.querySelectorAll("#eventsContainer .event");
-        eventElements.forEach(event => {
-            const eventData = {
-                name: event.querySelector(".eventName").value,
-                date: event.querySelector(".eventDate").value,
-                description: event.querySelector(".eventDescription").value,
-            };
-            events.push(eventData);
-        });
+        function toggleLoading(show) {
+            document.getElementById("loading").classList.toggle("hidden", !show);
+        }
 
-        const news = [];
-        const newsElements = document.querySelectorAll("#newsContainer .news");
-        newsElements.forEach(newsItem => {
-            const newsData = {
-                title: newsItem.querySelector(".newsTitle").value,
-                content: newsItem.querySelector(".newsContent").value,
-            };
-            news.push(newsData);
-        });
-
-        const triggers = [];
-        const triggerElements = document.querySelectorAll("#triggersContainer .trigger");
-        triggerElements.forEach(trigger => {
-            const triggerData = {
-                name: trigger.querySelector(".triggerName").value,
-                condition: trigger.querySelector(".triggerCondition").value,
-                action: trigger.querySelector(".triggerAction").value,
-            };
-            triggers.push(triggerData);
-        });
-
-        const data = {
-            scenario_id: scenarioId,
-            events: events,
-            news: news,
-            triggers: triggers,
-        };
-
-        toggleLoading(true);
-        fetch("/api/scenario/add-events-news-triggers/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": getCookie("csrftoken"),
-            },
-            body: JSON.stringify(data),
-        })
-        .then(response => response.json())
-        .then(data => {
-            toggleLoading(false);
-            if (data.scenario_id) {
-                nextStep();
-            } else {
-                alert("Failed to add events, news, and triggers: " + data.error);
-            }
-        })
-        .catch(error => {
-            toggleLoading(false);
-            alert("Failed to add events, news, and triggers: " + error.message);
-        });
-    }
-
-    function submitScenario() {
-        toggleLoading(true);
-        fetch("/api/scenario/review-submit/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": getCookie("csrftoken"),
-            },
-            body: JSON.stringify({ scenario_id: scenarioId }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            toggleLoading(false);
-            if (data.message === "Scenario submitted successfully") {
-                alert("Scenario created successfully");
-                location.reload(); // Reload the page to update the list of scenarios
-            } else {
-                alert("Failed to submit scenario: " + data.error);
-            }
-        })
-        .catch(error => {
-            toggleLoading(false);
-            alert("Failed to submit scenario: " + error.message);
-        });
-    }
-
-    function toggleLoading(show) {
-        document.getElementById("loading").classList.toggle("hidden", !show);
-    }
-
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
                 }
             }
+            return cookieValue;
         }
-        return cookieValue;
-    }
 
-function addCompanyAndStock() {
-    const companyIndex = document.querySelectorAll("#companiesContainer .company").length + 1;
-    const companyHtml = `
+        function addCompanyAndStock() {
+            const companyIndex = document.querySelectorAll("#companiesContainer .company").length + 1;
+            const companyHtml = `
         <div class="company mb-4 p-4 border border-gray-300 rounded-lg">
             <h5 class="text-lg font-medium text-gray-900">Company ${companyIndex}</h5>
             <div class="mb-4">
@@ -398,7 +444,7 @@ function addCompanyAndStock() {
             </div>
         </div>
     `;
-    const stockHtml = `
+            const stockHtml = `
         <div class="stock mb-4 p-4 border border-gray-300 rounded-lg">
             <h5 class="text-lg font-medium text-gray-900">Stock ${companyIndex}</h5>
             <div class="mb-4">
@@ -435,13 +481,13 @@ function addCompanyAndStock() {
             </div>
         </div>
     `;
-    document.getElementById("companiesContainer").insertAdjacentHTML("beforeend", companyHtml);
-    document.getElementById("companiesContainer").insertAdjacentHTML("beforeend", stockHtml);
-}
+            document.getElementById("companiesContainer").insertAdjacentHTML("beforeend", companyHtml);
+            document.getElementById("companiesContainer").insertAdjacentHTML("beforeend", stockHtml);
+        }
 
-function addTeam() {
-    const teamIndex = document.querySelectorAll("#teamsContainer .team").length + 1;
-    const teamHtml = `
+        function addTeam() {
+            const teamIndex = document.querySelectorAll("#teamsContainer .team").length + 1;
+            const teamHtml = `
         <div class="team mb-4 p-4 border border-gray-300 rounded-lg">
             <h5 class="text-lg font-medium text-gray-900">Team ${teamIndex}</h5>
             <div class="mb-4">
@@ -454,12 +500,12 @@ function addTeam() {
             </div>
         </div>
     `;
-    document.getElementById("teamsContainer").insertAdjacentHTML("beforeend", teamHtml);
-}
+            document.getElementById("teamsContainer").insertAdjacentHTML("beforeend", teamHtml);
+        }
 
-function addEvent() {
-    const eventIndex = document.querySelectorAll("#eventsContainer .event").length + 1;
-    const eventHtml = `
+        function addEvent() {
+            const eventIndex = document.querySelectorAll("#eventsContainer .event").length + 1;
+            const eventHtml = `
         <div class="event mb-4 p-4 border border-gray-300 rounded-lg">
             <h5 class="text-lg font-medium text-gray-900">Event ${eventIndex}</h5>
             <div class="mb-4">
@@ -476,12 +522,12 @@ function addEvent() {
             </div>
         </div>
     `;
-    document.getElementById("eventsContainer").insertAdjacentHTML("beforeend", eventHtml);
-}
+            document.getElementById("eventsContainer").insertAdjacentHTML("beforeend", eventHtml);
+        }
 
-function addNews() {
-    const newsIndex = document.querySelectorAll("#newsContainer .news").length + 1;
-    const newsHtml = `
+        function addNews() {
+            const newsIndex = document.querySelectorAll("#newsContainer .news").length + 1;
+            const newsHtml = `
         <div class="news mb-4 p-4 border border-gray-300 rounded-lg">
             <h5 class="text-lg font-medium text-gray-900">News ${newsIndex}</h5>
             <div class="mb-4">
@@ -494,12 +540,12 @@ function addNews() {
             </div>
         </div>
     `;
-    document.getElementById("newsContainer").insertAdjacentHTML("beforeend", newsHtml);
-}
+            document.getElementById("newsContainer").insertAdjacentHTML("beforeend", newsHtml);
+        }
 
-function addTrigger() {
-    const triggerIndex = document.querySelectorAll("#triggersContainer .trigger").length + 1;
-    const triggerHtml = `
+        function addTrigger() {
+            const triggerIndex = document.querySelectorAll("#triggersContainer .trigger").length + 1;
+            const triggerHtml = `
         <div class="trigger mb-4 p-4 border border-gray-300 rounded-lg">
             <h5 class="text-lg font-medium text-gray-900">Trigger ${triggerIndex}</h5>
             <div class="mb-4">
@@ -516,8 +562,8 @@ function addTrigger() {
             </div>
         </div>
     `;
-    document.getElementById("triggersContainer").insertAdjacentHTML("beforeend", triggerHtml);
-}
+            document.getElementById("triggersContainer").insertAdjacentHTML("beforeend", triggerHtml);
+        }
 
-</script>
+    </script>
 {% endblock content %}

@@ -1,8 +1,9 @@
 from collections import deque
+
 from django.db import transaction
 from django.utils import timezone
+from simulation.models import Stock, Order
 from simulation.models import TransactionHistory
-from simulation.models import Stock, Order, SimulationSettings
 
 
 class BuySellQueue:

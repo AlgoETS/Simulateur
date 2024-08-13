@@ -1,22 +1,25 @@
-from django.test import TestCase, RequestFactory
 from django.contrib.auth.models import User, AnonymousUser
-from django.http import HttpResponse, JsonResponse
-from django.urls import reverse
-from simulation.models import UserProfile, Team
+from django.http import HttpResponse
+from django.test import TestCase, RequestFactory
 from simulation.decorators import admin_required, user_required, team_required
+from simulation.models import UserProfile, Team
+
 
 # Dummy view functions to apply decorators to
 @admin_required
 def admin_view(request):
     return HttpResponse('Admin View')
 
+
 @user_required
 def user_view(request):
     return HttpResponse('User View')
 
+
 @team_required
 def team_view(request):
     return HttpResponse('Team View')
+
 
 class DecoratorTests(TestCase):
 
@@ -25,7 +28,9 @@ class DecoratorTests(TestCase):
         self.admin_user = User.objects.create_user(username='admin', password='password', is_superuser=True)
         self.normal_user = User.objects.create_user(username='user', password='password')
         self.team = Team.objects.create(name="Test Team")
-        self.user_profile = UserProfile.objects.create(user=self.normal_user, team=self.team)
+        self.user_profile, _ = UserProfile.objects.get_or_create(user=self.normal_user)
+        self.user_profile.teams.set([self.team])
+        self.team.members.set([self.user_profile])
         self.anonymous_user = AnonymousUser()
 
     def test_admin_required_with_admin_user(self):
@@ -64,8 +69,7 @@ class DecoratorTests(TestCase):
         self.assertEqual(response.content, b'Team View')
 
     def test_team_required_with_user_not_in_team(self):
-        self.user_profile.team = None
-        self.user_profile.save()
+        self.user_profile.teams.clear()  # Remove user from all teams
         request = self.factory.get('/team/')
         request.user = self.normal_user
         response = team_view(request)

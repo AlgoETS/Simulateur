@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class ScenarioManager(models.Model):
     class ScenarioState(models.TextChoices):
         INITIALIZED = 'initialized', 'Initialized'

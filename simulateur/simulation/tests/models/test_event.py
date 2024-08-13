@@ -1,6 +1,8 @@
+from datetime import datetime
+
 from django.test import TestCase
 from simulation.models import Event
-from datetime import datetime
+
 
 class EventModelTest(TestCase):
 

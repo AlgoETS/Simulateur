@@ -12,9 +12,9 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 import os
 from pathlib import Path
-from django.core.asgi import get_asgi_application
-import django
 
+import django
+from django.core.asgi import get_asgi_application
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -31,7 +31,7 @@ DEBUG = os.getenv("DEBUG", "True") == "True"
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-#CSRF_TRUSTED_ORIGINS = ['*']
+# CSRF_TRUSTED_ORIGINS = ['*']
 
 # Site and login configurations
 SITE_ID = 1
@@ -87,6 +87,7 @@ INSTALLED_APPS = [
     'health_check.contrib.rabbitmq',
     'health_check.contrib.redis',
     'storages',
+    'drf_yasg'
 
     'simulation',
 ]
@@ -139,7 +140,6 @@ TEMPLATES = [
     },
 ]
 
-
 # Database configuration
 DATABASE_ENGINE = os.getenv("DATABASE_ENGINE", "sqlite")  # Use 'postgresql', 'mysql', or 'sqlite'
 
@@ -161,7 +161,6 @@ else:  # Default to sqlite
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
-
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -347,9 +346,9 @@ PWA_APP_SHORTCUTS = [
 ]
 PWA_APP_SCREENSHOTS = [
     {
-      'src': '/static/images/icons/splash-750x1334.png',
-      'sizes': '750x1334',
-      "type": "image/png"
+        'src': '/static/images/icons/splash-750x1334.png',
+        'sizes': '750x1334',
+        "type": "image/png"
     }
 ]
 
@@ -364,7 +363,7 @@ RQ_QUEUES = {
 # Health check settings
 HEALTH_CHECK = {
     'DISK_USAGE_MAX': 90,  # percent
-    'MEMORY_MIN': 100,    # in MB
+    'MEMORY_MIN': 100,  # in MB
 }
 
 # MinIO Storage Configuration

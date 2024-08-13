@@ -1,14 +1,14 @@
 import csv
-import json
 from datetime import datetime
-import logging
-from django.core.management.base import BaseCommand
+
 from django.contrib.auth.models import User
+from django.core.management.base import BaseCommand
 from django.db import transaction
 from simulation.models import (
     Company, Stock, Team, UserProfile, Event, Trigger, SimulationSettings,
     Scenario, Portfolio, TransactionHistory
 )
+
 
 class Command(BaseCommand):
     help = 'Seed the database with initial data from CSV files'
@@ -165,7 +165,8 @@ class Command(BaseCommand):
                             'fluctuation_rate': float(row['fluctuation_rate']),
                             'close_stock_market_at_night': row['close_stock_market_at_night'].lower() == 'true',
                             'noise_function': row['noise_function'] if 'noise_function' in row else 'brownian',
-                            'stock_trading_logic': row['stock_trading_logic'] if 'stock_trading_logic' in row else 'static'
+                            'stock_trading_logic': row[
+                                'stock_trading_logic'] if 'stock_trading_logic' in row else 'static'
                         }
                     )
             self.stdout.write(self.style.SUCCESS('Seeded simulation settings'))
@@ -222,7 +223,6 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS('Seeded portfolios'))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Error seeding portfolios: {e}'))
-
 
     def seed_orders(self):
         try:

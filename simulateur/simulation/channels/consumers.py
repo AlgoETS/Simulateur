@@ -1,8 +1,10 @@
 import json
-from channels.generic.websocket import AsyncWebsocketConsumer
 import logging
 
+from channels.generic.websocket import AsyncWebsocketConsumer
+
 logger = logging.getLogger(__name__)
+
 
 class SimulationConsumer(AsyncWebsocketConsumer):
     async def connect(self):

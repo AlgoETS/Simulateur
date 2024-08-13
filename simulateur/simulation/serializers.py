@@ -4,6 +4,7 @@ from .models import (
     Scenario, Team, Portfolio, TransactionHistory, Trigger, News, StockPriceHistory, ScenarioManager
 )
 
+
 class CompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = Company

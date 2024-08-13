@@ -1,33 +1,22 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from simulation.api.scenario import (
-    CreateScenario,
-    PublishScenario,
-    ScenarioStocks,
-    StockHistory,
-    GetPublishedScenarios,
-    CreateCompanyAndStock,
-    CreateNews,
-    CreateEvent,
-    CreateTrigger,
-    CreateScenarioView,
-    AddCompanyStockView,
-    AddTeamsView,
-    AddEventsNewsTriggersView,
-    ReviewSubmitScenarioView,
+from simulation.api.ai_llm import (
+    InteractWithOllama,
+    CreateNewsAI,
+    CreateEventAI,
+    CreateTriggerAI,
+    CreateCompanyAndStockAI,
+    CreateScenarioAI,
 )
-
-# Importing HTML views
-from simulation.views.dashboard import (
-    GameDashboardView,
-    HomeView,
-    PortfolioDetailView,
-    PortfolioUserDetailView,
-    UserDashboardView,
-    AdminDashboardView,
-    TeamDashboardView,
-    MarketOverviewView,
+from simulation.api.auth import UpdateMemberRole
+from simulation.api.portfolio import (
+    BuyStock,
+    PortfolioView,
+    SellStock,
+    StockPrice,
+    UserOrders,
 )
+from simulation.api.teams import GenerateJoinLink, JoinTeam, RemoveTeamMember, UpdateTeamName
 from simulation.views.auth import (
     ForgotPasswordView,
     LogoutView,
@@ -39,33 +28,23 @@ from simulation.views.auth import (
     LoginView,
     JoinTeamView,
 )
-from simulation.views.simulation import SimulationGraphView
-# Importing API views
-from simulation.api.simulation import (
-    SimulationSettingsView,
-    StartSimulation,
-    PauseSimulation,
-    StopSimulation,
-    FastForwardSimulation,
-    RewindSimulation,
+# Importing HTML views
+from simulation.views.dashboard import (
+    GameDashboardView,
+    HomeView,
+    PortfolioDetailView,
+    PortfolioUserDetailView,
+    UserDashboardView,
+    AdminDashboardView,
+    TeamDashboardView,
+    MarketOverviewView,
 )
-from simulation.api.portfolio import (
-    BuyStock,
-    PortfolioView,
-    SellStock,
-    StockPrice,
-    UserOrders,
+from simulation.api.event import (
+    EventManagement
 )
-from simulation.api.ai_llm import (
-    InteractWithOllama,
-    CreateNewsAI,
-    CreateEventAI,
-    CreateTriggerAI,
-    CreateCompanyAndStockAI,
-    CreateScenarioAI,
-)
-from simulation.api.auth import UpdateMemberRole
-from simulation.api.teams import GenerateJoinLink, JoinTeam, RemoveTeamMember, UpdateTeamName
+
+from simulation.api.news import NewsManagement
+from simulation.api.trigger import TriggerManagement
 
 router = DefaultRouter()
 
@@ -90,44 +69,30 @@ html_patterns = [
 ]
 
 api_patterns = [
-    path('simulation/start/', StartSimulation.as_view(), name='start_simulation'),
-    path('simulation/pause/', PauseSimulation.as_view(), name='pause_simulation'),
-    path('simulation/stop/', StopSimulation.as_view(), name='stop_simulation'),
-    path('simulation/fast-forward/', FastForwardSimulation.as_view(), name='fast-forward-simulation'),
-    path('simulation/rewind/', RewindSimulation.as_view(), name='rewind-simulation'),
     path('portfolio/<int:user_id>/', PortfolioView.as_view(), name='portfolio_view'),
     path('stock/buy/', BuyStock.as_view(), name='buy_stock'),
     path('stock/sell/', SellStock.as_view(), name='sell_stock'),
     path('stock/price/<stock_id>/', StockPrice.as_view(), name='stock_price'),
     path('user/orders/', UserOrders.as_view(), name='user_orders'),
-    path('graph/', SimulationGraphView.as_view(), name='simulation_graph'),
-    path('settings/', SimulationSettingsView.as_view(), name='simulation_settings'),
     path('join_team/<int:team_id>/<str:key>/', JoinTeam.as_view(), name='join_team'),
     path('team/remove-member/<int:team_id>/<int:user_id>/', RemoveTeamMember.as_view(), name='remove_team_member'),
     path('team/update-name/<int:team_id>/', UpdateTeamName.as_view(), name='change_team_name'),
     path('team/update-role/<int:team_id>/<int:user_id>/', UpdateMemberRole.as_view(), name='update_member_role'),
-    path('scenario/create/', CreateScenarioView.as_view(), name='create_scenario'),
-    path('scenario/publish/<int:scenario_id>/', PublishScenario.as_view(), name='publish_scenario'),
-    path('scenarios/published/', GetPublishedScenarios.as_view(), name='get_published_scenarios'),
-    path('scenarios/<int:scenario_id>/stocks/', ScenarioStocks.as_view(), name='scenario_stocks'),
-    path('stocks/<int:stock_id>/history/', StockHistory.as_view(), name='stock_history'),
-    path('scenario/company-and-stock/', AddCompanyStockView.as_view(), name='create_company_and_stock'),
-    path('scenario/news/', CreateNews.as_view(), name='create_news'),
-    path('scenario/event/', CreateEvent.as_view(), name='create_event'),
-    path('scenario/trigger/', CreateTrigger.as_view(), name='create_trigger'),
     path('interact-with-ollama/', InteractWithOllama.as_view(), name='interact-with-ollama'),
     path('create-news-ai/', CreateNewsAI.as_view(), name='create-news-ai'),
     path('create-event-ai/', CreateEventAI.as_view(), name='create-event-ai'),
     path('create-trigger-ai/', CreateTriggerAI.as_view(), name='create-trigger-ai'),
     path('create-company-stock-ai/', CreateCompanyAndStockAI.as_view(), name='create-company-stock-ai'),
     path('create-scenario-ai/', CreateScenarioAI.as_view(), name='create-scenario-ai'),
-    path('scenario/add-company-stock/', AddCompanyStockView.as_view(), name='add_company_stock'),
-    path('scenario/add-teams/', AddTeamsView.as_view(), name='add_teams'),
-    path('scenario/add-events-news-triggers/', AddEventsNewsTriggersView.as_view(), name='add_events_news_triggers'),
-    path('scenario/review-submit/', ReviewSubmitScenarioView.as_view(), name='review_submit_scenario'),
     path('team/generate-join-link/<int:team_id>/', GenerateJoinLink.as_view(), name='generate_join_link'),
-]
 
+    path('/news/', NewsManagement.as_view(), name='create_news'),
+    path('/news/<int:news_id>/', NewsManagement.as_view(), name='manage_news'),
+    path('event/', EventManagement.as_view(), name='create_event'),
+    path('event/<int:event_id>/', EventManagement.as_view(), name='manage_event'),
+    path('triggers/', TriggerManagement.as_view(), name='create_trigger'),
+    path('triggers/<int:trigger_id>/', TriggerManagement.as_view(), name='manage_trigger'),
+]
 # Combine both HTML and API patterns into a single list
 urlpatterns = [
     path('api/', include(router.urls)),

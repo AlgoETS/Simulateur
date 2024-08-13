@@ -1,6 +1,5 @@
 from django.db import models
-
-from simulation.models import ScenarioManager, StockPriceHistory
+from simulation.models import StockPriceHistory
 
 
 class Portfolio(models.Model):
@@ -12,7 +11,7 @@ class Portfolio(models.Model):
         related_name="portfolio",
     )
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    scenario_manager = models.ForeignKey(ScenarioManager, on_delete=models.CASCADE)
+    scenario_manager = models.ForeignKey("ScenarioManager", on_delete=models.CASCADE)
 
     def __str__(self):
         return f"Portfolio for {self.owner}"

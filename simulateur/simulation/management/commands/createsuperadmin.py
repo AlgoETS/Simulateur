@@ -2,6 +2,7 @@ from django.contrib.auth.management.commands import createsuperuser
 from django.core.management import CommandError
 from django.contrib.auth import get_user_model
 
+
 class Command(createsuperuser.Command):
     help = 'Create a superadmin user with a password non-interactively'
 

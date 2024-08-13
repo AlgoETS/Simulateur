@@ -1,6 +1,7 @@
 from django.test import TestCase
 from simulation.models import Scenario
 
+
 class ScenarioModelTest(TestCase):
 
     def setUp(self):
@@ -32,4 +33,3 @@ class ScenarioModelTest(TestCase):
         self.assertEqual(scenario_default.description, "")
         self.assertEqual(scenario_default.backstory, "")
         self.assertEqual(scenario_default.duration, 0)
-

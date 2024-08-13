@@ -1,8 +1,12 @@
-from django.test import TestCase
-from django.contrib.auth.models import User
 from decimal import Decimal
+
+from django.contrib.auth.models import User
+from django.test import TestCase
 from django.utils import timezone
-from simulation.models import Portfolio, ScenarioManager, UserProfile, Stock, Scenario, SimulationSettings, SimulationData, StockPortfolio, StockPriceHistory, Company
+from simulation.models import Portfolio, ScenarioManager, UserProfile, Stock, Scenario, SimulationSettings, \
+    SimulationData, StockPortfolio, StockPriceHistory, Company
+
+
 class PortfolioModelTest(TestCase):
 
     def setUp(self):
@@ -154,4 +158,3 @@ class PortfolioModelTest(TestCase):
                 portfolio=self.portfolio,
                 quantity=5
             )
-

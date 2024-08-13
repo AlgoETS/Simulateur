@@ -2,16 +2,6 @@ from django.test import TestCase
 from simulation.models import (
     Company,
     Stock,
-    StockPriceHistory,
-    UserProfile,
-    Event,
-    SimulationSettings,
-    Scenario,
-    Team,
-    Portfolio,
-    TransactionHistory,
-    Trigger,
-    News,
 )
 from simulation.serializers import (
     CompanySerializer,
@@ -19,8 +9,6 @@ from simulation.serializers import (
     EventSerializer,
     SimulationSettingsSerializer,
     TeamSerializer,
-    PortfolioSerializer,
-    TransactionHistorySerializer,
     TriggerSerializer,
     NewsSerializer,
     ScenarioSerializer,
@@ -38,7 +26,6 @@ class SerializerTests(TestCase):
             "industry": "Software",
         }
         self.stock_data = {
-            "company": self.company_data,
             "ticker": "TEST",
             "volatility": 0.5,
             "liquidity": 1.0,

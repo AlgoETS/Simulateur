@@ -1,6 +1,7 @@
 from django.db import models
 from simulation.models.simulation_manager import ScenarioManager
 
+
 class TransactionHistory(models.Model):
     scenario_manager = models.ForeignKey(ScenarioManager, related_name='transactions', on_delete=models.CASCADE)
     orders = models.ManyToManyField('Order', related_name='transactions')
@@ -10,6 +11,7 @@ class TransactionHistory(models.Model):
 
     class Meta:
         verbose_name_plural = "Transaction Histories"
+
 
 class Order(models.Model):
     user = models.ForeignKey('UserProfile', on_delete=models.CASCADE)

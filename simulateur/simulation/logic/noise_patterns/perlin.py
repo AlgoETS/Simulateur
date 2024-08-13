@@ -1,6 +1,6 @@
-from simulation.logic.noise_patterns.noise_strategy import NoiseStrategy
 import noise
 import numpy as np
+from simulation.logic.noise_patterns.noise_strategy import NoiseStrategy
 
 
 class Perlin(NoiseStrategy):

@@ -1,6 +1,7 @@
 from django.test import TestCase
 from simulation.models import Trigger, Event
 
+
 class TriggerModelTest(TestCase):
 
     def setUp(self):
@@ -33,6 +34,7 @@ class TriggerModelTest(TestCase):
         self.trigger.delete()
         self.event1.delete()
         self.event2.delete()
+
     def test_trigger_creation(self):
         # Test if the Trigger object was created successfully
         self.assertEqual(self.trigger.name, "Test Trigger")

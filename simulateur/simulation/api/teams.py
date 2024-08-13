@@ -1,13 +1,14 @@
-from django.shortcuts import get_object_or_404
-from rest_framework import generics, status
-from rest_framework.response import Response
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-from simulation.serializers import JoinTeamSerializer, UpdateTeamNameSerializer
-from simulation.models import Team, JoinLink, UserProfile
-from django.shortcuts import redirect
-from rest_framework.views import APIView
 from django.contrib import messages
+from django.shortcuts import get_object_or_404
+from django.shortcuts import redirect
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from simulation.models import Team, JoinLink, UserProfile
+from simulation.serializers import JoinTeamSerializer, UpdateTeamNameSerializer
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 class JoinTeam(APIView):
@@ -49,6 +50,7 @@ class JoinTeam(APIView):
 
         messages.error(request, "Invalid data")
         return redirect("join_team")
+
 
 class RemoveTeamMember(APIView):
     def post(self, request, team_id, user_id):

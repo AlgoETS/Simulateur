@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -75,14 +74,26 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('timer_step', models.IntegerField(default=10)),
-                ('timer_step_unit', models.CharField(choices=[('millisecond', 'Millisecond'), ('centisecond', 'Centisecond'), ('decisecond', 'Decisecond'), ('second', 'Second'), ('minute', 'Minute'), ('hour', 'Hour'), ('day', 'Day'), ('month', 'Month'), ('year', 'Year')], default='second', max_length=20)),
+                ('timer_step_unit', models.CharField(
+                    choices=[('millisecond', 'Millisecond'), ('centisecond', 'Centisecond'),
+                             ('decisecond', 'Decisecond'), ('second', 'Second'), ('minute', 'Minute'), ('hour', 'Hour'),
+                             ('day', 'Day'), ('month', 'Month'), ('year', 'Year')], default='second', max_length=20)),
                 ('interval', models.IntegerField(default=20)),
-                ('interval_unit', models.CharField(choices=[('millisecond', 'Millisecond'), ('centisecond', 'Centisecond'), ('decisecond', 'Decisecond'), ('second', 'Second'), ('minute', 'Minute'), ('hour', 'Hour'), ('day', 'Day'), ('month', 'Month'), ('year', 'Year')], default='second', max_length=20)),
+                ('interval_unit', models.CharField(
+                    choices=[('millisecond', 'Millisecond'), ('centisecond', 'Centisecond'),
+                             ('decisecond', 'Decisecond'), ('second', 'Second'), ('minute', 'Minute'), ('hour', 'Hour'),
+                             ('day', 'Day'), ('month', 'Month'), ('year', 'Year')], default='second', max_length=20)),
                 ('max_interval', models.IntegerField(default=3000)),
                 ('fluctuation_rate', models.FloatField(default=0.1)),
                 ('close_stock_market_at_night', models.BooleanField(default=True)),
-                ('noise_function', models.CharField(choices=[('brownian', 'Brownian Motion'), ('monte_carlo', 'Monte Carlo'), ('perlin', 'Perlin Noise'), ('random_walk', 'Random Walk'), ('fbm', 'Fractional Brownian Motion'), ('other', 'Other')], default='brownian', max_length=20)),
-                ('stock_trading_logic', models.CharField(choices=[('dynamic', 'Dynamic'), ('static', 'Static')], default='static', max_length=20)),
+                ('noise_function', models.CharField(
+                    choices=[('brownian', 'Brownian Motion'), ('monte_carlo', 'Monte Carlo'),
+                             ('perlin', 'Perlin Noise'), ('random_walk', 'Random Walk'),
+                             ('fbm', 'Fractional Brownian Motion'), ('other', 'Other')], default='brownian',
+                    max_length=20)),
+                ('stock_trading_logic',
+                 models.CharField(choices=[('dynamic', 'Dynamic'), ('static', 'Static')], default='static',
+                                  max_length=20)),
             ],
             options={
                 'verbose_name_plural': 'Simulation Settings',
@@ -105,7 +116,8 @@ class Migration(migrations.Migration):
                 ('title', models.CharField(default='', max_length=100)),
                 ('content', models.TextField(default='')),
                 ('published_date', models.DateTimeField(auto_now=True)),
-                ('event', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='news_items', to='simulation.event')),
+                ('event', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='news_items',
+                                            to='simulation.event')),
             ],
             options={
                 'verbose_name_plural': 'Market News',
@@ -119,7 +131,8 @@ class Migration(migrations.Migration):
                 ('timestamp', models.DateTimeField(auto_now_add=True)),
                 ('volatility', models.FloatField(default=0.0)),
                 ('liquidity', models.FloatField(default=0.0)),
-                ('company', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='stocks', to='simulation.company')),
+                ('company', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='stocks',
+                                              to='simulation.company')),
             ],
             options={
                 'verbose_name_plural': 'Stocks',
@@ -132,7 +145,8 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('quantity', models.IntegerField(default=0)),
                 ('price', models.FloatField(default=0.0)),
-                ('transaction_type', models.CharField(choices=[('BUY', 'Buy'), ('SELL', 'Sell')], default='BUY', max_length=100)),
+                ('transaction_type',
+                 models.CharField(choices=[('BUY', 'Buy'), ('SELL', 'Sell')], default='BUY', max_length=100)),
                 ('timestamp', models.DateTimeField(auto_now=True)),
                 ('stock', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='simulation.stock')),
             ],
@@ -151,7 +165,8 @@ class Migration(migrations.Migration):
                 ('timestamp', models.DateTimeField(auto_now_add=True)),
                 ('volatility', models.FloatField(default=0.0)),
                 ('liquidity', models.FloatField(default=0.0)),
-                ('stock', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='price_history', to='simulation.stock')),
+                ('stock', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='price_history',
+                                            to='simulation.stock')),
             ],
             options={
                 'verbose_name_plural': 'Stock Price Histories',
@@ -162,14 +177,19 @@ class Migration(migrations.Migration):
             name='ScenarioManager',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('state', models.CharField(choices=[('initialized', 'Initialized'), ('created', 'Created'), ('published', 'Published'), ('ongoing', 'Ongoing'), ('stopped', 'Stopped'), ('finished', 'Finished')], default='initialized', max_length=20)),
+                ('state', models.CharField(
+                    choices=[('initialized', 'Initialized'), ('created', 'Created'), ('published', 'Published'),
+                             ('ongoing', 'Ongoing'), ('stopped', 'Stopped'), ('finished', 'Finished')],
+                    default='initialized', max_length=20)),
                 ('timestamp', models.DateTimeField(auto_now_add=True)),
                 ('published_date', models.DateTimeField(auto_now=True)),
                 ('events', models.ManyToManyField(related_name='scenarios_events', to='simulation.event')),
                 ('news', models.ManyToManyField(related_name='scenarios_news', to='simulation.news')),
                 ('scenario', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='simulation.scenario')),
-                ('simulation_data', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='simulation.simulationdata')),
-                ('simulation_settings', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='simulation.simulationsettings')),
+                ('simulation_data',
+                 models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='simulation.simulationdata')),
+                ('simulation_settings',
+                 models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='simulation.simulationsettings')),
                 ('stocks', models.ManyToManyField(related_name='scenarios_stocks', to='simulation.stock')),
                 ('teams', models.ManyToManyField(related_name='scenarios_teams', to='simulation.team')),
             ],
@@ -181,7 +201,8 @@ class Migration(migrations.Migration):
                 ('key', models.CharField(max_length=32, unique=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('expires_at', models.DateTimeField()),
-                ('team', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='join_links', to='simulation.team')),
+                ('team', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='join_links',
+                                           to='simulation.team')),
             ],
             options={
                 'verbose_name_plural': 'Join Links',
@@ -192,7 +213,9 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('orders', models.ManyToManyField(related_name='transactions', to='simulation.order')),
-                ('scenario_manager', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='transactions', to='simulation.scenariomanager')),
+                ('scenario_manager',
+                 models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='transactions',
+                                   to='simulation.scenariomanager')),
             ],
             options={
                 'verbose_name_plural': 'Transaction Histories',
@@ -224,9 +247,13 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('timestamp', models.DateTimeField(auto_now_add=True)),
                 ('avatar', models.ImageField(blank=True, null=True, upload_to='avatars/')),
-                ('role', models.CharField(choices=[('member', 'Member'), ('team_leader', 'Team Leader'), ('admin', 'Admin'), ('super_admin', 'Super Admin'), ('moderator', 'Moderator')], default='member', max_length=20)),
+                ('role', models.CharField(
+                    choices=[('member', 'Member'), ('team_leader', 'Team Leader'), ('admin', 'Admin'),
+                             ('super_admin', 'Super Admin'), ('moderator', 'Moderator')], default='member',
+                    max_length=20)),
                 ('teams', models.ManyToManyField(blank=True, related_name='user_profiles', to='simulation.team')),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                'user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'verbose_name_plural': 'User Profiles',
@@ -242,8 +269,10 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('balance', models.DecimalField(decimal_places=2, default=0.0, max_digits=10)),
-                ('scenario_manager', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='simulation.scenariomanager')),
-                ('owner', models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='portfolio', to='simulation.userprofile')),
+                ('scenario_manager',
+                 models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='simulation.scenariomanager')),
+                ('owner', models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE,
+                                               related_name='portfolio', to='simulation.userprofile')),
             ],
             options={
                 'verbose_name_plural': 'Portfolios',
@@ -259,9 +288,13 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('quantity', models.IntegerField(default=0)),
-                ('portfolio', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='simulation.portfolio')),
-                ('stock', models.ForeignKey(blank=True, on_delete=django.db.models.deletion.CASCADE, to='simulation.stock')),
-                ('latest_price_history', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='stock_portfolios', to='simulation.stockpricehistory')),
+                (
+                'portfolio', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='simulation.portfolio')),
+                ('stock',
+                 models.ForeignKey(blank=True, on_delete=django.db.models.deletion.CASCADE, to='simulation.stock')),
+                ('latest_price_history',
+                 models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE,
+                                   related_name='stock_portfolios', to='simulation.stockpricehistory')),
             ],
             options={
                 'unique_together': {('stock', 'portfolio')},

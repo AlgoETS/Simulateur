@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class SimulationSettings(models.Model):
     TIME_UNIT_CHOICES = [
         ('millisecond', 'Millisecond'),
@@ -39,5 +40,6 @@ class SimulationSettings(models.Model):
 
     def __str__(self):
         return f'Simulation Settings: {self.id}'
+
     class Meta:
         verbose_name_plural = "Simulation Settings"

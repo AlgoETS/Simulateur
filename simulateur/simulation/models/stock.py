@@ -16,6 +16,7 @@ class Stock(models.Model):
         verbose_name_plural = "Stocks"
         ordering = ["timestamp"]
 
+
 class StockPriceHistory(models.Model):
     stock = models.ForeignKey(
         Stock, on_delete=models.CASCADE, related_name="price_history"

@@ -34,7 +34,7 @@ services:
       - web
       - all
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      test: [ "CMD-SHELL", "curl -f http://localhost:8000/health || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -50,7 +50,7 @@ services:
       - caching
       - all
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -71,7 +71,7 @@ services:
       - storage
       - all
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/live || exit 1"]
+      test: [ "CMD-SHELL", "curl -f http://localhost:9000/minio/health/live || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -92,7 +92,7 @@ services:
       - metrics
       - all
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8086/health || exit 1"]
+      test: [ "CMD-SHELL", "curl -f http://localhost:8086/health || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -113,7 +113,7 @@ services:
       - database
       - all
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -132,7 +132,7 @@ services:
     pull_policy: always
     tty: true
     restart: always
-    entrypoint: ["/usr/bin/bash", "/entrypoint.sh"]  # Use the custom entrypoint script
+    entrypoint: [ "/usr/bin/bash", "/entrypoint.sh" ]  # Use the custom entrypoint script
 
 volumes:
   minio_data:

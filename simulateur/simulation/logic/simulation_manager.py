@@ -1,19 +1,18 @@
 import logging
 import time
-from django.utils import timezone
-from django.core.cache import cache
-from django.conf import settings
+
 from channels.layers import get_channel_layer
-from simulation.logic.noise_patterns.noise_strategy import NoiseStrategy
-from simulation.logic.noise_patterns.fbm import Fbm
+from django.conf import settings
+from django.core.cache import cache
+from django.utils import timezone
+from simulation.logic.broker import broker
 from simulation.logic.noise_patterns.brownian_motion import BrownianMotion
+from simulation.logic.noise_patterns.fbm import Fbm
 from simulation.logic.noise_patterns.perlin import Perlin
 from simulation.logic.noise_patterns.random_candle import RandomCandle
 from simulation.logic.noise_patterns.random_walk import RandomWalk
-from simulation.models import Scenario, Stock, StockPriceHistory
-from simulation.logic.broker import broker
 from simulation.logic.utils import is_market_open, send_ohlc_update, TIME_UNITS
-
+from simulation.models import Scenario, StockPriceHistory
 
 logger = logging.getLogger(__name__)
 
@@ -27,12 +26,12 @@ class SimulationManager:
         self.running = False
         self.run_duration = 100000
         self.time_step = (
-            scenario.simulation_settings.timer_step
-            * TIME_UNITS[scenario.simulation_settings.timer_step_unit]
+                scenario.simulation_settings.timer_step
+                * TIME_UNITS[scenario.simulation_settings.timer_step_unit]
         )
         self.interval = (
-            scenario.simulation_settings.interval
-            * TIME_UNITS[scenario.simulation_settings.interval_unit]
+                scenario.simulation_settings.interval
+                * TIME_UNITS[scenario.simulation_settings.interval_unit]
         )
         self.close_stock_market_at_night = (
             scenario.simulation_settings.close_stock_market_at_night
@@ -61,7 +60,7 @@ class SimulationManager:
                     break
 
                 if self.close_stock_market_at_night and not is_market_open(
-                    current_time
+                        current_time
                 ):
                     logger.info("Stock market is closed")
                 else:

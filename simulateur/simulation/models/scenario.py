@@ -1,4 +1,6 @@
 from django.db import models
+
+
 class Scenario(models.Model):
     name = models.CharField(max_length=100, default='')
     description = models.TextField(default='')

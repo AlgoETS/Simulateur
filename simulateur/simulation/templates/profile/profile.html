@@ -3,110 +3,121 @@
 {% block title %}Profile and Settings{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-8">
-    <h1 class="text-4xl font-extrabold text-gray-900 mb-8">Profile</h1>
-    <div class="bg-white shadow-lg rounded-lg overflow-hidden mb-8">
-        <div class="px-4 py-5 sm:px-6 bg-gradient-to-r from-indigo-500 to-blue-500 text-white">
-            <h3 class="text-xl leading-6 font-semibold">User Information</h3>
-            <p class="mt-1 max-w-2xl text-sm">Personal details and application.</p>
-        </div>
-        <div class="border-t border-gray-200">
-            <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt class="text-sm font-medium text-gray-500">Avatar</dt>
-                <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {% if user_profile.avatar %}
-                        <img src="{{ user_profile.avatar.url }}" alt="{{ user.username }}" class="h-16 w-16 rounded-full">
-                    {% else %}
-                        <p>No avatar uploaded.</p>
-                    {% endif %}
-                </dd>
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-8">
+        <h1 class="text-4xl font-extrabold text-gray-900 mb-8">Profile</h1>
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden mb-8">
+            <div class="px-4 py-5 sm:px-6 bg-gradient-to-r from-indigo-500 to-blue-500 text-white">
+                <h3 class="text-xl leading-6 font-semibold">User Information</h3>
+                <p class="mt-1 max-w-2xl text-sm">Personal details and application.</p>
             </div>
-            <dl>
+            <div class="border-t border-gray-200">
                 <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt class="text-sm font-medium text-gray-500">Username</dt>
-                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ user.username }}</dd>
-                </div>
-                <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt class="text-sm font-medium text-gray-500">Email</dt>
-                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ user.email }}</dd>
-                </div>
-                <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt class="text-sm font-medium text-gray-500">Balance</dt>
-                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">${{ portfolio.balance }}</dd>
-                </div>
-                <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt class="text-sm font-medium text-gray-500">Team</dt>
+                    <dt class="text-sm font-medium text-gray-500">Avatar</dt>
                     <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                        {% if user_profile.team %}
-                            {{ user_profile.team.name }}
-                            <br><button onclick="removeFromTeam('{{ user_profile.team.id }}', '{{ user_profile.user.id }}')" class="inline-block mt-2 bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">Leave Team</button>
+                        {% if user_profile.avatar %}
+                            <img src="{{ user_profile.avatar.url }}" alt="{{ user.username }}"
+                                 class="h-16 w-16 rounded-full">
                         {% else %}
-                            <p>You are not part of any team.</p>
-                            <a href="{% url 'join_team' %}" class="inline-block mt-2 bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Join a Team</a>
+                            <p>No avatar uploaded.</p>
                         {% endif %}
                     </dd>
                 </div>
-                <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt class="text-sm font-medium text-gray-500">Joined</dt>
-                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ user_profile.timestamp|date:"F j, Y" }}</dd>
-                </div>
-            </dl>
+                <dl>
+                    <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500">Username</dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ user.username }}</dd>
+                    </div>
+                    <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500">Email</dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ user.email }}</dd>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500">Balance</dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">${{ portfolio.balance }}</dd>
+                    </div>
+                    <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500">Team</dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            {% if user_profile.team %}
+                                {{ user_profile.team.name }}
+                                <br>
+                                <button onclick="removeFromTeam('{{ user_profile.team.id }}', '{{ user_profile.user.id }}')"
+                                        class="inline-block mt-2 bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                    Leave Team
+                                </button>
+                            {% else %}
+                                <p>You are not part of any team.</p>
+                                <a href="{% url 'join_team' %}"
+                                   class="inline-block mt-2 bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Join
+                                    a Team</a>
+                            {% endif %}
+                        </dd>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500">Joined</dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ user_profile.timestamp|date:"F j, Y" }}</dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
+
+        <h1 class="text-4xl font-extrabold text-gray-900 mb-8">Settings</h1>
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+            <div class="px-4 py-5 sm:px-6 bg-gradient-to-r from-indigo-500 to-blue-500 text-white">
+                <h3 class="text-xl leading-6 font-semibold">Account Settings</h3>
+                <p class="mt-1 max-w-2xl text-sm">Manage your account settings and set e-mail preferences.</p>
+            </div>
+            <div class="border-t border-gray-200">
+                <form class="px-4 py-5 sm:p-6" action="{% url 'profile' %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="grid grid-cols-6 gap-6">
+                        <div class="col-span-6 sm:col-span-4">
+                            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                            <input type="email" name="email" id="email" autocomplete="email" value="{{ user.email }}"
+                                   class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div class="col-span-6 sm:col-span-4">
+                            <label for="balance" class="block text-sm font-medium text-gray-700">Balance</label>
+                            <input type="number" name="balance" id="balance" value="{{ portfolio.balance }}"
+                                   class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div class="col-span-6 sm:col-span-4">
+                            <label for="avatar" class="block text-sm font-medium text-gray-700">Change Avatar</label>
+                            <input type="file" name="avatar" id="avatar"
+                                   class="mt-1 block w-full text-sm text-gray-500">
+                        </div>
+                    </div>
+                    <div class="mt-6 flex justify-end">
+                        <button type="submit"
+                                class="group relative w-full sm:w-auto flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
-    <h1 class="text-4xl font-extrabold text-gray-900 mb-8">Settings</h1>
-    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-        <div class="px-4 py-5 sm:px-6 bg-gradient-to-r from-indigo-500 to-blue-500 text-white">
-            <h3 class="text-xl leading-6 font-semibold">Account Settings</h3>
-            <p class="mt-1 max-w-2xl text-sm">Manage your account settings and set e-mail preferences.</p>
-        </div>
-        <div class="border-t border-gray-200">
-            <form class="px-4 py-5 sm:p-6" action="{% url 'profile' %}" method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="grid grid-cols-6 gap-6">
-                    <div class="col-span-6 sm:col-span-4">
-                        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                        <input type="email" name="email" id="email" autocomplete="email" value="{{ user.email }}" class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
-                    </div>
-                    <div class="col-span-6 sm:col-span-4">
-                        <label for="balance" class="block text-sm font-medium text-gray-700">Balance</label>
-                        <input type="number" name="balance" id="balance" value="{{ portfolio.balance }}" class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
-                    </div>
-                    <div class="col-span-6 sm:col-span-4">
-                        <label for="avatar" class="block text-sm font-medium text-gray-700">Change Avatar</label>
-                        <input type="file" name="avatar" id="avatar" class="mt-1 block w-full text-sm text-gray-500">
-                    </div>
-                </div>
-                <div class="mt-6 flex justify-end">
-                    <button type="submit" class="group relative w-full sm:w-auto flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        Save Changes
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+    <script>
+        function removeFromTeam(teamId, userId) {
+            const csrfToken = getCookie('csrftoken');
 
-<script>
-    function removeFromTeam(teamId, userId) {
-        const csrfToken = getCookie('csrftoken');
-
-        axios.post(`/api/team/remove-member/${teamId}/${userId}/`, {}, {
-            headers: {
-                'X-CSRFToken': csrfToken
-            }
-        })
-        .then(response => {
-            if (response.data.status === 'success') {
-                alert(response.data.message);
-                location.reload();
-            } else {
-                alert(response.data.message);
-            }
-        })
-        .catch(error => {
-            alert('Failed to leave team.');
-        });
-    }
-</script>
+            axios.post(`/api/team/remove-member/${teamId}/${userId}/`, {}, {
+                headers: {
+                    'X-CSRFToken': csrfToken
+                }
+            })
+                .then(response => {
+                    if (response.data.status === 'success') {
+                        alert(response.data.message);
+                        location.reload();
+                    } else {
+                        alert(response.data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Failed to leave team.');
+                });
+        }
+    </script>
 {% endblock %}

@@ -1,8 +1,10 @@
+from datetime import timedelta
+
 from django.db import models
-from django.utils.crypto import get_random_string
 from django.urls import reverse
 from django.utils import timezone
-from datetime import timedelta
+from django.utils.crypto import get_random_string
+
 
 class Team(models.Model):
     name = models.CharField(max_length=100, default='')
@@ -22,6 +24,7 @@ class Team(models.Model):
 
     class Meta:
         verbose_name_plural = "Teams"
+
 
 class JoinLink(models.Model):
     team = models.ForeignKey('Team', on_delete=models.CASCADE, related_name='join_links')

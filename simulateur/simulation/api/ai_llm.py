@@ -1,19 +1,37 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
+import json
+import logging
+import os
+
+import ollama
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-import os
-import ollama
-import json
-from simulation.models import Company, Stock, News, Scenario, SimulationSettings
-import logging
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from simulation.models import Company, Stock, News, Scenario
 
 logger = logging.getLogger(__name__)
 
 
+def check_ollama_service():
+    model_name = os.environ.get('OLLAMA_MODEL', 'llama3')
+    try:
+        response = ollama.chat(model=model_name, messages=[{'role': 'user', 'content': 'Test message'}])
+        return True
+    except ollama.ResponseError as e:
+        if e.status_code == 404 and f'model {model_name} not found' in e.error:
+            return True
+        return {"status": "error", "message": str(e)}
+    except Exception as e:
+        return {"status": "error", "message": "Ollama service is unavailable or another error occurred: " + str(e)}
+
+
 class InteractWithOllama(APIView):
     def post(self, request):
+        service_check = check_ollama_service()
+        if service_check is not True:
+            return Response(service_check, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
         data = request.data.get('data', '')
         model_name = os.environ.get('OLLAMA_MODEL', 'llama3')
 
@@ -26,6 +44,10 @@ class InteractWithOllama(APIView):
 
 class CreateNewsAI(APIView):
     def post(self, request):
+        service_check = check_ollama_service()
+        if service_check is not True:
+            return Response(service_check, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
         company_id = request.data.get('company_id')
         stock_id = request.data.get('stock_id')
 
@@ -57,6 +79,10 @@ class CreateNewsAI(APIView):
 
 class CreateEventAI(APIView):
     def post(self, request):
+        service_check = check_ollama_service()
+        if service_check is not True:
+            return Response(service_check, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
         company_id = request.data.get('company_id')
         stock_id = request.data.get('stock_id')
 
@@ -85,6 +111,10 @@ class CreateEventAI(APIView):
 
 class CreateTriggerAI(APIView):
     def post(self, request):
+        service_check = check_ollama_service()
+        if service_check is not True:
+            return Response(service_check, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
         company_id = request.data.get('company_id')
         stock_id = request.data.get('stock_id')
 
@@ -113,6 +143,10 @@ class CreateTriggerAI(APIView):
 
 class CreateCompanyAndStockAI(APIView):
     def post(self, request):
+        service_check = check_ollama_service()
+        if service_check is not True:
+            return Response(service_check, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
         prompt = (
             "Generate a new company and stock with the following details:\n"
             "1. Company name, backstory, sector, country, and industry.\n"
@@ -192,6 +226,10 @@ class CreateCompanyAndStockAI(APIView):
 
 class CreateScenarioAI(APIView):
     def post(self, request, *args, **kwargs):
+        service_check = check_ollama_service()
+        if service_check is not True:
+            return Response(service_check, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
         model_name = os.environ.get('OLLAMA_MODEL', 'llama3')
         prompt = (
             "Generate a new simulation scenario with the following details in JSON format:\n"

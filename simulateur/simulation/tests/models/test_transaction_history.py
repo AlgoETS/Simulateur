@@ -1,6 +1,7 @@
-from django.test import TestCase
 from django.contrib.auth.models import User
-from simulation.models import TransactionHistory, Order, ScenarioManager, Stock, UserProfile, Company, Scenario, SimulationSettings, SimulationData
+from django.test import TestCase
+from simulation.models import TransactionHistory, Order, ScenarioManager, Stock, UserProfile, Company, Scenario, \
+    SimulationSettings, SimulationData
 
 
 class OrderModelTest(TestCase):

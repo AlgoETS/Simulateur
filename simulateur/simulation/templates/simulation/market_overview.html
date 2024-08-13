@@ -1,123 +1,129 @@
 {% extends 'includes/base_generic.html' %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-8">
-    <h1 class="text-4xl font-extrabold text-gray-900 mb-8">{{ title }}</h1>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Companies and Stocks Overview -->
-        <div class="bg-white shadow-lg rounded-lg p-6 h-96 overflow-y-auto">
-            <h2 class="text-2xl font-bold mb-4 sticky top-0 bg-white">Companies & Stocks</h2>
-            <ul class="divide-y divide-gray-200">
-                {% for stock in stocks %}
-                    <li class="py-4 flex justify-between items-center group relative">
-                        <div>
-                            <p class="text-gray-700 font-semibold cursor-pointer" onclick="toggleBackstory('{{ stock.id }}')">{{ stock.company.name }} ({{ stock.ticker }})</p>
-                            <p class="text-sm text-gray-500">Sector: {{ stock.company.sector }} - Industry: {{ stock.company.industry }}</p>
-                            <p class="text-sm text-gray-500">Current Price: ${{ stock.price }}</p>
-                            <p class="text-sm text-green-600">Open: ${{ stock.open_price }}</p>
-                            <p class="text-sm text-red-600">Low: ${{ stock.low_price }}</p>
-                            <p class="text-sm text-green-600">High: ${{ stock.high_price }}</p>
-                        </div>
-                        <div id="backstory-{{ stock.id }}" class="hidden absolute top-0 right-0 bg-white p-4 shadow-lg rounded-lg w-64 z-10 text-sm text-gray-500">
-                            <p class="font-bold">Backstory</p>
-                            <p>{{ stock.company.backstory }}</p>
-                        </div>
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-8">
+        <h1 class="text-4xl font-extrabold text-gray-900 mb-8">{{ title }}</h1>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Companies and Stocks Overview -->
+            <div class="bg-white shadow-lg rounded-lg p-6 h-96 overflow-y-auto">
+                <h2 class="text-2xl font-bold mb-4 sticky top-0 bg-white">Companies & Stocks</h2>
+                <ul class="divide-y divide-gray-200">
+                    {% for stock in stocks %}
+                        <li class="py-4 flex justify-between items-center group relative">
+                            <div>
+                                <p class="text-gray-700 font-semibold cursor-pointer"
+                                   onclick="toggleBackstory('{{ stock.id }}')">{{ stock.company.name }}
+                                    ({{ stock.ticker }})</p>
+                                <p class="text-sm text-gray-500">Sector: {{ stock.company.sector }} -
+                                    Industry: {{ stock.company.industry }}</p>
+                                <p class="text-sm text-gray-500">Current Price: ${{ stock.price }}</p>
+                                <p class="text-sm text-green-600">Open: ${{ stock.open_price }}</p>
+                                <p class="text-sm text-red-600">Low: ${{ stock.low_price }}</p>
+                                <p class="text-sm text-green-600">High: ${{ stock.high_price }}</p>
+                            </div>
+                            <div id="backstory-{{ stock.id }}"
+                                 class="hidden absolute top-0 right-0 bg-white p-4 shadow-lg rounded-lg w-64 z-10 text-sm text-gray-500">
+                                <p class="font-bold">Backstory</p>
+                                <p>{{ stock.company.backstory }}</p>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
 
-        <!-- Events Overview -->
-        <div class="bg-white shadow-lg rounded-lg p-6 h-96 overflow-y-auto">
-            <h2 class="text-2xl font-bold mb-4 sticky top-0 bg-white">Events</h2>
-            <ul class="divide-y divide-gray-200">
-                {% for event in events %}
-                    <li class="py-4">
-                        <h3 class="text-lg font-semibold text-gray-700">{{ event.name }}</h3>
-                        <p class="text-sm text-gray-500">{{ event.date|date:"F j, Y, g:i a" }}</p>
-                        <p class="text-gray-700">{{ event.description|truncatewords:20 }}</p>
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
+            <!-- Events Overview -->
+            <div class="bg-white shadow-lg rounded-lg p-6 h-96 overflow-y-auto">
+                <h2 class="text-2xl font-bold mb-4 sticky top-0 bg-white">Events</h2>
+                <ul class="divide-y divide-gray-200">
+                    {% for event in events %}
+                        <li class="py-4">
+                            <h3 class="text-lg font-semibold text-gray-700">{{ event.name }}</h3>
+                            <p class="text-sm text-gray-500">{{ event.date|date:"F j, Y, g:i a" }}</p>
+                            <p class="text-gray-700">{{ event.description|truncatewords:20 }}</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
 
-        <!-- Market News Overview -->
-        <div class="bg-white shadow-lg rounded-lg p-6 h-96 overflow-y-auto">
-            <h2 class="text-2xl font-bold mb-4 sticky top-0 bg-white">Market News</h2>
-            <ul class="divide-y divide-gray-200">
-                {% for news_item in news_items %}
-                    <li class="py-4">
-                        <h3 class="text-lg font-semibold text-gray-700">{{ news_item.title }}</h3>
-                        <p class="text-gray-700">{{ news_item.content|truncatewords:20 }}</p>
-                        <p class="text-sm text-gray-500">{{ news_item.published_date|date:"F j, Y, g:i a" }}</p>
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
+            <!-- Market News Overview -->
+            <div class="bg-white shadow-lg rounded-lg p-6 h-96 overflow-y-auto">
+                <h2 class="text-2xl font-bold mb-4 sticky top-0 bg-white">Market News</h2>
+                <ul class="divide-y divide-gray-200">
+                    {% for news_item in news_items %}
+                        <li class="py-4">
+                            <h3 class="text-lg font-semibold text-gray-700">{{ news_item.title }}</h3>
+                            <p class="text-gray-700">{{ news_item.content|truncatewords:20 }}</p>
+                            <p class="text-sm text-gray-500">{{ news_item.published_date|date:"F j, Y, g:i a" }}</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
 
-        <!-- Transactions Overview -->
-        <div class="bg-white shadow-lg rounded-lg p-6 h-96 overflow-y-auto">
-            <h2 class="text-2xl font-bold mb-4 sticky top-0 bg-white">Recent Transactions</h2>
-            <ul class="divide-y divide-gray-200">
-                {% for transaction in transactions %}
-                    <li class="py-4">
-                        {% for order in transaction.orders.all %}
-                            <p class="text-gray-700">{{ order.transaction_type }} {{ order.quantity }} shares of {{ order.stock.ticker }} @ ${{ order.price }} by {{ order.user.user }}</p>
-                            <p class="text-sm text-gray-500">{{ order.timestamp|date:"F j, Y, g:i a" }}</p>
-                        {% endfor %}
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
-
-        <!-- Teams Overview -->
-        <div class="bg-white shadow-lg rounded-lg p-6 h-96 overflow-y-auto">
-            <h2 class="text-2xl font-bold mb-4 sticky top-0 bg-white">Teams</h2>
-            <ul class="divide-y divide-gray-200">
-                {% for team in teams %}
-                    <li class="py-4">
-                        <div class="flex justify-between items-center cursor-pointer" onclick="toggleDetails('{{ team.id }}')">
-                            <p class="text-gray-700 font-semibold">{{ team.name }}</p>
-                            <p class="text-sm text-gray-500">Members: {{ team.members.count }}</p>
-                        </div>
-                        <ul id="details-{{ team.id }}" class="hidden mt-2 space-y-2">
-                            {% for member in team.members.all %}
-                                <li class="ml-4">
-                                    <p class="text-sm text-gray-700">{{ member.user.username }}</p>
-                                    <p class="text-sm text-gray-500">Balance: ${{ member.portfolio.balance }}</p>
-                                </li>
+            <!-- Transactions Overview -->
+            <div class="bg-white shadow-lg rounded-lg p-6 h-96 overflow-y-auto">
+                <h2 class="text-2xl font-bold mb-4 sticky top-0 bg-white">Recent Transactions</h2>
+                <ul class="divide-y divide-gray-200">
+                    {% for transaction in transactions %}
+                        <li class="py-4">
+                            {% for order in transaction.orders.all %}
+                                <p class="text-gray-700">{{ order.transaction_type }} {{ order.quantity }} shares
+                                    of {{ order.stock.ticker }} @ ${{ order.price }} by {{ order.user.user }}</p>
+                                <p class="text-sm text-gray-500">{{ order.timestamp|date:"F j, Y, g:i a" }}</p>
                             {% endfor %}
-                        </ul>
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
 
-        <!-- Triggers Overview -->
-        <div class="bg-white shadow-lg rounded-lg p-6 h-96 overflow-y-auto">
-            <h2 class="text-2xl font-bold mb-4 sticky top-0 bg-white">Triggers</h2>
-            <ul class="divide-y divide-gray-200">
-                {% for trigger in triggers %}
-                    <li class="py-4">
-                        <h3 class="text-lg font-semibold text-gray-700">{{ trigger.name }}</h3>
-                        <p class="text-sm text-gray-500">{{ trigger.timestamp|date:"F j, Y, g:i a" }}</p>
-                        <p class="text-gray-700">{{ trigger.description|truncatewords:20 }}</p>
-                    </li>
-                {% endfor %}
-            </ul>
+            <!-- Teams Overview -->
+            <div class="bg-white shadow-lg rounded-lg p-6 h-96 overflow-y-auto">
+                <h2 class="text-2xl font-bold mb-4 sticky top-0 bg-white">Teams</h2>
+                <ul class="divide-y divide-gray-200">
+                    {% for team in teams %}
+                        <li class="py-4">
+                            <div class="flex justify-between items-center cursor-pointer"
+                                 onclick="toggleDetails('{{ team.id }}')">
+                                <p class="text-gray-700 font-semibold">{{ team.name }}</p>
+                                <p class="text-sm text-gray-500">Members: {{ team.members.count }}</p>
+                            </div>
+                            <ul id="details-{{ team.id }}" class="hidden mt-2 space-y-2">
+                                {% for member in team.members.all %}
+                                    <li class="ml-4">
+                                        <p class="text-sm text-gray-700">{{ member.user.username }}</p>
+                                        <p class="text-sm text-gray-500">Balance: ${{ member.portfolio.balance }}</p>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Triggers Overview -->
+            <div class="bg-white shadow-lg rounded-lg p-6 h-96 overflow-y-auto">
+                <h2 class="text-2xl font-bold mb-4 sticky top-0 bg-white">Triggers</h2>
+                <ul class="divide-y divide-gray-200">
+                    {% for trigger in triggers %}
+                        <li class="py-4">
+                            <h3 class="text-lg font-semibold text-gray-700">{{ trigger.name }}</h3>
+                            <p class="text-sm text-gray-500">{{ trigger.timestamp|date:"F j, Y, g:i a" }}</p>
+                            <p class="text-gray-700">{{ trigger.description|truncatewords:20 }}</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
     </div>
-</div>
 
-<script>
-    function toggleDetails(teamId) {
-        const details = document.getElementById(`details-${teamId}`);
-        details.classList.toggle('hidden');
-    }
+    <script>
+        function toggleDetails(teamId) {
+            const details = document.getElementById(`details-${teamId}`);
+            details.classList.toggle('hidden');
+        }
 
-    function toggleBackstory(stockId) {
-        const backstory = document.getElementById(`backstory-${stockId}`);
-        backstory.classList.toggle('hidden');
-    }
-</script>
+        function toggleBackstory(stockId) {
+            const backstory = document.getElementById(`backstory-${stockId}`);
+            backstory.classList.toggle('hidden');
+        }
+    </script>
 {% endblock %}

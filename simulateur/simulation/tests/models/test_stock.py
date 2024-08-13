@@ -1,6 +1,7 @@
 from django.test import TestCase
 from simulation.models import Stock, StockPriceHistory, Company
 
+
 class StockModelTest(TestCase):
 
     def setUp(self):
@@ -35,6 +36,7 @@ class StockModelTest(TestCase):
     def test_stock_str_method(self):
         # Test the __str__ method of Stock
         self.assertEqual(str(self.stock), "Test Company Stock")
+
 
 class StockPriceHistoryModelTest(TestCase):
 

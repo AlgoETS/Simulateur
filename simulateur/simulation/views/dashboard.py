@@ -1,13 +1,15 @@
-from django.urls import reverse
-from django.views import View
-from django.shortcuts import get_object_or_404, render, redirect
+import logging
+
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.db.models import Sum
-from django.views.decorators.cache import cache_page
+from django.shortcuts import get_object_or_404, render, redirect
+from django.urls import reverse
 from django.utils.decorators import method_decorator
-from django.conf import settings
-
+from django.views import View
+from django.views.decorators.cache import cache_page
+from simulation.models import StockPriceHistory
 from simulation.models import (
     UserProfile,
     Stock,
@@ -19,25 +21,24 @@ from simulation.models import (
     Company,
     Event,
     Scenario,
-    Order,
     Trigger,
 )
-import logging
-
-from simulation.models import StockPriceHistory
 
 logger = logging.getLogger(__name__)
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', 30)  # 30 seconds
 
+
 class AdminOnlyMixin(UserPassesTestMixin):
     def test_func(self):
         return self.request.user.is_staff
+
 
 class HomeView(View):
     @method_decorator(cache_page(CACHE_TTL))
     def get(self, request):
         return render(request, "simulation/home.html")
+
 
 class UserDashboardView(View):
     @method_decorator(cache_page(CACHE_TTL))
@@ -110,6 +111,7 @@ class UserDashboardView(View):
 
         return render(request, "dashboard/user_dashboard.html", context)
 
+
 class AdminDashboardView(AdminOnlyMixin, View):
     @method_decorator(cache_page(CACHE_TTL))
     def get(self, request):
@@ -130,6 +132,7 @@ class AdminDashboardView(AdminOnlyMixin, View):
             "stocks": stocks,
         }
         return render(request, "dashboard/admin_dashboard.html", context)
+
 
 class TeamDashboardView(View):
     def get(self, request):
@@ -161,6 +164,7 @@ class TeamDashboardView(View):
             messages.error(request, str(e))
             return redirect(reverse("home"))
 
+
 class GameDashboardView(View):
     @method_decorator(cache_page(CACHE_TTL))
     def get(self, request):
@@ -186,7 +190,8 @@ class GameDashboardView(View):
             stock_prices = stock.price_history.order_by("timestamp").values(
                 "timestamp", "open_price", "high_price", "low_price", "close_price"
             )
-            stock_prices = list(map(lambda x: {**x, "timestamp": x["timestamp"].strftime("%Y-%m-%d %H:%M:%S")}, stock_prices))
+            stock_prices = list(
+                map(lambda x: {**x, "timestamp": x["timestamp"].strftime("%Y-%m-%d %H:%M:%S")}, stock_prices))
             stocks_data.append({
                 "id": stock.id,
                 "name": stock.company.name,
@@ -209,6 +214,7 @@ class GameDashboardView(View):
         response['Cache-Control'] = f'public, max-age={CACHE_TTL}'
         return response
 
+
 class MarketOverviewView(View):
     @method_decorator(cache_page(CACHE_TTL))
     def get(self, request):
@@ -230,6 +236,7 @@ class MarketOverviewView(View):
         }
         return render(request, "simulation/market_overview.html", context)
 
+
 class PortfolioDetailView(View):
     @method_decorator(cache_page(CACHE_TTL))
     def get(self, request, portfolio_id):
@@ -245,6 +252,7 @@ class PortfolioDetailView(View):
             "stocks_data": stocks_data,
         }
         return render(request, "portfolio/portfolio_detail.html", context)
+
 
 class PortfolioUserDetailView(View):
     # @method_decorator(cache_page(CACHE_TTL))

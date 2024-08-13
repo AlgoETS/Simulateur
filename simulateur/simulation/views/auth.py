@@ -1,29 +1,27 @@
-from base64 import urlsafe_b64decode
 import json
+from base64 import urlsafe_b64decode
+
+from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
-from django.views import View
-from django.db import transaction
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
-from django.core.mail import send_mail
 from django.template.loader import render_to_string
+from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.contrib.auth.tokens import default_token_generator
-from simulation.models.team import JoinLink, Team
-from simulation.models.user_profile import UserProfile
-from django.contrib.auth.decorators import login_required
-from django.core.mail import send_mail
+from django.views import View
 from django.views.decorators.cache import cache_page
-from django.utils.decorators import method_decorator
-from django.conf import settings
-
+from django.views.decorators.csrf import csrf_exempt
 from simulation.models import UserProfile, Portfolio
+from simulation.models.team import JoinLink, Team
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', 30)
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 class SignupView(View):
@@ -55,6 +53,7 @@ class SignupView(View):
         except Exception as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=400)
 
+
 @method_decorator(csrf_exempt, name='dispatch')
 class LoginView(View):
     @method_decorator(cache_page(CACHE_TTL), name='dispatch')
@@ -75,6 +74,7 @@ class LoginView(View):
         except json.JSONDecodeError:
             return JsonResponse({"status": "error", "message": "Invalid JSON data"}, status=400)
 
+
 class LogoutView(View):
     def get(self, request):
         logout(request)
@@ -83,6 +83,7 @@ class LogoutView(View):
     def post(self, request):
         logout(request)
         return JsonResponse({"status": "success"})
+
 
 class PublicProfileView(View):
     @method_decorator(cache_page(CACHE_TTL))
@@ -94,6 +95,7 @@ class PublicProfileView(View):
             "portfolio": portfolio,
         }
         return render(request, "profile/profile.html", context)
+
 
 class SettingsView(View):
     @method_decorator(login_required)
@@ -121,6 +123,7 @@ class SettingsView(View):
             portfolio.save()
         return redirect('settings')
 
+
 class PrivateProfileView(View):
     @method_decorator(login_required)
     @method_decorator(cache_page(CACHE_TTL))
@@ -132,6 +135,7 @@ class PrivateProfileView(View):
             "portfolio": portfolio,
         }
         return render(request, "profile/profile.html", context)
+
 
 class ForgotPasswordView(View):
     def get(self, request):
@@ -155,6 +159,7 @@ class ForgotPasswordView(View):
             return JsonResponse({"status": "success", "message": "Password reset link sent to your email"})
         except User.DoesNotExist:
             return JsonResponse({"status": "error", "message": "Email not registered"}, status=400)
+
 
 class PasswordResetConfirmView(View):
     def get(self, request, uidb64, token):
@@ -188,6 +193,7 @@ class PasswordResetConfirmView(View):
                 return JsonResponse({"status": "error", "message": "Invalid link"}, status=400)
         except json.JSONDecodeError:
             return JsonResponse({"status": "error", "message": "Invalid JSON data"}, status=400)
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 class JoinTeamView(View):

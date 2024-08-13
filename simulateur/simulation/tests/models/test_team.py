@@ -1,9 +1,10 @@
+from datetime import timedelta
+
+from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
-from datetime import timedelta
 from simulation.models import Team, JoinLink, UserProfile
-from django.contrib.auth.models import User
 
 
 class TeamModelTest(TestCase):

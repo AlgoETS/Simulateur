@@ -1,8 +1,9 @@
-import sys
+import argparse
 import os
 import subprocess
-import argparse
+import sys
 import threading
+
 
 def install_requirements():
     try:
@@ -10,6 +11,7 @@ def install_requirements():
     except subprocess.CalledProcessError as e:
         print(f"Failed to install requirements: {e}")
         sys.exit(1)
+
 
 def apply_migrations():
     try:
@@ -19,6 +21,7 @@ def apply_migrations():
         print(f"Failed to apply migrations: {e}")
         sys.exit(1)
 
+
 def start_simulation(simulation_id):
     try:
         subprocess.check_call([sys.executable, 'manage.py', 'start_simulation', str(simulation_id)])
@@ -26,12 +29,14 @@ def start_simulation(simulation_id):
         print(f"Failed to start simulation: {e}")
         sys.exit(1)
 
+
 def seed_database():
     try:
         subprocess.check_call([sys.executable, 'manage.py', 'seed_database'])
     except subprocess.CalledProcessError as e:
         print(f"Failed to seed database: {e}")
         sys.exit(1)
+
 
 def create_superuser(username, password):
     try:
@@ -45,6 +50,7 @@ def create_superuser(username, password):
         print(f"Failed to create superuser: {e}")
         sys.exit(1)
 
+
 def install_requirements_cms():
     try:
         # Change directory to cms
@@ -57,12 +63,13 @@ def install_requirements_cms():
         # Change back to the original directory
         os.chdir('..')
 
+
 def start_wagtail():
     try:
         # Set the correct PYTHONPATH
         pythonpath = os.path.abspath('..')
         os.environ['PYTHONPATH'] = pythonpath
-        
+
         # Change directory to cms
         os.chdir('../cms')
         subprocess.check_call([sys.executable, 'manage.py', 'runserver', '8001'])
@@ -73,12 +80,13 @@ def start_wagtail():
         # Change back to the original directory
         os.chdir('..')
 
+
 def apply_migrations_cms():
     try:
         # Set the correct PYTHONPATH
         pythonpath = os.path.abspath('..')
         os.environ['PYTHONPATH'] = pythonpath
-        
+
         # Change directory to cms
         os.chdir('../cms')
         subprocess.check_call([sys.executable, 'manage.py', 'migrate'])
@@ -89,12 +97,13 @@ def apply_migrations_cms():
         # Change back to the original directory
         os.chdir('..')
 
+
 def create_superuser_cms(username, password):
     try:
         # Set the correct PYTHONPATH
         pythonpath = os.path.abspath('..')
         os.environ['PYTHONPATH'] = pythonpath
-        
+
         # Change directory to cms
         os.chdir('../cms')
         subprocess.check_call([
@@ -116,6 +125,7 @@ def create_superuser_cms(username, password):
         # Change back to the original directory
         os.chdir('..')
 
+
 def daphne_server(bind, port):
     import django
     # Set the Django settings module environment variable
@@ -131,6 +141,7 @@ def daphne_server(bind, port):
     from daphne.cli import CommandLineInterface
     CommandLineInterface.entrypoint()
 
+
 if __name__ == '__main__':
     # Parse command line arguments
     parser = argparse.ArgumentParser(description='Run the Daphne server with optional steps.')
@@ -138,7 +149,8 @@ if __name__ == '__main__':
     parser.add_argument('--install', action='store_true', help='Only install requirements')
     parser.add_argument('--install-cms', action='store_true', help='Install and set up CMS requirements')
     parser.add_argument('--start-simulation', type=int, help='Start a simulation with the given ID')
-    parser.add_argument('--create-superuser', nargs=2, metavar=('USERNAME', 'PASSWORD'), help='Create a superuser with the given username and password')
+    parser.add_argument('--create-superuser', nargs=2, metavar=('USERNAME', 'PASSWORD'),
+                        help='Create a superuser with the given username and password')
     parser.add_argument('--cms', action='store_true', help='Start the Wagtail CMS server')
     parser.add_argument('--seed-database', action='store_true', help='Seed the database with initial data')
     parser.add_argument('-b', '--bind', default='0.0.0.0', help='Bind address')

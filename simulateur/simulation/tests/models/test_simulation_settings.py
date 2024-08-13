@@ -1,6 +1,7 @@
 from django.test import TestCase
 from simulation.models import SimulationSettings
 
+
 class SimulationSettingsModelTest(TestCase):
 
     def setUp(self):

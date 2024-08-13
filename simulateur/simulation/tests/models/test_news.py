@@ -1,6 +1,8 @@
+from datetime import datetime
+
 from django.test import TestCase
 from simulation.models import News, Event
-from datetime import datetime
+
 
 class NewsModelTest(TestCase):
 

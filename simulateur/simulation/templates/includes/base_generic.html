@@ -5,23 +5,23 @@
 {% include 'includes/head.html' %}
 
 <body>
-    {% include 'includes/nav.html' %}
+{% include 'includes/nav.html' %}
 
-    <main class="container mx-auto mt-6">
-        {% block content %}{% endblock %}
-    </main>
+<main class="container mx-auto mt-6">
+    {% block content %}{% endblock %}
+</main>
 
-    {% include 'includes/footer.html' %}
+{% include 'includes/footer.html' %}
 
-    <script>
-        document.getElementById('nav-toggle').addEventListener('click', function () {
-            document.getElementById('nav-menu').classList.toggle('hidden');
-        });
+<script>
+    document.getElementById('nav-toggle').addEventListener('click', function () {
+        document.getElementById('nav-menu').classList.toggle('hidden');
+    });
 
-        document.getElementById('dark-mode-toggle').addEventListener('click', function () {
-            document.documentElement.classList.toggle('dark');
-        });
-    </script>
+    document.getElementById('dark-mode-toggle').addEventListener('click', function () {
+        document.documentElement.classList.toggle('dark');
+    });
+</script>
 </body>
 
 </html>

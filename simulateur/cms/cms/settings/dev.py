@@ -1,5 +1,3 @@
-from .base import *
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -10,7 +8,6 @@ SECRET_KEY = "django-insecure-h2=ippz&=9%h&gwowwza8qi@r_tavipq*o^w*6jq&eoitd=-t&
 ALLOWED_HOSTS = ["*"]
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
 
 try:
     from .local import *

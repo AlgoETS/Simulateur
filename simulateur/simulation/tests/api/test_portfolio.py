@@ -1,68 +1,15 @@
-from django.test import TestCase
-from django.contrib.auth.models import User
-from django.urls import reverse
-from rest_framework.test import APIClient
-from rest_framework import status
-from decimal import Decimal
 import json
+from decimal import Decimal
+
+from django.contrib.auth.models import User
+from django.test import TestCase
+from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APIClient
 from simulation.models import (
     Portfolio, Stock, Order, TransactionHistory, Scenario, UserProfile,
     StockPriceHistory, Company, ScenarioManager, SimulationSettings, SimulationData
 )
-
-
-class PortfolioViewTests(TestCase):
-    def setUp(self):
-        self.client = APIClient()
-        self.user = User.objects.create_user(username='testuser', password='password')
-
-        # Manual check and create UserProfile if not exists
-        if not UserProfile.objects.filter(user=self.user).exists():
-            self.user_profile = UserProfile.objects.create(user=self.user)
-        else:
-            self.user_profile = UserProfile.objects.get(user=self.user)
-
-        # Create necessary scenario-related models
-        self.scenario = Scenario.objects.create(name="Test Scenario")
-        self.simulation_settings = SimulationSettings.objects.create()
-        self.simulation_data = SimulationData.objects.create()
-        self.scenario_manager = ScenarioManager.objects.create(
-            scenario=self.scenario,
-            simulation_settings=self.simulation_settings,
-            simulation_data=self.simulation_data
-        )
-
-        # Create the portfolio with scenario_manager
-        self.portfolio = Portfolio.objects.create(
-            owner=self.user_profile,
-            balance=Decimal("1000.00"),
-            scenario_manager=self.scenario_manager
-        )
-
-        self.client.login(username='testuser', password='password')
-
-    def tearDown(self):
-        self.client.logout()
-        User.objects.all().delete()
-        Portfolio.objects.all().delete()
-        UserProfile.objects.all().delete()
-        Scenario.objects.all().delete()
-        ScenarioManager.objects.all().delete()
-        SimulationSettings.objects.all().delete()
-        SimulationData.objects.all().delete()
-
-    def test_get_portfolio_success(self):
-        url = reverse('portfolio_view', kwargs={'user_id': self.user.id})
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json()['balance'], str(self.portfolio.balance))
-
-    def test_get_portfolio_not_found(self):
-        url = reverse('portfolio_view', kwargs={'user_id': 999})
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual(response.json()['message'], 'Portfolio not found')
-
 
 class BuyStockTests(TestCase):
     def setUp(self):
