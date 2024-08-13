@@ -1,13 +1,13 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from simulation.models import ScenarioManager, News
 
 class NewsManagement(APIView):
 
-    def post(self, request, scenario_manager_id, *args, **kwargs):
-        scenario_manager = get_object_or_404(ScenarioManager, id=scenario_manager_id)
+    def post(self, request, *args, **kwargs):
         data = request.data
 
         # Extract news data
@@ -26,18 +26,15 @@ class NewsManagement(APIView):
             title=title,
             content=content,
             published_date=published_date,
-            event=scenario_manager.event  # Assuming ScenarioManager has a related Event
         )
-        scenario_manager.news.add(news)
 
         return Response(
             {'status': 'success', 'message': 'News created successfully', 'data': {'id': news.id, 'title': news.title}},
             status=status.HTTP_201_CREATED
         )
 
-    def put(self, request, scenario_manager_id, news_id, *args, **kwargs):
-        scenario_manager = get_object_or_404(ScenarioManager, id=scenario_manager_id)
-        news = get_object_or_404(News, id=news_id, event__scenarios_events=scenario_manager)
+    def put(self, request, news_id, *args, **kwargs):
+        news = get_object_or_404(News, id=news_id)
 
         data = request.data
         title = data.get('title', news.title)
@@ -55,9 +52,8 @@ class NewsManagement(APIView):
             status=status.HTTP_200_OK
         )
 
-    def delete(self, request, scenario_manager_id, news_id, *args, **kwargs):
-        scenario_manager = get_object_or_404(ScenarioManager, id=scenario_manager_id)
-        news = get_object_or_404(News, id=news_id, event__scenarios_events=scenario_manager)
+    def delete(self, request, news_id, *args, **kwargs):
+        news = get_object_or_404(News, id=news_id)
 
         # Delete the News item
         news.delete()
@@ -66,11 +62,9 @@ class NewsManagement(APIView):
             status=status.HTTP_204_NO_CONTENT
         )
 
-    def get(self, request, scenario_manager_id, news_id=None, *args, **kwargs):
-        scenario_manager = get_object_or_404(ScenarioManager, id=scenario_manager_id)
-
+    def get(self, request, news_id=None, *args, **kwargs):
         if news_id:
-            news = get_object_or_404(News, id=news_id, event__scenarios_events=scenario_manager)
+            news = get_object_or_404(News, id=news_id)
             data = {
                 'id': news.id,
                 'title': news.title,
@@ -79,7 +73,7 @@ class NewsManagement(APIView):
             }
             return Response({'status': 'success', 'data': data}, status=status.HTTP_200_OK)
 
-        news_items = scenario_manager.news.all()
+        news_items = News.objects.all()
         data = [
             {
                 'id': news.id,

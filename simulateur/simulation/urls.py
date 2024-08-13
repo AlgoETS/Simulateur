@@ -1,5 +1,10 @@
-from django.urls import path, include
+from django.urls import path, re_path, include
 from rest_framework.routers import DefaultRouter
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+from rest_framework import permissions
+
+# Import your API views here
 from simulation.api.ai_llm import (
     InteractWithOllama,
     CreateNewsAI,
@@ -10,11 +15,10 @@ from simulation.api.ai_llm import (
 )
 from simulation.api.auth import UpdateMemberRole
 from simulation.api.portfolio import (
-    BuyStock,
     PortfolioView,
     SellStock,
+    BuyStock,
     StockPrice,
-    UserOrders,
 )
 from simulation.api.teams import GenerateJoinLink, JoinTeam, RemoveTeamMember, UpdateTeamName
 from simulation.views.auth import (
@@ -28,7 +32,6 @@ from simulation.views.auth import (
     LoginView,
     JoinTeamView,
 )
-# Importing HTML views
 from simulation.views.dashboard import (
     GameDashboardView,
     HomeView,
@@ -39,15 +42,29 @@ from simulation.views.dashboard import (
     TeamDashboardView,
     MarketOverviewView,
 )
-from simulation.api.event import (
-    EventManagement
-)
-
+from simulation.api.event import EventManagement
 from simulation.api.news import NewsManagement
 from simulation.api.trigger import TriggerManagement
+from simulation.api.transaction import UserOrders
 
+# Initialize the DefaultRouter
 router = DefaultRouter()
 
+# Swagger Schema View
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Simulateur API",
+        default_version='v1',
+        description="API documentation for the Simulateur project",
+        terms_of_service="https://www.google.com/policies/terms/",
+        contact=openapi.Contact(email="antoine@antoineboucher.info"),
+        license=openapi.License(name="BSD License"),
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+)
+
+# HTML view patterns
 html_patterns = [
     path('', HomeView.as_view(), name='home'),
     path('dashboard/', UserDashboardView.as_view(), name='user_dashboard'),
@@ -68,6 +85,7 @@ html_patterns = [
     path('portfolio/', PortfolioUserDetailView.as_view(), name='portfolio_detail'),
 ]
 
+# API view patterns
 api_patterns = [
     path('portfolio/<int:user_id>/', PortfolioView.as_view(), name='portfolio_view'),
     path('stock/buy/', BuyStock.as_view(), name='buy_stock'),
@@ -86,16 +104,21 @@ api_patterns = [
     path('create-scenario-ai/', CreateScenarioAI.as_view(), name='create-scenario-ai'),
     path('team/generate-join-link/<int:team_id>/', GenerateJoinLink.as_view(), name='generate_join_link'),
 
-    path('/news/', NewsManagement.as_view(), name='create_news'),
-    path('/news/<int:news_id>/', NewsManagement.as_view(), name='manage_news'),
+    path('news/', NewsManagement.as_view(), name='create_news'),
+    path('news/<int:news_id>/', NewsManagement.as_view(), name='manage_news'),
     path('event/', EventManagement.as_view(), name='create_event'),
     path('event/<int:event_id>/', EventManagement.as_view(), name='manage_event'),
     path('triggers/', TriggerManagement.as_view(), name='create_trigger'),
     path('triggers/<int:trigger_id>/', TriggerManagement.as_view(), name='manage_trigger'),
 ]
+
 # Combine both HTML and API patterns into a single list
 urlpatterns = [
     path('api/', include(router.urls)),
     path('api/', include(api_patterns)),
+    # Swagger and ReDoc URLs at the top level
+    re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     path('', include(html_patterns)),
 ]

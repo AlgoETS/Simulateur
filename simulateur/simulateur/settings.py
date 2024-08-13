@@ -42,26 +42,35 @@ ACCOUNT_LOGOUT_REDIRECT_URL = '/'
 INSTALLED_APPS = [
     'channels',
     'django.contrib.sites',
+
     'jet',
     'jet.dashboard',
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'rest_framework',
+
     'django_json_widget',
+
     'django_check_seo',
     'easyaudit',
+
     'django_prometheus',
     'tinymce',
+
     'pictures',
     'imagekit',
     'colorfield',
     'djmoney',
     'any_urlfield',
+
     'organizations',
+
     'allauth_ui',
     'allauth',
     'allauth.account',
@@ -70,13 +79,18 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.github',
     'allauth.socialaccount.providers.microsoft',
     'allauth.socialaccount.providers.notion',
+
     'widget_tweaks',
     'slippers',
+
     'guest_user',
+
     'pwa',
     'webpack_loader',
+
     'sslserver',
     'django_rq',
+
     'health_check',
     'health_check.db',
     'health_check.cache',
@@ -86,8 +100,9 @@ INSTALLED_APPS = [
     'health_check.contrib.s3boto3_storage',
     'health_check.contrib.rabbitmq',
     'health_check.contrib.redis',
+
     'storages',
-    'drf_yasg'
+    'drf_yasg',
 
     'simulation',
 ]
@@ -388,3 +403,12 @@ CACHE_TTL = 30
 # ASGI and WSGI application settings
 ASGI_APPLICATION = 'simulateur.asgi.application'
 # WSGI_APPLICATION = 'simulateur.wsgi.application'
+
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Basic': {
+            'type': 'basic'
+        }
+    }
+}

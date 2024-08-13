@@ -6,9 +6,9 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views import View
+from rest_framework.decorators import api_view
 from simulation.logic.BuySellQueue import buy_sell_queue
 from simulation.models import Portfolio, Stock, Order, TransactionHistory, Scenario, StockPriceHistory
-from simulation.models import UserProfile
 from simulation.serializers import PortfolioSerializer
 
 
