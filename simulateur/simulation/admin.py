@@ -15,7 +15,8 @@ from .models import (
     News,
     Order,
     JoinLink,
-    StockPriceHistory
+    StockPriceHistory,
+    SimulationManager,
 )
 
 admin.site.register(Company)
@@ -33,3 +34,4 @@ admin.site.register(News)
 admin.site.register(Order)
 admin.site.register(JoinLink)
 admin.site.register(StockPriceHistory)
+admin.site.register(SimulationManager)

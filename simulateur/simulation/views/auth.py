@@ -98,17 +98,6 @@ class PublicProfileView(View):
 
 class SettingsView(View):
     @method_decorator(login_required)
-    @method_decorator(cache_page(CACHE_TTL))
-    def get(self, request):
-        user_profile = self.get_user_profile(request)
-        portfolio = self.get_user_portfolio(user_profile)
-        context = {
-            "user_profile": user_profile,
-            "portfolio": portfolio,
-        }
-        return render(request, "registration/settings.html", context)
-
-    @method_decorator(login_required)
     def post(self, request):
         user_profile = self.get_user_profile(request)
         portfolio = self.get_user_portfolio(user_profile)
@@ -120,7 +109,7 @@ class SettingsView(View):
         if 'balance' in request.POST:
             portfolio.balance = request.POST['balance']
             portfolio.save()
-        return redirect('settings')
+        return redirect('profile')
 
     def get_user_profile(self, request):
         return get_object_or_404(UserProfile, user=request.user)

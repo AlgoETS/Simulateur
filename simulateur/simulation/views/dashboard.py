@@ -139,20 +139,30 @@ class UserDashboardView(View):
 class AdminDashboardView(AdminOnlyMixin, View):
     @method_decorator(cache_page(CACHE_TTL))
     def get(self, request):
-        simulation_managers = SimulationManager.objects.all()
-        news = News.objects.all()
-        events = Event.objects.all()
-        triggers = Trigger.objects.all()
-        companies = Company.objects.all()
-        stocks = Stock.objects.all()
+        user_profile = get_user_profile(request)
+        if not user_profile:
+            return redirect("home")
+
+        simulation_manager = SimulationManager.objects.all().first()
+
+        if not simulation_manager:
+            messages.error(request, "You are not associated with any simulation manager.")
+            return redirect("some_error_page")
+
+        # Fetch only the related data for the specific simulation manager
+        news = simulation_manager.news.all()
+        events = simulation_manager.events.all()
+        triggers = simulation_manager.triggers.all()
+        companies = simulation_manager.stocks.values_list('company', flat=True).distinct()
+        stocks = simulation_manager.stocks.all()
 
         context = {
             "title": "Admin Dashboard",
-            "simulation_managers": simulation_managers,
+            "simulation_manager": simulation_manager,
             "news": news,
             "events": events,
             "triggers": triggers,
-            "companies": companies,
+            "companies": Company.objects.filter(id__in=companies),
             "stocks": stocks,
         }
         return render(request, "dashboard/admin_dashboard.html", context)
@@ -194,19 +204,34 @@ class GameDashboardView(View):
             messages.error(request, "You are not part of any team. Please join or create a team.")
             return redirect(reverse("join_team"))
 
-        context = self.get_dashboard_context(team)
+        simulation_manager = self.get_active_simulation_manager(team)
+
+        if not simulation_manager:
+            messages.error(request, "No active simulation manager found.")
+            return redirect(reverse("home"))
+
+        context = self.get_dashboard_context(team, simulation_manager)
         response = render(request, "dashboard/game_dashboard.html", context)
         response['Cache-Control'] = f'public, max-age={CACHE_TTL}'
         return response
 
-    def get_dashboard_context(self, team):
-        user_profiles_in_team = team.members.all()
-        portfolios = Portfolio.objects.filter(owner__in=user_profiles_in_team)
-        simulation_managers = portfolios.values_list('simulation_manager', flat=True)
-        transactions = TransactionHistory.objects.filter(simulation_manager__in=simulation_managers)
-        news_items = News.objects.all()
+    def get_active_simulation_manager(self, team):
+        return SimulationManager.objects.all().first()
 
-        stocks = Stock.objects.all()
+    def get_dashboard_context(self, team, simulation_manager):
+        # Retrieve all team members
+        user_profiles_in_team = team.members.all()
+        # Retrieve portfolios of all members associated with the active simulation manager
+        portfolios = Portfolio.objects.filter(owner__in=user_profiles_in_team, simulation_manager=simulation_manager)
+
+        # Fetch transactions related to the active simulation manager
+        transactions = TransactionHistory.objects.filter(simulation_manager=simulation_manager)
+
+        # Fetch news items associated with the active simulation manager
+        news_items = simulation_manager.news.all()
+
+        # Fetch only the stocks related to the active simulation manager
+        stocks = simulation_manager.stocks.all()
         stocks_data = self.get_stocks_data(stocks)
 
         return {
@@ -216,7 +241,7 @@ class GameDashboardView(View):
             "transactions": transactions,
             "stocks": stocks_data,
             "news_items": news_items,
-            "simulation_managers": SimulationManager.objects.all(),
+            "simulation_managers": [simulation_manager],  # To keep the data specific to the active simulation manager
         }
 
     def get_stocks_data(self, stocks):
@@ -240,16 +265,31 @@ class GameDashboardView(View):
 class MarketOverviewView(View):
     @method_decorator(cache_page(CACHE_TTL))
     def get(self, request):
-        stocks = Stock.objects.select_related('company').all()
-        events = Event.objects.all()
-        companies = Company.objects.all()
-        news_items = News.objects.all().order_by('-published_date')[:5]
-        transactions = TransactionHistory.objects.all()
-        teams = Team.objects.all()
+        # Get the simulation_manager_id from the query parameters
+        simulation_manager_id = request.GET.get('simulation_manager_id', 1)
+
+        # Filter data based on the selected simulation manager if provided
+        if simulation_manager_id:
+            simulation_manager = SimulationManager.objects.filter(id=simulation_manager_id).first()
+            if simulation_manager:
+                stocks = simulation_manager.stocks.select_related('company').all()
+                stock_history = StockPriceHistory.objects.filter(stock__in=stocks).order_by('timestamp')
+                events = simulation_manager.events.all()
+                companies = simulation_manager.stocks.values_list('company', flat=True).distinct()
+                news_items = simulation_manager.news.order_by('-published_date')[:5]
+                transactions = TransactionHistory.objects.filter(simulation_manager=simulation_manager)
+                teams = simulation_manager.teams.all()
+            else:
+                messages.error(request, "Selected simulation manager does not exist.")
+                return redirect(reverse("home"))
+        else:
+            messages.error(request, "No simulation manager selected.")
+            return redirect(reverse("home"))
 
         context = {
             "title": "Market Overview",
             "stocks": stocks,
+            "stock_history": stock_history,
             "events": events,
             "companies": companies,
             "news_items": news_items,
@@ -257,6 +297,7 @@ class MarketOverviewView(View):
             "teams": teams,
         }
         return render(request, "simulation/market_overview.html", context)
+
 
 
 class PortfolioDetailView(View):
