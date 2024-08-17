@@ -11,7 +11,7 @@ from simulation.logic.noise_patterns.perlin import Perlin
 from simulation.logic.noise_patterns.random_candle import RandomCandle
 from simulation.logic.noise_patterns.random_walk import RandomWalk
 from simulation.logic.utils import is_market_open, send_ohlc_update, TIME_UNITS
-from simulation.models import ScenarioManager, StockPriceHistory
+from simulation.models import SimulationManager as SM, StockPriceHistory
 
 logger = logging.getLogger(__name__)
 
@@ -19,28 +19,28 @@ CACHE_TTL = getattr(settings, "CACHE_TTL", 15)  # 15 minutes default
 
 
 class SimulationManager:
-    def __init__(self, scenario_manager):
-        self.scenario_manager = scenario_manager
-        self.scenario = scenario_manager.scenario
+    def __init__(self, simulation_manager):
+        self.simulation_manager = simulation_manager
+        self.scenario = simulation_manager.scenario
         self.channel_layer = get_channel_layer()
         self.running = False
         self.run_duration = 100000
         self.time_step = (
-            scenario_manager.simulation_settings.timer_step
-            * TIME_UNITS[scenario_manager.simulation_settings.timer_step_unit]
+            simulation_manager.simulation_settings.timer_step
+            * TIME_UNITS[simulation_manager.simulation_settings.timer_step_unit]
         )
         self.interval = (
-            scenario_manager.simulation_settings.interval
-            * TIME_UNITS[scenario_manager.simulation_settings.interval_unit]
+            simulation_manager.simulation_settings.interval
+            * TIME_UNITS[simulation_manager.simulation_settings.interval_unit]
         )
         self.close_stock_market_at_night = (
-            scenario_manager.simulation_settings.close_stock_market_at_night
+            simulation_manager.simulation_settings.close_stock_market_at_night
         )
-        self.fluctuation_rate = scenario_manager.simulation_settings.fluctuation_rate
-        self.noise_function = scenario_manager.simulation_settings.noise_function.lower()
+        self.fluctuation_rate = simulation_manager.simulation_settings.fluctuation_rate
+        self.noise_function = simulation_manager.simulation_settings.noise_function.lower()
         self.time_index = 0
         self.noise_strategy = self.get_noise_strategy(self.noise_function)
-        self.trading_strategy = scenario_manager.simulation_settings.stock_trading_logic
+        self.trading_strategy = simulation_manager.simulation_settings.stock_trading_logic
         self.broker = broker
 
         logger.info(
@@ -115,49 +115,53 @@ class SimulationManager:
             self.broadcast_update(stock, current_time)
 
     def get_stocks(self):
-        cache_key = f"stocks_for_scenario_{self.scenario_manager.id}"
+        cache_key = f"stocks_for_scenario_{self.simulation_manager.id}"
         stocks = cache.get(cache_key)
 
         if not stocks:
-            stocks = list(self.scenario_manager.stocks.all())
+            stocks = list(self.simulation_manager.stocks.all())
             cache.set(cache_key, stocks, timeout=CACHE_TTL)
 
         return stocks
 
     def apply_changes(self, stock, current_time):
+        last_price_entry = stock.price_history.order_by('-timestamp').first()
+        last_price = last_price_entry.close_price if last_price_entry else 0.0
+
         change = self.noise_strategy.generate_noise(
-            stock.price, self.fluctuation_rate, self.time_index
+            last_price, self.fluctuation_rate, self.time_index
         )
         self.time_index += 1
-        stock.open_price = change["Open"]
-        stock.high_price = change["High"]
-        stock.low_price = change["Low"]
-        stock.close_price = change["Close"]
-        stock.price = change["Close"]
-        stock.save()
 
-        logger.info(f"Updated stock {stock.ticker} with new price: {stock.price} at {current_time}")
+        logger.info(f"Updated stock {stock.ticker} with new price: {change['Close']} at {current_time}")
 
         return {
             "ticker": stock.ticker,
-            "open": stock.open_price,
-            "high": stock.high_price,
-            "low": stock.low_price,
-            "close": stock.close_price,
+            "open": change["Open"],
+            "high": change["High"],
+            "low": change["Low"],
+            "close": change["Close"],
             "time": current_time.isoformat(),
         }
 
     def broadcast_update(self, stock, current_time):
+        # Retrieve the latest price history entry for the stock
+        last_price_entry = stock.price_history.order_by('-timestamp').first()
+
+        if not last_price_entry:
+            logger.warning(f"No price history found for stock {stock.ticker} at {current_time}")
+            return
+
         update = {
             "id": stock.id,
             "ticker": stock.ticker,
             "name": stock.company.name,
             "type": "stock",
-            "open": stock.open_price,
-            "high": stock.high_price,
-            "low": stock.low_price,
-            "close": stock.close_price,
-            "current": stock.price,
+            "open": last_price_entry.open_price,
+            "high": last_price_entry.high_price,
+            "low": last_price_entry.low_price,
+            "close": last_price_entry.close_price,
+            "current": last_price_entry.close_price,  # Use the close price as the current price
             "timestamp": current_time.isoformat(),
         }
 
@@ -170,13 +174,13 @@ class SimulationManagerSingleton:
     _instances = {}
 
     @classmethod
-    def get_instance(cls, scenario_manager_id):
-        if scenario_manager_id not in cls._instances:
-            scenario_manager = ScenarioManager.objects.get(id=scenario_manager_id)
-            cls._instances[scenario_manager_id] = SimulationManager(scenario_manager)
-        return cls._instances[scenario_manager_id]
+    def get_instance(cls, simulation_manager_id):
+        if simulation_manager_id not in cls._instances:
+            simulation_manager = SM.objects.get(id=simulation_manager_id)
+            cls._instances[simulation_manager_id] = SimulationManager(simulation_manager)
+        return cls._instances[simulation_manager_id]
 
     @classmethod
-    def remove_instance(cls, scenario_manager_id):
-        if scenario_manager_id in cls._instances:
-            del cls._instances[scenario_manager_id]
+    def remove_instance(cls, simulation_manager_id):
+        if simulation_manager_id in cls._instances:
+            del cls._instances[simulation_manager_id]

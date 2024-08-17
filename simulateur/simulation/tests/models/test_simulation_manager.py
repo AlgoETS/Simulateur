@@ -1,9 +1,9 @@
 from django.test import TestCase
 from django.utils import timezone
-from simulation.models import ScenarioManager, Scenario, Stock, Team, Event, Trigger, News, SimulationSettings, Company
+from simulation.models import SimulationManager, Scenario, Stock, Team, Event, Trigger, News, SimulationSettings, Company
 
 
-class ScenarioManagerModelTest(TestCase):
+class SimulationManagerModelTest(TestCase):
 
     def setUp(self):
         self.company = Company.objects.create(
@@ -25,33 +25,33 @@ class ScenarioManagerModelTest(TestCase):
         self.simulation_settings = SimulationSettings.objects.create(
         )
 
-        # Create ScenarioManager instance
-        self.scenario_manager = ScenarioManager.objects.create(
+        # Create SimulationManager instance
+        self.simulation_manager = SimulationManager.objects.create(
             scenario=self.scenario,
             simulation_settings=self.simulation_settings
         )
 
     def tearDown(self):
-        self.scenario_manager.delete()
+        self.simulation_manager.delete()
         self.simulation_settings.delete()
         self.scenario.delete()
         self.company.delete()
 
-    def test_scenario_manager_creation(self):
-        # Test if the ScenarioManager object was created successfully
-        self.assertEqual(self.scenario_manager.scenario, self.scenario)
-        self.assertEqual(self.scenario_manager.simulation_settings, self.simulation_settings)
-        self.assertEqual(self.scenario_manager.state, ScenarioManager.ScenarioState.INITIALIZED)
-        self.assertIsNotNone(self.scenario_manager.timestamp)
-        self.assertIsNotNone(self.scenario_manager.published_date)
+    def test_simulation_manager_creation(self):
+        # Test if the SimulationManager object was created successfully
+        self.assertEqual(self.simulation_manager.scenario, self.scenario)
+        self.assertEqual(self.simulation_manager.simulation_settings, self.simulation_settings)
+        self.assertEqual(self.simulation_manager.state, SimulationManager.ScenarioState.INITIALIZED)
+        self.assertIsNotNone(self.simulation_manager.timestamp)
+        self.assertIsNotNone(self.simulation_manager.published_date)
 
-    def test_scenario_manager_state_change(self):
-        # Test changing the state of the ScenarioManager
-        self.scenario_manager.state = ScenarioManager.ScenarioState.ONGOING
-        self.scenario_manager.save()
-        self.assertEqual(self.scenario_manager.state, ScenarioManager.ScenarioState.ONGOING)
+    def test_simulation_manager_state_change(self):
+        # Test changing the state of the SimulationManager
+        self.simulation_manager.state = SimulationManager.ScenarioState.ONGOING
+        self.simulation_manager.save()
+        self.assertEqual(self.simulation_manager.state, SimulationManager.ScenarioState.ONGOING)
 
-    def test_scenario_manager_relationships(self):
+    def test_simulation_manager_relationships(self):
         # Create necessary related objects
         company = Company.objects.create(
             name="Test Company",
@@ -91,18 +91,18 @@ class ScenarioManagerModelTest(TestCase):
             event=event
         )
 
-        # Add related objects to ScenarioManager
-        self.scenario_manager.stocks.add(stock)
-        self.scenario_manager.teams.add(team)
-        self.scenario_manager.events.add(event)
-        self.scenario_manager.triggers.add(trigger)
-        self.scenario_manager.news.add(news)
+        # Add related objects to SimulationManager
+        self.simulation_manager.stocks.add(stock)
+        self.simulation_manager.teams.add(team)
+        self.simulation_manager.events.add(event)
+        self.simulation_manager.triggers.add(trigger)
+        self.simulation_manager.news.add(news)
 
-        self.assertIn(stock, self.scenario_manager.stocks.all())
-        self.assertIn(team, self.scenario_manager.teams.all())
-        self.assertIn(event, self.scenario_manager.events.all())
-        self.assertIn(trigger, self.scenario_manager.triggers.all())
-        self.assertIn(news, self.scenario_manager.news.all())
+        self.assertIn(stock, self.simulation_manager.stocks.all())
+        self.assertIn(team, self.simulation_manager.teams.all())
+        self.assertIn(event, self.simulation_manager.events.all())
+        self.assertIn(trigger, self.simulation_manager.triggers.all())
+        self.assertIn(news, self.simulation_manager.news.all())
 
-    def test_scenario_manager_str_method(self):
-        self.assertEqual(str(self.scenario_manager), f'Scenario Manager: {str(self.scenario.name)}')
+    def test_simulation_manager_str_method(self):
+        self.assertEqual(str(self.simulation_manager), f'Scenario Manager: {str(self.scenario.name)}')

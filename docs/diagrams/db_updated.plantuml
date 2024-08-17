@@ -40,7 +40,7 @@ class Scenario {
     +IntegerField duration
 }
 
-class ScenarioManager {
+class SimulationManager {
     +ForeignKey scenario
     +CharField state
     +DateTimeField timestamp
@@ -90,7 +90,7 @@ class JoinLink {
 }
 
 class TransactionHistory {
-    +ForeignKey scenario_manager
+    +ForeignKey simulation_manager
 }
 
 class Order {
@@ -121,13 +121,13 @@ class UserProfile {
 ' Relationships
 Company "1" --> "0..*" Stock : "has many"
 Stock "1" --> "0..*" StockPriceHistory : "has many"
-ScenarioManager "1" --> "1" Scenario : "manages"
-ScenarioManager "1" --> "1" SimulationSettings : "configures"
-ScenarioManager "1" --> "0..*" Stock : "manages"
-ScenarioManager "1" --> "0..*" Team : "manages"
-ScenarioManager "1" --> "0..*" Event : "triggers"
-ScenarioManager "1" --> "0..*" Trigger : "activates"
-ScenarioManager "1" --> "0..*" News : "broadcasts"
+SimulationManager "1" --> "1" Scenario : "manages"
+SimulationManager "1" --> "1" SimulationSettings : "configures"
+SimulationManager "1" --> "0..*" Stock : "manages"
+SimulationManager "1" --> "0..*" Team : "manages"
+SimulationManager "1" --> "0..*" Event : "triggers"
+SimulationManager "1" --> "0..*" Trigger : "activates"
+SimulationManager "1" --> "0..*" News : "broadcasts"
 Team "1" --> "0..*" JoinLink : "has many"
 Portfolio "1" --> "0..*" StockPortfolio : "contains"
 UserProfile "1" --> "0..*" Order : "places"
@@ -135,5 +135,5 @@ TransactionHistory "1" --> "0..*" Order : "records"
 Trigger "1" --> "0..*" Event : "triggers"
 UserProfile "1" --> "1" Portfolio : "holds"
 UserProfile "1" <-- "0..*" Team : "member of"
-ScenarioManager "1" --> "0..*" TransactionHistory : "records"
+SimulationManager "1" --> "0..*" TransactionHistory : "records"
 @enduml

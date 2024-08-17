@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.utils import timezone
-from simulation.models import Portfolio, ScenarioManager, UserProfile, Stock, Scenario, SimulationSettings, StockPortfolio, StockPriceHistory, Company
+from simulation.models import Portfolio, SimulationManager, UserProfile, Stock, Scenario, SimulationSettings, StockPortfolio, StockPriceHistory, Company
 
 
 class PortfolioModelTest(TestCase):
@@ -20,8 +20,8 @@ class PortfolioModelTest(TestCase):
         # Create SimulationSettings instance
         self.simulation_settings = SimulationSettings.objects.create()
 
-        # Create ScenarioManager instance
-        self.scenario_manager = ScenarioManager.objects.create(
+        # Create SimulationManager instance
+        self.simulation_manager = SimulationManager.objects.create(
             scenario=self.scenario,
             simulation_settings=self.simulation_settings,
         )
@@ -34,7 +34,7 @@ class PortfolioModelTest(TestCase):
         self.portfolio = Portfolio.objects.create(
             owner=self.user_profile1,
             balance=Decimal("10000.00"),
-            scenario_manager=self.scenario_manager
+            simulation_manager=self.simulation_manager
         )
 
         # Create a Company instance
@@ -81,7 +81,7 @@ class PortfolioModelTest(TestCase):
             self.portfolio.delete()
             self.user_profile1.delete()
             self.user_profile2.delete()
-            self.scenario_manager.delete()
+            self.simulation_manager.delete()
             self.simulation_settings.delete()
             self.scenario.delete()
         except Exception as e:
@@ -97,7 +97,7 @@ class PortfolioModelTest(TestCase):
         """Test if the Portfolio object was created successfully."""
         self.assertEqual(self.portfolio.owner, self.user_profile1)
         self.assertEqual(self.portfolio.balance, Decimal("10000.00"))
-        self.assertEqual(self.portfolio.scenario_manager, self.scenario_manager)
+        self.assertEqual(self.portfolio.simulation_manager, self.simulation_manager)
 
     def test_portfolio_str_method(self):
         """Test the __str__ method of the Portfolio model."""
@@ -107,7 +107,7 @@ class PortfolioModelTest(TestCase):
         """Test the default balance of a Portfolio."""
         portfolio_default = Portfolio.objects.create(
             owner=self.user_profile2,
-            scenario_manager=self.scenario_manager
+            simulation_manager=self.simulation_manager
         )
         self.assertEqual(portfolio_default.balance, Decimal("0.00"))
 

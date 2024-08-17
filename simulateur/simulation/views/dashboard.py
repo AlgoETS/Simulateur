@@ -62,8 +62,8 @@ class UserDashboardView(View):
             return redirect(reverse("home"))
 
         # Fetch necessary data
-        scenario_manager = current_scenario.scenario_manager.first()  # Assuming a one-to-one relationship
-        if not scenario_manager:
+        simulation_manager = current_scenario.simulation_manager.first()  # Assuming a one-to-one relationship
+        if not simulation_manager:
             messages.error(request, "Scenario Manager for the selected scenario does not exist.")
             return redirect(reverse("home"))
 

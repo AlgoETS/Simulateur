@@ -93,7 +93,7 @@
             })
                 .then(response => {
                     if (response.data.status === 'success') {
-                        window.location.href = '{% url "account_login" %}';
+                        window.location.href = '{% url "login" %}';
                     } else {
                         alert(response.data.message);
                     }

@@ -15,7 +15,7 @@ class UserOrders(View):
             data = json.loads(request.body)
             user_profile = request.user.userprofile
             scenario = Scenario.objects.get(id=data['scenario_id'])
-            transaction_history = TransactionHistory.objects.filter(scenario_manager=scenario.scenario_manager).first()
+            transaction_history = TransactionHistory.objects.filter(simulation_manager=scenario.simulation_manager).first()
             orders = transaction_history.orders.filter(user=user_profile).order_by('-timestamp')
 
             # Prepare the data to send to the frontend

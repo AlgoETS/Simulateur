@@ -7,7 +7,8 @@ import threading
 
 def install_requirements():
     try:
-        subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-r', 'requirements.txt'])
+        subprocess.check_call([sys.executable, '-m', 'pip', 'install', '--upgrade', 'pip', 'setuptools', 'wheel'])
+        subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-r', 'requirements.txt', '--no-cache-dir'])
     except subprocess.CalledProcessError as e:
         print(f"Failed to install requirements: {e}")
         sys.exit(1)

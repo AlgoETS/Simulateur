@@ -68,7 +68,7 @@ class BuyStock(View):
 
                 # Retrieve or create the transaction history record and add the order
                 transaction_history, _ = TransactionHistory.objects.get_or_create(
-                    scenario_manager=scenario.scenario_manager)
+                    simulation_manager=scenario.simulation_manager)
                 transaction_history.orders.add(order)
 
             return JsonResponse({'status': 'success', 'order_id': order.id})
@@ -127,7 +127,7 @@ class SellStock(View):
 
                 # Retrieve or create the transaction history record and add the order
                 transaction_history, _ = TransactionHistory.objects.get_or_create(
-                    scenario_manager=scenario.scenario_manager)
+                    simulation_manager=scenario.simulation_manager)
                 transaction_history.orders.add(order)
 
             return JsonResponse({'status': 'success', 'order_id': order.id})

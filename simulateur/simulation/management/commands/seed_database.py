@@ -7,7 +7,7 @@ from django.db import transaction, IntegrityError
 from django.utils.timezone import make_aware
 from simulation.models import (
     Company, Stock, Team, UserProfile, Event, Trigger, SimulationSettings,
-    Scenario, Portfolio, TransactionHistory, Order, ScenarioManager,
+    Scenario, Portfolio, TransactionHistory, Order, SimulationManager,
     StockPortfolio, StockPriceHistory, News, JoinLink
 )
 
@@ -198,18 +198,18 @@ class Command(BaseCommand):
                 for row in reader:
                     try:
                         owner = UserProfile.objects.get(user__username=row['owner'])
-                        scenario_manager = ScenarioManager.objects.get(id=row['scenario_manager'])
+                        simulation_manager = SimulationManager.objects.get(id=row['simulation_manager'])
 
                         Portfolio.objects.get_or_create(
                             owner=owner,
-                            scenario_manager=scenario_manager,
+                            simulation_manager=simulation_manager,
                             defaults={'balance': float(row['balance'])}
                         )
                     except UserProfile.DoesNotExist:
                         self.stdout.write(self.style.ERROR(f"UserProfile for owner {row['owner']} does not exist"))
-                    except ScenarioManager.DoesNotExist:
+                    except SimulationManager.DoesNotExist:
                         self.stdout.write(
-                            self.style.ERROR(f"ScenarioManager with id {row['scenario_manager']} does not exist"))
+                            self.style.ERROR(f"SimulationManager with id {row['simulation_manager']} does not exist"))
                     except IntegrityError as e:
                         self.stdout.write(self.style.ERROR(f"Error seeding portfolios: {e}"))
                 self.stdout.write(self.style.SUCCESS('Seeded portfolios'))
@@ -251,11 +251,11 @@ class Command(BaseCommand):
                     try:
                         order_ids = row['orders'].split(';')
                         orders = Order.objects.filter(id__in=order_ids)
-                        scenario_manager = ScenarioManager.objects.get(id=row['scenario_manager'])
+                        simulation_manager = SimulationManager.objects.get(id=row['simulation_manager'])
 
                         if not orders.exists():
                             self.stdout.write(self.style.ERROR(
-                                f"No valid orders found for scenario_manager {row['scenario_manager']}"
+                                f"No valid orders found for simulation_manager {row['simulation_manager']}"
                             ))
                             continue
 
@@ -272,12 +272,12 @@ class Command(BaseCommand):
                             continue
 
                         # Create the transaction history
-                        transaction_history = TransactionHistory.objects.create(scenario_manager=scenario_manager)
+                        transaction_history = TransactionHistory.objects.create(simulation_manager=simulation_manager)
                         transaction_history.orders.set(orders)
                         transaction_history.save()
 
-                    except ScenarioManager.DoesNotExist:
-                        self.stdout.write(self.style.ERROR(f"ScenarioManager {row['scenario_manager']} does not exist"))
+                    except SimulationManager.DoesNotExist:
+                        self.stdout.write(self.style.ERROR(f"SimulationManager {row['simulation_manager']} does not exist"))
                     except Stock.DoesNotExist:
                         self.stdout.write(self.style.ERROR(
                             f"Stock matching query does not exist for one of the orders in {row['orders']}"
@@ -304,7 +304,7 @@ class Command(BaseCommand):
                         # Fetch SimulationSettings by id
                         simulation_settings = SimulationSettings.objects.get(id=row['simulation_settings'])
 
-                        scenario_manager, created = ScenarioManager.objects.get_or_create(
+                        simulation_manager, created = SimulationManager.objects.get_or_create(
                             scenario=scenario,
                             simulation_settings=simulation_settings,
                             state=row['state']
@@ -319,11 +319,11 @@ class Command(BaseCommand):
                             news = News.objects.filter(title__in=row['news'].split(';'))
 
                             # Assign related objects
-                            scenario_manager.stocks.set(stocks)
-                            scenario_manager.teams.set(teams)
-                            scenario_manager.events.set(events)
-                            scenario_manager.triggers.set(triggers)
-                            scenario_manager.news.set(news)
+                            simulation_manager.stocks.set(stocks)
+                            simulation_manager.teams.set(teams)
+                            simulation_manager.events.set(events)
+                            simulation_manager.triggers.set(triggers)
+                            simulation_manager.news.set(news)
                     except Exception as e:
                         self.stdout.write(self.style.ERROR(f'Error seeding simulation manager: {e}'))
             self.stdout.write(self.style.SUCCESS('Seeded simulation manager'))

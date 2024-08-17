@@ -4,18 +4,18 @@ from simulation.logic.simulation_manager import SimulationManagerSingleton
 
 
 class Command(BaseCommand):
-    help = 'Start the simulation based on a scenario'
+    help = 'Start the simulation based on a simulation manager id'
 
     def add_arguments(self, parser):
-        parser.add_argument('scenario_id', type=int, help='The ID of the scenario to simulate')
+        parser.add_argument('simulation_manager_id', type=int, help='The ID of the simulation manager to simulate')
 
     def handle(self, *args, **kwargs):
-        scenario_id = kwargs['scenario_id']
+        simulation_manager_id = kwargs['simulation_manager_id']
         try:
-            simulation_manager = SimulationManagerSingleton.get_instance(scenario_id)
+            simulation_manager = SimulationManagerSingleton.get_instance(simulation_manager_id)
             simulation_manager.start_simulation()
         except Scenario.DoesNotExist:
-            self.stdout.write(self.style.ERROR(f'Scenario with ID {scenario_id} does not exist.'))
+            self.stdout.write(self.style.ERROR(f'Scenario with ID {simulation_manager_id} does not exist.'))
         except KeyboardInterrupt:
             self.stdout.write(self.style.SUCCESS('Simulation stopped successfully'))
         except Exception as e:

@@ -18,9 +18,9 @@ from simulation.api.ai_llm import (
 )
 from simulation.api.company import CompanyManagement
 from simulation.api.scenario import ScenarioManagement
-from simulation.api.scenario_manager import (
-    ScenarioManagerManagement, ChangeScenarioManagerState, ScenarioManagerNews,
-    ScenarioManagerTriggers, ScenarioManagerEvents, ScenarioManagerStocks, ScenarioManagerTeams
+from simulation.api.simulation_manager import (
+    SimulationManagerManagement, ChangeSimulationManagerState, SimulationManagerNews,
+    SimulationManagerTriggers, SimulationManagerEvents, SimulationManagerStocks, SimulationManagerTeams
 )
 from simulation.api.event import EventManagement
 from simulation.api.news import NewsManagement
@@ -188,37 +188,37 @@ class UrlsTest(SimpleTestCase):
         url = reverse('manage_scenario', kwargs={'scenario_id': 1})
         self.assertEqual(resolve(url).func.view_class, ScenarioManagement)
 
-    def test_scenario_manager_management_create_url_is_resolved(self):
-        url = reverse('create_scenario_manager')
-        self.assertEqual(resolve(url).func.view_class, ScenarioManagerManagement)
+    def test_simulation_manager_management_create_url_is_resolved(self):
+        url = reverse('create_simulation_manager')
+        self.assertEqual(resolve(url).func.view_class, SimulationManagerManagement)
 
-    def test_scenario_manager_management_manage_url_is_resolved(self):
-        url = reverse('manage_scenario_manager', kwargs={'scenario_manager_id': 1})
-        self.assertEqual(resolve(url).func.view_class, ScenarioManagerManagement)
+    def test_simulation_manager_management_manage_url_is_resolved(self):
+        url = reverse('manage_simulation_manager', kwargs={'simulation_manager_id': 1})
+        self.assertEqual(resolve(url).func.view_class, SimulationManagerManagement)
 
-    def test_scenario_manager_stocks_url_is_resolved(self):
-        url = reverse('scenario_manager_stocks', kwargs={'scenario_manager_id': 1})
-        self.assertEqual(resolve(url).func.view_class, ScenarioManagerStocks)
+    def test_simulation_manager_stocks_url_is_resolved(self):
+        url = reverse('simulation_manager_stocks', kwargs={'simulation_manager_id': 1})
+        self.assertEqual(resolve(url).func.view_class, SimulationManagerStocks)
 
-    def test_scenario_manager_teams_url_is_resolved(self):
-        url = reverse('scenario_manager_teams', kwargs={'scenario_manager_id': 1})
-        self.assertEqual(resolve(url).func.view_class, ScenarioManagerTeams)
+    def test_simulation_manager_teams_url_is_resolved(self):
+        url = reverse('simulation_manager_teams', kwargs={'simulation_manager_id': 1})
+        self.assertEqual(resolve(url).func.view_class, SimulationManagerTeams)
 
-    def test_scenario_manager_events_url_is_resolved(self):
-        url = reverse('scenario_manager_events', kwargs={'scenario_manager_id': 1})
-        self.assertEqual(resolve(url).func.view_class, ScenarioManagerEvents)
+    def test_simulation_manager_events_url_is_resolved(self):
+        url = reverse('simulation_manager_events', kwargs={'simulation_manager_id': 1})
+        self.assertEqual(resolve(url).func.view_class, SimulationManagerEvents)
 
-    def test_scenario_manager_triggers_url_is_resolved(self):
-        url = reverse('scenario_manager_triggers', kwargs={'scenario_manager_id': 1})
-        self.assertEqual(resolve(url).func.view_class, ScenarioManagerTriggers)
+    def test_simulation_manager_triggers_url_is_resolved(self):
+        url = reverse('simulation_manager_triggers', kwargs={'simulation_manager_id': 1})
+        self.assertEqual(resolve(url).func.view_class, SimulationManagerTriggers)
 
-    def test_scenario_manager_news_url_is_resolved(self):
-        url = reverse('scenario_manager_news', kwargs={'scenario_manager_id': 1})
-        self.assertEqual(resolve(url).func.view_class, ScenarioManagerNews)
+    def test_simulation_manager_news_url_is_resolved(self):
+        url = reverse('simulation_manager_news', kwargs={'simulation_manager_id': 1})
+        self.assertEqual(resolve(url).func.view_class, SimulationManagerNews)
 
-    def test_change_scenario_manager_state_url_is_resolved(self):
-        url = reverse('change_state', kwargs={'scenario_manager_id': 1})
-        self.assertEqual(resolve(url).func.view_class, ChangeScenarioManagerState)
+    def test_change_simulation_manager_state_url_is_resolved(self):
+        url = reverse('change_state', kwargs={'simulation_manager_id': 1})
+        self.assertEqual(resolve(url).func.view_class, ChangeSimulationManagerState)
 
     def test_news_management_create_url_is_resolved(self):
         url = reverse('create_news')

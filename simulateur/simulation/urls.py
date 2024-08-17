@@ -43,9 +43,9 @@ from simulation.views.dashboard import (
 )
 from simulation.api.company import CompanyManagement
 from simulation.api.scenario import ScenarioManagement
-from simulation.api.scenario_manager import (
-    ScenarioManagerManagement, ChangeScenarioManagerState, ScenarioManagerNews,
-    ScenarioManagerTriggers, ScenarioManagerEvents, ScenarioManagerStocks, ScenarioManagerTeams
+from simulation.api.simulation_manager import (
+    SimulationManagerManagement, ChangeSimulationManagerState, SimulationManagerNews,
+    SimulationManagerTriggers, SimulationManagerEvents, SimulationManagerStocks, SimulationManagerTeams
 )
 from simulation.api.event import EventManagement
 from simulation.api.news import NewsManagement
@@ -133,20 +133,20 @@ api_patterns = [
     path('scenario/', ScenarioManagement.as_view(), name='create_scenario'),
     path('scenario/<int:scenario_id>/', ScenarioManagement.as_view(), name='manage_scenario'),
 
-    path('scenario-manager/', ScenarioManagerManagement.as_view(), name='create_scenario_manager'),
-    path('scenario-manager/<int:scenario_manager_id>/', ScenarioManagerManagement.as_view(),
-         name='manage_scenario_manager'),
-    path('scenario-manager/<int:scenario_manager_id>/stocks/', ScenarioManagerStocks.as_view(),
-         name='scenario_manager_stocks'),
-    path('scenario-manager/<int:scenario_manager_id>/teams/', ScenarioManagerTeams.as_view(),
-         name='scenario_manager_teams'),
-    path('scenario-manager/<int:scenario_manager_id>/events/', ScenarioManagerEvents.as_view(),
-         name='scenario_manager_events'),
-    path('scenario-manager/<int:scenario_manager_id>/triggers/', ScenarioManagerTriggers.as_view(),
-         name='scenario_manager_triggers'),
-    path('scenario-manager/<int:scenario_manager_id>/news/', ScenarioManagerNews.as_view(),
-         name='scenario_manager_news'),
-    path('scenario-manager/<int:scenario_manager_id>/change-state/', ChangeScenarioManagerState.as_view(), name='change_state'),
+    path('scenario-manager/', SimulationManagerManagement.as_view(), name='create_simulation_manager'),
+    path('scenario-manager/<int:simulation_manager_id>/', SimulationManagerManagement.as_view(),
+         name='manage_simulation_manager'),
+    path('scenario-manager/<int:simulation_manager_id>/stocks/', SimulationManagerStocks.as_view(),
+         name='simulation_manager_stocks'),
+    path('scenario-manager/<int:simulation_manager_id>/teams/', SimulationManagerTeams.as_view(),
+         name='simulation_manager_teams'),
+    path('scenario-manager/<int:simulation_manager_id>/events/', SimulationManagerEvents.as_view(),
+         name='simulation_manager_events'),
+    path('scenario-manager/<int:simulation_manager_id>/triggers/', SimulationManagerTriggers.as_view(),
+         name='simulation_manager_triggers'),
+    path('scenario-manager/<int:simulation_manager_id>/news/', SimulationManagerNews.as_view(),
+         name='simulation_manager_news'),
+    path('scenario-manager/<int:simulation_manager_id>/change-state/', ChangeSimulationManagerState.as_view(), name='change_state'),
 
     path('news/', NewsManagement.as_view(), name='create_news'),
     path('news/<int:news_id>/', NewsManagement.as_view(), name='manage_news'),

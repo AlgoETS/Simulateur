@@ -1,9 +1,9 @@
 from django.db import models
-from simulation.models.simulation_manager import ScenarioManager
+from simulation.models.simulation_manager import SimulationManager
 
 
 class TransactionHistory(models.Model):
-    scenario_manager = models.ForeignKey(ScenarioManager, related_name='transactions', on_delete=models.CASCADE)
+    simulation_manager = models.ForeignKey(SimulationManager, related_name='transactions', on_delete=models.CASCADE)
     orders = models.ManyToManyField('Order', related_name='transactions')
 
     def __str__(self):

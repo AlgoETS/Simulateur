@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
-from simulation.models import TransactionHistory, Order, ScenarioManager, Stock, UserProfile, Company, Scenario, \
+from simulation.models import TransactionHistory, Order, SimulationManager, Stock, UserProfile, Company, Scenario, \
     SimulationSettings
 
 
@@ -87,7 +87,7 @@ class TransactionHistoryModelTest(TestCase):
             transaction_type='BUY'
         )
 
-        # Create a Scenario and ScenarioManager instance
+        # Create a Scenario and SimulationManager instance
         self.scenario = Scenario.objects.create(
             name="Test Scenario",
             description="A test scenario",
@@ -95,19 +95,19 @@ class TransactionHistoryModelTest(TestCase):
             duration=10,
         )
 
-        self.scenario_manager = ScenarioManager.objects.create(
+        self.simulation_manager = SimulationManager.objects.create(
             scenario=self.scenario,
             simulation_settings=SimulationSettings.objects.create(),
         )
 
         # Create a TransactionHistory instance and add the Order
         self.transaction_history = TransactionHistory.objects.create(
-            scenario_manager=self.scenario_manager
+            simulation_manager=self.simulation_manager
         )
         self.transaction_history.orders.add(self.order)
 
     def tearDown(self):
-        self.scenario_manager.delete()
+        self.simulation_manager.delete()
         self.company.delete()
         self.stock.delete()
         self.user.delete()
@@ -117,7 +117,7 @@ class TransactionHistoryModelTest(TestCase):
 
     def test_transaction_history_creation(self):
         # Test if the TransactionHistory object was created successfully
-        self.assertEqual(self.transaction_history.scenario_manager, self.scenario_manager)
+        self.assertEqual(self.transaction_history.simulation_manager, self.simulation_manager)
         self.assertIn(self.order, self.transaction_history.orders.all())
 
     def test_transaction_history_str_method(self):
