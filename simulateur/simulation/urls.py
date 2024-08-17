@@ -18,6 +18,8 @@ from simulation.api.portfolio import (
     SellStock,
     BuyStock,
     StockPrice,
+    StockHoldings,
+    GroupedPerformanceView
 )
 from simulation.api.teams import GenerateJoinLink, JoinTeam, RemoveTeamMember, UpdateTeamName
 from simulation.views.auth import (
@@ -55,7 +57,7 @@ from simulation.api.event import EventManagement
 from simulation.api.news import NewsManagement
 from simulation.api.trigger import TriggerManagement
 
-from simulation.api.stock import StockManagement, StockPriceHistoryManagement
+from simulation.api.stock import StockManagement, StockPriceHistoryView
 
 # Initialize the DefaultRouter
 router = DefaultRouter()
@@ -110,6 +112,7 @@ api_patterns = [
     path('stock/price/<stock_id>/', StockPrice.as_view(), name='stock_price'),
 
     path('user/orders/', UserOrders.as_view(), name='user_orders'),
+    path('user/stock-holdings/', StockHoldings.as_view(), name='user_stock_holdings'),
 
     path('join_team/<int:team_id>/<str:key>/', JoinTeam.as_view(), name='join_team'),
 
@@ -159,9 +162,9 @@ api_patterns = [
 
     path('stock/', StockManagement.as_view(), name='create_stock'),
     path('stock/<int:stock_id>/', StockManagement.as_view(), name='manage_stock'),
+    path('stock/<int:stock_id>/price-history/', StockPriceHistoryView.as_view(), name='stock-price-history'),
 
-    path('stock/price-history/', StockPriceHistoryManagement.as_view(), name='price_history_list'),
-    path('stock/price-history/<int:price_history_id>/', StockPriceHistoryManagement.as_view(),name='price_history_detail'),
+    path('user/grouped-performance/', GroupedPerformanceView.as_view(), name='grouped_performance'),
 ]
 
 urlpatterns = [

@@ -1,9 +1,9 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import status
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from simulation.models import Stock, StockPriceHistory, Company
+from simulation.models import Stock, StockPriceHistory, Company, SimulationManager
+
 
 class StockManagement(APIView):
 
@@ -109,34 +109,22 @@ class StockManagement(APIView):
         return Response({'status': 'success', 'data': stock_data}, status=status.HTTP_200_OK)
 
 
-class StockPriceHistoryManagement(APIView):
-    def get(self, request, price_history_id=None, *args, **kwargs):
-        if price_history_id:
-            price_history = get_object_or_404(StockPriceHistory, id=price_history_id)
-            price_history_data = {
-                'id': price_history.id,
-                'stock': price_history.stock.ticker,
-                'open_price': price_history.open_price,
-                'high_price': price_history.high_price,
-                'low_price': price_history.low_price,
-                'close_price': price_history.close_price,
-                'volatility': price_history.volatility,
-                'liquidity': price_history.liquidity,
-                'timestamp': price_history.timestamp
-            }
-            return Response({'status': 'success', 'data': price_history_data}, status=status.HTTP_200_OK)
+class StockPriceHistoryView(APIView):
+    def get(self, request, stock_id, *args, **kwargs):
+        simulation_manager_id = request.query_params.get('simulation_manager_id')
+        if not simulation_manager_id:
+            return Response({'status': 'error', 'message': 'Simulation manager ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        price_histories = StockPriceHistory.objects.all()
+        simulation_manager = get_object_or_404(SimulationManager, id=simulation_manager_id)
+        stock = get_object_or_404(Stock, id=stock_id, company__simulation_manager=simulation_manager)
+
+        price_histories = StockPriceHistory.objects.filter(stock=stock).order_by('timestamp')
         price_history_data = [{
-            'id': price_history.id,
-            'stock': price_history.stock.ticker,
+            'timestamp': price_history.timestamp,
             'open_price': price_history.open_price,
             'high_price': price_history.high_price,
             'low_price': price_history.low_price,
-            'close_price': price_history.close_price,
-            'volatility': price_history.volatility,
-            'liquidity': price_history.liquidity,
-            'timestamp': price_history.timestamp
+            'close_price': price_history.close_price
         } for price_history in price_histories]
 
         return Response({'status': 'success', 'data': price_history_data}, status=status.HTTP_200_OK)

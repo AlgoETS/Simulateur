@@ -68,7 +68,7 @@
                 <p class="mt-1 max-w-2xl text-sm">Manage your account settings and set e-mail preferences.</p>
             </div>
             <div class="border-t border-gray-200">
-                <form class="px-4 py-5 sm:p-6" action="{% url 'profile' %}" method="post" enctype="multipart/form-data">
+                <form class="px-4 py-5 sm:p-6" action="{% url 'settings' %}" method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="grid grid-cols-6 gap-6">
                         <div class="col-span-6 sm:col-span-4">
