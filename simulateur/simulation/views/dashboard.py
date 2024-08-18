@@ -179,7 +179,7 @@ class TeamDashboardView(View):
             messages.error(request, "You are not part of any team. Please join or create a team.")
             return redirect(reverse("join_team"))
 
-        portfolios = Portfolio.objects.filter(owner__team=team)
+        portfolios = Portfolio.objects.filter(owner__teams=team)
         members = team.members.all()
 
         context = {
@@ -241,7 +241,7 @@ class GameDashboardView(View):
             "transactions": transactions,
             "stocks": stocks_data,
             "news_items": news_items,
-            "simulation_managers": [simulation_manager],  # To keep the data specific to the active simulation manager
+            "simulation_managers": [simulation_manager],
         }
 
     def get_stocks_data(self, stocks):
@@ -273,7 +273,14 @@ class MarketOverviewView(View):
             simulation_manager = SimulationManager.objects.filter(id=simulation_manager_id).first()
             if simulation_manager:
                 stocks = simulation_manager.stocks.select_related('company').all()
-                stock_history = StockPriceHistory.objects.filter(stock__in=stocks).order_by('timestamp')
+
+                # Get the latest price for each stock
+                latest_prices = {}
+                for stock in stocks:
+                    latest_price = StockPriceHistory.objects.filter(stock=stock).order_by('-timestamp').first()
+                    if latest_price:
+                        latest_prices[stock.id] = latest_price
+
                 events = simulation_manager.events.all()
                 companies = simulation_manager.stocks.values_list('company', flat=True).distinct()
                 news_items = simulation_manager.news.order_by('-published_date')[:5]
@@ -289,7 +296,7 @@ class MarketOverviewView(View):
         context = {
             "title": "Market Overview",
             "stocks": stocks,
-            "stock_history": stock_history,
+            "latest_prices": latest_prices,
             "events": events,
             "companies": companies,
             "news_items": news_items,
@@ -297,7 +304,6 @@ class MarketOverviewView(View):
             "teams": teams,
         }
         return render(request, "simulation/market_overview.html", context)
-
 
 
 class PortfolioDetailView(View):

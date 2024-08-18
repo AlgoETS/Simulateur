@@ -111,7 +111,7 @@
 
         function changeTeamName() {
             const teamName = document.getElementById('teamName').value;
-            fetch("{% url 'change_team_name' team.id %}", {
+            fetch("{% url 'update_team_name' team.id %}", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

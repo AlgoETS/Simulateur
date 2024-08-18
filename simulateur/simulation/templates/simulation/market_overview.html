@@ -16,10 +16,17 @@
                                     ({{ stock.ticker }})</p>
                                 <p class="text-sm text-gray-500">Sector: {{ stock.company.sector }} -
                                     Industry: {{ stock.company.industry }}</p>
-                                <p class="text-sm text-gray-500">Current Price: ${{ stock.price }}</p>
-                                <p class="text-sm text-green-600">Open: ${{ stock.open_price }}</p>
-                                <p class="text-sm text-red-600">Low: ${{ stock.low_price }}</p>
-                                <p class="text-sm text-green-600">High: ${{ stock.high_price }}</p>
+                                {% if latest_prices|length > 0 %}
+                                    <p class="text-sm text-gray-500">Current Price:
+                                        ${{ latest_prices[stock.id].price }}</p>
+                                    <p class="text-sm text-green-600">Open:
+                                        ${{ latest_prices[stock.id].open_price }}</p>
+                                    <p class="text-sm text-red-600">Low: ${{ latest_prices[stock.id].low_price }}</p>
+                                    <p class="text-sm text-green-600">High:
+                                        ${{ latest_prices[stock.id].high_price }}</p>
+                                {% else %}
+                                    <p class="text-sm text-gray-500">Price data not available</p>
+                                {% endif %}
                             </div>
                             <div id="backstory-{{ stock.id }}"
                                  class="hidden absolute top-0 right-0 bg-white p-4 shadow-lg rounded-lg w-64 z-10 text-sm text-gray-500">

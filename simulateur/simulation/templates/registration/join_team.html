@@ -42,7 +42,7 @@
                         <h4 class="text-lg font-semibold text-gray-700">Members:</h4>
                         <ul class="list-disc list-inside">
                             {% for member in item.team.members.all %}
-                                <li>{{ member.user.username }} {{ member.role }} - ${{ member.portfolio.balance }} </li>
+                                <li>{{ member.user.username }} {{ member.role }} : ${{ member.portfolio.balance }} </li>
                             {% endfor %}
                         </ul>
                     </div>

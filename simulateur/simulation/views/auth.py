@@ -196,8 +196,6 @@ class PasswordResetConfirmView(View):
 
 
 class JoinTeamView(View):
-    @method_decorator(csrf_exempt, name='dispatch')
-    @method_decorator(cache_page(CACHE_TTL), name='dispatch')
     def get(self, request):
         teams = Team.objects.all()
         portfolios = Portfolio.objects.all()
@@ -225,17 +223,20 @@ class JoinTeamView(View):
         join_link = get_object_or_404(JoinLink, team=team, key=key)
 
         if join_link.is_expired():
-            return JsonResponse({'status': 'error', 'message': 'Link has expired'}, status=400)
+            return redirect("team_dashboard")
 
         user_profile = self.get_user_profile(request)
         if user_profile.teams.filter(id=team_id).exists():
-            return JsonResponse({'status': 'error', 'message': 'Already a member of this team'}, status=400)
+            return redirect("team_dashboard")
 
-        with transaction.atomic():
-            user_profile.team = team
-            user_profile.save()
-            team.members.add(user_profile)
-        return JsonResponse({'status': 'success', 'message': f'Joined team {team.name}'})
+        try:
+            with transaction.atomic():
+                user_profile.teams.add(team)
+                user_profile.save()
+                team.members.add(user_profile)
+            return redirect("team_dashboard")
+        except Exception as e:
+            return redirect("team_dashboard")
 
     def get_user_profile(self, request):
         return get_object_or_404(UserProfile, user=request.user)
