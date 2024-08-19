@@ -1,15 +1,17 @@
 import logging
 import time
+import threading
 from channels.layers import get_channel_layer
 from django.conf import settings
-from django.core.cache import cache
 from django.utils import timezone
+from django.core.cache import cache
 from simulation.logic.broker import broker
 from simulation.logic.noise_patterns.brownian_motion import BrownianMotion
 from simulation.logic.noise_patterns.fbm import Fbm
 from simulation.logic.noise_patterns.perlin import Perlin
 from simulation.logic.noise_patterns.random_candle import RandomCandle
 from simulation.logic.noise_patterns.random_walk import RandomWalk
+from simulation.logic.noise_patterns.monte_carlo import MonteCarlo
 from simulation.logic.utils import is_market_open, send_ohlc_update, TIME_UNITS
 from simulation.models import SimulationManager as SM, StockPriceHistory
 
@@ -44,33 +46,83 @@ class SimulationManager:
         self.broker = broker
 
         logger.info(
-            f"Starting simulation for scenario {self.scenario} with time step {self.time_step} seconds"
+            f"Initializing simulation for scenario {self.scenario} with time step {self.time_step} seconds"
+        )
+
+    def apply_new_settings(self, new_settings):
+        """
+        Apply the new settings to the running simulation.
+        """
+        self.simulation_manager.simulation_settings = new_settings
+        self.time_step = (
+            new_settings.timer_step * TIME_UNITS[new_settings.timer_step_unit]
+        )
+        self.interval = (
+            new_settings.interval * TIME_UNITS[new_settings.interval_unit]
+        )
+        self.close_stock_market_at_night = new_settings.close_stock_market_at_night
+        self.fluctuation_rate = new_settings.fluctuation_rate
+        self.noise_function = new_settings.noise_function.lower()
+        self.noise_strategy = self.get_noise_strategy(self.noise_function)
+        self.trading_strategy = new_settings.stock_trading_logic
+
+        logger.info(
+            f"Updated simulation settings for scenario {self.scenario} with time step {self.time_step} seconds"
         )
 
     def get_noise_strategy(self, noise_function):
-        if noise_function == "brownian":
-            return BrownianMotion()
-        elif noise_function == "perlin":
-            return Perlin()
-        elif noise_function == "random_walk":
-            return RandomWalk()
-        elif noise_function == "fbm":
-            return Fbm()
-        elif noise_function == "random":
-            return RandomCandle()
-        else:
+        strategies = {
+            "brownian": BrownianMotion,
+            "perlin": Perlin,
+            "random_walk": RandomWalk,
+            "fbm": Fbm,
+            "random": RandomCandle,
+            "monte_carlo": MonteCarlo
+        }
+        strategy_class = strategies.get(noise_function)
+        if not strategy_class:
             raise ValueError(f"Unsupported noise function: {noise_function}")
+        return strategy_class()
+
+    def monitor_state_and_start(self):
+        """ Continuously monitors the state and starts or restarts the simulation if it becomes ONGOING. """
+        while True:
+            self.simulation_manager.refresh_from_db()  # Refresh state from the database
+
+            # If the state is ONGOING, start or restart the simulation
+            if self.simulation_manager.state == SM.ScenarioState.ONGOING:
+                if not self.running:
+                    logger.info(f"State changed to ONGOING. Starting simulation for scenario {self.scenario}.")
+                    self.start_simulation()
+
+            # If the state is FINISHED, exit the monitoring loop
+            elif self.simulation_manager.state == SM.ScenarioState.FINISHED:
+                logger.info("Simulation is in FINISHED state. Monitoring loop will exit.")
+                break
+
+            # Wait before checking the state again
+            time.sleep(5)
 
     def start_simulation(self):
         self.running = True
         start_time = timezone.now()
         try:
             while self.running:
+                self.simulation_manager.refresh_from_db()
+                if self.simulation_manager.state == SM.ScenarioState.STOPPED:
+                    logger.info("State changed to STOPPED. Halting simulation.")
+                    break
+                elif self.simulation_manager.state == SM.ScenarioState.FINISHED:
+                    logger.info("State changed to FINISHED. Ending simulation.")
+                    break
+
                 current_time = timezone.now()
                 elapsed_time = (current_time - start_time).total_seconds()
 
                 if elapsed_time >= self.run_duration:
                     logger.info("Run duration reached, stopping simulation")
+                    self.simulation_manager.state = SM.ScenarioState.FINISHED
+                    self.simulation_manager.save()
                     break
 
                 if self.close_stock_market_at_night and not is_market_open(current_time):
@@ -87,14 +139,12 @@ class SimulationManager:
                 time.sleep(self.time_step)
         except KeyboardInterrupt:
             logger.info("Simulation stopped by user")
+            self.simulation_manager.state = SM.ScenarioState.STOPPED
+            self.simulation_manager.save()
         except Exception as e:
             logger.error(f"Error occurred during simulation: {e}", exc_info=True)
         finally:
             self.stop_simulation()
-
-    def pause_simulation(self):
-        self.running = False
-        logger.info("Simulation paused")
 
     def stop_simulation(self):
         self.running = False
@@ -145,7 +195,6 @@ class SimulationManager:
         }
 
     def broadcast_update(self, stock, current_time):
-        # Retrieve the latest price history entry for the stock
         last_price_entry = stock.price_history.order_by('-timestamp').first()
 
         if not last_price_entry:
@@ -161,7 +210,7 @@ class SimulationManager:
             "high": last_price_entry.high_price,
             "low": last_price_entry.low_price,
             "close": last_price_entry.close_price,
-            "current": last_price_entry.close_price,  # Use the close price as the current price
+            "current": last_price_entry.close_price,
             "timestamp": current_time.isoformat(),
         }
 
@@ -172,15 +221,29 @@ class SimulationManager:
 
 class SimulationManagerSingleton:
     _instances = {}
+    _threads = {}
 
     @classmethod
     def get_instance(cls, simulation_manager_id):
         if simulation_manager_id not in cls._instances:
             simulation_manager = SM.objects.get(id=simulation_manager_id)
-            cls._instances[simulation_manager_id] = SimulationManager(simulation_manager)
+            manager_instance = SimulationManager(simulation_manager)
+            cls._instances[simulation_manager_id] = manager_instance
+
+            # Start a monitoring thread for this simulation
+            monitoring_thread = threading.Thread(
+                target=manager_instance.monitor_state_and_start,
+                daemon=True
+            )
+            cls._threads[simulation_manager_id] = monitoring_thread
+            monitoring_thread.start()
+
         return cls._instances[simulation_manager_id]
 
     @classmethod
     def remove_instance(cls, simulation_manager_id):
         if simulation_manager_id in cls._instances:
             del cls._instances[simulation_manager_id]
+        if simulation_manager_id in cls._threads:
+            cls._threads[simulation_manager_id].join(timeout=1)  # Ensure the thread is stopped
+            del cls._threads[simulation_manager_id]

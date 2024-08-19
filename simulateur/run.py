@@ -23,9 +23,9 @@ def apply_migrations():
         sys.exit(1)
 
 
-def start_simulation(simulation_id):
+def start_simulation(simulation_ids):
     try:
-        subprocess.check_call([sys.executable, 'manage.py', 'start_simulation', str(simulation_id)])
+        subprocess.check_call([sys.executable, 'manage.py', 'start_simulation', *map(str, simulation_ids)])
     except subprocess.CalledProcessError as e:
         print(f"Failed to start simulation: {e}")
         sys.exit(1)
@@ -149,7 +149,7 @@ if __name__ == '__main__':
     parser.add_argument('--quick', action='store_true', help='Skip installing requirements and applying migrations')
     parser.add_argument('--install', action='store_true', help='Only install requirements')
     parser.add_argument('--install-cms', action='store_true', help='Install and set up CMS requirements')
-    parser.add_argument('--start-simulation', type=int, help='Start a simulation with the given ID')
+    parser.add_argument('--start-simulation', nargs='+', type=int, help='Start one or more simulations with the given IDs')
     parser.add_argument('--create-superuser', nargs=2, metavar=('USERNAME', 'PASSWORD'),
                         help='Create a superuser with the given username and password')
     parser.add_argument('--cms', action='store_true', help='Start the Wagtail CMS server')
