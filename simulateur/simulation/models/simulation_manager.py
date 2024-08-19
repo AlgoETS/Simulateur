@@ -27,3 +27,6 @@ class SimulationManager(models.Model):
 
     def __str__(self):
         return f'Scenario Manager: {self.scenario.name}'
+
+    class Meta:
+        verbose_name_plural = "Simulation Managers"

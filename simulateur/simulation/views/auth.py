@@ -46,6 +46,7 @@ class SignupView(View):
 
             with transaction.atomic():
                 user = User.objects.create_user(username=username, email=email, password=password)
+                user_profile = UserProfile.objects.create(user=user)
             return JsonResponse({"status": "success"})
         except json.JSONDecodeError:
             return JsonResponse({"status": "error", "message": "Invalid JSON data"}, status=400)
@@ -109,7 +110,7 @@ class SettingsView(View):
         if 'balance' in request.POST:
             portfolio.balance = request.POST['balance']
             portfolio.save()
-        return redirect('profile')
+        return redirect('private_profile')
 
     def get_user_profile(self, request):
         return get_object_or_404(UserProfile, user=request.user)

@@ -9,15 +9,16 @@ def install_requirements():
     try:
         # Check if requirements.txt exists
         if os.path.exists('requirements.txt'):
+            subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'uv'])
             subprocess.check_call([sys.executable, '-m', 'pip', 'install', '--upgrade', 'pip'])
-            subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-r', 'requirements.txt', '--no-cache-dir'])
+            subprocess.check_call([sys.executable, '-m', 'uv', 'pip', 'install', '-r', 'requirements.txt', '--no-cache-dir', '--prerelease=allow'])
         else:
             print("requirements.txt file not found.")
             sys.exit(1)
 
         # Generate or update requirements.txt with the current package versions
         with open('requirements-freeze.txt', 'w') as req_file:
-            subprocess.check_call([sys.executable, '-m', 'pip', 'freeze'], stdout=req_file)
+            subprocess.check_call([sys.executable, '-m', 'uv', 'pip', 'freeze'], stdout=req_file)
 
     except subprocess.CalledProcessError as e:
         print(f"Failed to install requirements: {e}")
@@ -26,7 +27,7 @@ def install_requirements():
 def upgrade_all_packages():
     try:
         # List outdated packages
-        result = subprocess.run([sys.executable, '-m', 'pip', 'list', '--outdated'], capture_output=True, text=True)
+        result = subprocess.run([sys.executable, '-m', 'uv', 'pip', 'list', '--outdated'], capture_output=True, text=True)
         if result.returncode != 0:
             print(f"Failed to list outdated packages: {result.stderr}")
             sys.exit(1)
@@ -36,7 +37,7 @@ def upgrade_all_packages():
         for line in lines:
             parts = line.split()
             package_name = parts[0]
-            subprocess.check_call([sys.executable, '-m', 'pip', 'install', '--upgrade', package_name])
+            subprocess.check_call([sys.executable, '-m', 'uv', 'pip', 'install', '--upgrade', package_name])
     except subprocess.CalledProcessError as e:
         print(f"Failed to upgrade packages: {e}")
         sys.exit(1)

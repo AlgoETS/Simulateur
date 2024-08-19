@@ -58,24 +58,24 @@ def send_ohlc_update(channel_layer, update, simulation_id):
     """Send an OHLC update to the specified WebSocket channel."""
     data = {
         'id': update['id'],
-        'simulation_id': simulation_id,
+        'simulation_manager': update['simulation_manager'],
         'ticker': update['ticker'],
         'name': update['name'],
-        'type': "stock",
+        'type': update['type'],
         'open': update['open'],
         'high': update['high'],
         'low': update['low'],
         'close': update['close'],
         'current': update['current'],
-        'timestamp': timezone.now().isoformat()
+        'timestamp': str(timezone.now().isoformat())
     }
-    logger.info(f"Sending OHLC update: {data}")
+    logger.debug(f"Sending OHLC update: {data}")
 
     async_to_sync(channel_layer.group_send)(
-        f'simulation_{simulation_id}',
+        f"simulation_{simulation_id}",
         {
-            'type': 'simulation_update',
-            'message': data
+            "type": "stock_update",  # Updated to match the consumer method
+            "message": data
         }
     )
     logger.debug(f"OHLC update sent to group 'simulation_{simulation_id}'")

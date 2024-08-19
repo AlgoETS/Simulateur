@@ -1,3 +1,4 @@
+import decimal
 import json
 from collections import defaultdict
 from decimal import Decimal
@@ -70,9 +71,20 @@ class BuyStock(View):
                 user_profile.portfolio.balance -= total_cost
                 user_profile.portfolio.save()
 
-                # Retrieve or create the transaction history record and add the order
-                transaction_history, _ = TransactionHistory.objects.get_or_create(
-                    simulation_manager=simulation_manager)
+                # Add the stock to the StockPortfolio or update the existing quantity
+                stock_portfolio, created = StockPortfolio.objects.get_or_create(
+                    portfolio=user_profile.portfolio,
+                    stock=stock,
+                    defaults={'quantity': amount, 'latest_price_history': latest_price_history}
+                )
+
+                if not created:
+                    stock_portfolio.quantity += amount
+                    stock_portfolio.latest_price_history = latest_price_history  # Update the latest price history
+                    stock_portfolio.save()
+
+                # Retrieve the transaction history record and add the order
+                transaction_history = TransactionHistory.objects.get(simulation_manager=simulation_manager)
                 transaction_history.orders.add(order)
 
             return JsonResponse({'status': 'success', 'order_id': order.id})
@@ -96,32 +108,26 @@ class SellStock(View):
             simulation_manager = SimulationManager.objects.get(id=data['simulation_manager_id'])
             amount = int(data['amount'])
 
-            # Validate input data
             if amount <= 0:
                 return JsonResponse({'status': 'error', 'message': 'Amount must be greater than zero'}, status=400)
 
-            # Find the correct portfolio based on the simulation manager and user profile
             portfolio = Portfolio.objects.filter(owner=user_profile, simulation_manager=simulation_manager).first()
             if not portfolio:
                 return JsonResponse({'status': 'error', 'message': 'Portfolio not found for this simulation manager'},
                                     status=404)
 
-            # Get the user's stock portfolio for the specified stock
             stock_portfolio = StockPortfolio.objects.filter(portfolio=portfolio, stock=stock).first()
             if not stock_portfolio or stock_portfolio.quantity < amount:
                 return JsonResponse({'status': 'error', 'message': 'Insufficient stock holdings'}, status=400)
 
-            # Get the latest price from StockPriceHistory
             latest_price_history = StockPriceHistory.objects.filter(stock=stock).order_by('-timestamp').first()
             if not latest_price_history:
                 return JsonResponse({'status': 'error', 'message': 'No price history available for this stock'},
                                     status=404)
 
-            # Use the provided price or the latest close price as a fallback
             price = Decimal(data.get('price', latest_price_history.close_price))
 
             with transaction.atomic():
-                # Create an order
                 order = Order.objects.create(
                     user=user_profile,
                     stock=stock,
@@ -130,23 +136,18 @@ class SellStock(View):
                     transaction_type='SELL'
                 )
 
-                # Logic to sell stock
-                buy_sell_queue.add_to_sell_queue(user_profile, stock, amount, price)
+                buy_sell_queue.add_to_sell_queue(user_profile, stock, amount, price, simulation_manager)
 
-                # Update the user's balance
                 portfolio.balance += amount * price
                 portfolio.save()
 
-                # Update the stock portfolio (reduce quantity)
                 stock_portfolio.quantity -= amount
                 stock_portfolio.save()
 
-                # If all shares are sold, delete the StockPortfolio entry
                 if stock_portfolio.quantity == 0:
                     stock_portfolio.delete()
 
-                # Retrieve or create the transaction history record and add the order
-                transaction_history, _ = TransactionHistory.objects.get_or_create(simulation_manager=simulation_manager)
+                transaction_history = TransactionHistory.objects.get(simulation_manager=simulation_manager)
                 transaction_history.orders.add(order)
 
             return JsonResponse({'status': 'success', 'order_id': order.id})
@@ -252,17 +253,28 @@ class GroupedPerformanceView(View):
             if group_by not in valid_groupings:
                 return JsonResponse({'status': 'error', 'message': 'Invalid grouping criterion'}, status=400)
 
+            # Filter stock portfolios for the current user and the selected simulation manager
+            user_profile = request.user.userprofile
+            stock_portfolios = StockPortfolio.objects.filter(
+                portfolio__owner=user_profile,
+                portfolio__simulation_manager=simulation_manager
+            )
+
             # Group stock data by the specified criterion
             groups = defaultdict(lambda: {"value": 0, "stocks": []})
-            stock_portfolios = StockPortfolio.objects.filter(portfolio__simulation_manager=simulation_manager)
 
             for stock_portfolio in stock_portfolios:
                 stock = stock_portfolio.stock
                 group_value = getattr(stock.company, group_by, 'Unknown')  # Get the attribute dynamically
-                latest_price_history = StockPriceHistory.objects.filter(stock=stock).order_by('-timestamp').first()
+
+                # Get the latest price for the stock
+                latest_price_history = stock_portfolio.latest_price_history
                 latest_price = latest_price_history.close_price if latest_price_history else 0
+
+                # Calculate the total value of the stock in the portfolio
                 group_value_total = latest_price * stock_portfolio.quantity
 
+                # Add the value to the appropriate group
                 groups[group_value]["value"] += group_value_total
                 groups[group_value]["stocks"].append({
                     "ticker": stock.ticker,
@@ -282,5 +294,19 @@ class GroupedPerformanceView(View):
 
         except SimulationManager.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'Simulation manager not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+class PortfolioBalanceView(View):
+    @method_decorator(login_required)
+    def get(self, request):
+        try:
+            user_profile = request.user.userprofile
+            portfolio = Portfolio.objects.get(owner=user_profile)
+
+            return JsonResponse({'status': 'success', 'balance': str(portfolio.balance)}, status=200)
+        except Portfolio.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Portfolio not found'}, status=404)
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)

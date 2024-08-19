@@ -3,18 +3,23 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.db.models import Sum, F, Subquery, OuterRef
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.cache import cache_page
+from django.views.decorators.csrf import csrf_exempt
 from simulation.models import (
     UserProfile, Stock, Portfolio, TransactionHistory, StockPortfolio, Team,
     News, Company, Event, SimulationManager, Trigger, StockPriceHistory
 )
 
+from simulation.channels.consumers import SimulationConsumer
+
 logger = logging.getLogger(__name__)
 CACHE_TTL = getattr(settings, 'CACHE_TTL', 30)  # 30 seconds
+
 
 # Utility functions
 def get_user_profile(request):
@@ -40,7 +45,8 @@ def get_or_create_portfolio(user_profile, simulation_manager):
 
 
 def get_current_simulation_manager(simulation_managers, request):
-    current_simulation_manager_id = request.GET.get('simulation_manager', simulation_managers.first().id if simulation_managers.exists() else None)
+    current_simulation_manager_id = request.GET.get('simulation_manager',
+                                                    simulation_managers.first().id if simulation_managers.exists() else None)
     if not current_simulation_manager_id:
         messages.error(request, "No simulation managers available.")
         return None, None
@@ -52,8 +58,8 @@ def get_current_simulation_manager(simulation_managers, request):
 
 
 def get_transactions(simulation_manager):
-    transactions, _ = TransactionHistory.objects.get_or_create(simulation_manager=simulation_manager)
-    orders = transactions.orders.all()
+    transactions = TransactionHistory.objects.filter(simulation_manager=simulation_manager)
+    orders = transactions.order_by('-orders__timestamp')
     return transactions, orders
 
 
@@ -108,7 +114,8 @@ class UserDashboardView(View):
             return redirect(reverse("home"))
 
         simulation_managers = SimulationManager.objects.all()
-        current_simulation_manager_id, current_simulation_manager = get_current_simulation_manager(simulation_managers, request)
+        current_simulation_manager_id, current_simulation_manager = get_current_simulation_manager(simulation_managers,
+                                                                                                   request)
 
         if not current_simulation_manager:
             messages.error(request, "Selected simulation manager does not exist.")
@@ -204,23 +211,35 @@ class GameDashboardView(View):
             messages.error(request, "You are not part of any team. Please join or create a team.")
             return redirect(reverse("join_team"))
 
-        simulation_manager = self.get_active_simulation_manager(team)
+        # Get the simulation_manager_id from the GET parameters
+        simulation_manager_id = request.GET.get('simulation_manager_id')
+        simulation_manager = self.get_active_simulation_manager(team, simulation_manager_id)
 
         if not simulation_manager:
             messages.error(request, "No active simulation manager found.")
             return redirect(reverse("home"))
 
         context = self.get_dashboard_context(team, simulation_manager)
+        context['simulation_manager_id'] = simulation_manager.id  # Pass the simulation_manager_id
         response = render(request, "dashboard/game_dashboard.html", context)
         response['Cache-Control'] = f'public, max-age={CACHE_TTL}'
         return response
 
-    def get_active_simulation_manager(self, team):
+    def get_active_simulation_manager(self, team, simulation_manager_id=None):
+        # If a simulation_manager_id is provided, try to fetch that specific SimulationManager
+        if simulation_manager_id:
+            try:
+                return SimulationManager.objects.get(id=simulation_manager_id)
+            except SimulationManager.DoesNotExist:
+                pass  # If it doesn't exist, fall back to the default behavior
+
+        # Default to fetching the first active simulation manager if none is provided
         return SimulationManager.objects.all().first()
 
     def get_dashboard_context(self, team, simulation_manager):
         # Retrieve all team members
         user_profiles_in_team = team.members.all()
+
         # Retrieve portfolios of all members associated with the active simulation manager
         portfolios = Portfolio.objects.filter(owner__in=user_profiles_in_team, simulation_manager=simulation_manager)
 

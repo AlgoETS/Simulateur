@@ -1,0 +1,50 @@
+<div class="bg-white shadow-lg rounded-lg p-6 mb-6">
+    <h2 class="text-3xl font-bold text-white mb-4">Holdings</h2>
+    <div class="balance-container mb-4">
+        <h3 class="text-2xl font-semibold">Your Balance: <span id="balance">$0.00</span></h3>
+    </div>
+    <ul class="divide-y holding space-y-4"></ul>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        updateHoldings();
+        updateBalance();
+    });
+
+    function updateBalance() {
+        fetchData('balance', '/api/user/balance/', renderBalance, {
+            method: 'POST',
+            body: JSON.stringify({simulation_manager_id: document.getElementById('simulation_manager').value})
+        });
+    }
+
+    function renderBalance(data) {
+        document.getElementById('balance').textContent = `$${data.balance.toFixed(2)}`;
+    }
+
+    function updateHoldings() {
+        fetchData('holdings', '/api/user/stock-holdings/', renderHoldings, {
+            method: 'POST',
+            body: JSON.stringify({simulation_manager_id: document.getElementById('simulation_manager').value})
+        });
+    }
+
+    function renderHoldings(data) {
+        const holdingList = document.querySelector('.holding');
+        holdingList.innerHTML = data.holdings.map(holding => `
+                <li class="py-4">
+                    <div class="flex justify-between items-center">
+                        <div class="w-1/2">
+                            <p class="text-lg font-semibold">${holding.stock} - ${holding.company}</p>
+                            <p class="text-sm text-gray-200">Quantity: ${holding.quantity}</p>
+                        </div>
+                        <div class="w-1/2 flex flex-col text-right space-y-1">
+                            <div><span class="font-semibold">Latest Price:</span> <span class="text-green-300">$${holding.latest_price?.toFixed(2) || 'N/A'}</span></div>
+                            <div><span class="font-semibold">Price Difference:</span> <span class="${holding.price_difference >= 0 ? 'text-green-300' : 'text-red-300'}">$${holding.price_difference?.toFixed(2) || 'N/A'}</span></div>
+                            <div><span class="font-semibold">Percentage Change:</span> <span class="${holding.percentage_change >= 0 ? 'text-green-300' : 'text-red-300'}">${holding.percentage_change?.toFixed(2) || 'N/A'}%</span></div>
+                        </div>
+                    </div>
+                </li>`).join('');
+    }
+</script>

@@ -135,7 +135,7 @@ class SimulationManager:
                     logger.debug(
                         f"Simulation time ({self.simulation_manager.id}): Elapsed time: {elapsed_time}"
                     )
-                logger.debug(f"Sleeping for {self.time_step} seconds")
+                logger.info(f"Sleeping for {self.time_step} seconds")
                 time.sleep(self.time_step)
         except KeyboardInterrupt:
             logger.info("Simulation stopped by user")
@@ -216,7 +216,7 @@ class SimulationManager:
         logger.debug(f"Preparing to broadcast update: {update}")
 
         try:
-            send_ohlc_update(self.channel_layer, update, f'{self.simulation_manager.id}')
+            send_ohlc_update(self.channel_layer, update, f'{1}')
             logger.debug(f"Broadcast update sent successfully.")
         except Exception as e:
             logger.error(f"Error sending broadcast update: {e}")

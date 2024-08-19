@@ -168,6 +168,17 @@
             }
             return cookieValue;
         }
+
+        function fetchData(key, url, callback, options = {}) {
+            const defaultOptions = {
+                method: 'GET',
+                headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken')}
+            };
+            fetch(url, {...defaultOptions, ...options})
+                .then(response => response.json())
+                .then(data => data.status === 'success' ? callback(data) : alert(data.message))
+                .catch(console.error);
+        }
     </script>
     <script>
         function showToast(message, type) {

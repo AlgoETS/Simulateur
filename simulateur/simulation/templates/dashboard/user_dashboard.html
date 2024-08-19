@@ -6,60 +6,35 @@
     <div class="container mx-auto p-6">
         <h1 class="text-4xl font-extrabold text-gray-900 mb-6">{{ title }}</h1>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div class="grid grid-cols-2 md:grid-cols-2 gap-6 mb-6">
             <!-- Stocks List -->
             <div class="col-span-1">
                 <div class="bg-white shadow-lg rounded-lg p-6 mb-6">
                     <h2 class="text-2xl font-bold text-indigo-900 mb-4">Stocks List</h2>
                     <form id="stockForm">
+                        {% csrf_token %}
+                        {% include "partials/_simulation_manager_selector.html" %}
+                        {% include "partials/_stock_selector.html" %}
+                        <input type="hidden" id="transaction_type" name="transaction_type" value="buy">
                         <div class="mb-4">
-                            <label for="simulation_manager" class="block text-sm font-medium text-gray-700 mb-2">Simulation
-                                Manager</label>
-                            <select id="simulation_manager" name="simulation_manager"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-                                    onchange="updateSimulationManager()">
-                                {% for simulation_manager in simulation_managers %}
-                                    <option
-                                            value="{{ simulation_manager.id }}"
-                                            {% if simulation_manager.id == current_simulation_manager_id %}
-                                            selected
-                                            {% endif %}
-                                    >
-                                        {{ simulation_manager.scenario.name }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="mb-4">
-                            <label for="company" class="block text-sm font-medium text-gray-700 mb-2">Company</label>
-                            <select id="company" name="company"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-                                    onchange="updateInterface()">
-                                {% for stock in stocks %}
-                                    <option value="{{ stock.id }}">{{ stock.company.name }} ({{ stock.ticker }})
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="mb-4">
-                            <label for="amount" class="block text-sm font-medium text-gray-700 mb-2">Amount</label>
                             <input type="number" id="amount" name="amount"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-                                   placeholder="Enter amount" min="1" max="999" oninput="updateInterface()">
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block"
+                                   placeholder="Enter amount" min="1" max="999" step="1" onchange="updatePrice()"
+                                   required onfocus="updatePrice()">
                         </div>
                         <div class="mb-4">
-                            <label for="price" class="block text-sm font-medium text-gray-700 mb-2">Price</label>
-                            <input disabled type="number" id="price" name="price"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-                                   placeholder="Enter price" min="1" step="0.01">
+                            <input type="number" id="price" name="price"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block"
+                                   placeholder="Enter price" step="0.01" disabled readonly required>
                         </div>
                         <div class="flex space-x-4">
-                            <button type="button" onclick="buyStock()"
-                                    class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+                            <button type="button" onclick="handleTransaction('buy')"
+                                    class="bg-green-500 hover:bg-green-400 text-white font-bold py-2 px-4 border-b-4 border-green-700 hover:border-green-500 rounded w-full">
                                 Buy
                             </button>
-                            <button type="button" onclick="sellStock()"
-                                    class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+
+                            <button type="button" onclick="handleTransaction('sell')"
+                                    class="bg-red-500 hover:bg-red-400 text-white font-bold py-2 px-4 border-b-4 border-red-700 hover:border-red-500 rounded w-full">
                                 Sell
                             </button>
                         </div>
@@ -67,339 +42,61 @@
                 </div>
             </div>
 
-            <!-- Order History and Holdings -->
+            <!-- Order History  -->
+            <!-- Holdings -->
+            {% include "partials/_user_holdings.html" %}
+
             <div class="col-span-1 md:col-span-2">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Order History -->
-                    <div class="bg-white shadow-lg rounded-lg p-6 mb-6">
-                        <h2 class="text-2xl font-bold text-indigo-900 mb-4">Order History</h2>
-                        <ul class="divide-y divide-gray-200 order-history">
-                            {% for order in orders %}
-                                <li class="py-4">
-                                    <div class="flex justify-between">
-                                        <div>
-                                            <p class="text-sm font-medium text-gray-900">{{ order.transaction_type }} {{ order.quantity }}
-                                                shares of {{ order.stock.ticker }}</p>
-                                            <p class="text-sm text-gray-500">{{ order.timestamp|date:"F j, Y, g:i a" }}</p>
-                                        </div>
-                                        <div class="text-sm text-gray-900">
-                                            ${{ order.price }}
-                                        </div>
-                                    </div>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-
-                    <!-- Holdings -->
-                    <div class="bg-white shadow-lg rounded-lg p-6 mb-6">
-                        <h2 class="text-2xl font-bold text-indigo-900 mb-4">Holdings</h2>
-                        <ul class="divide-y divide-gray-200 holding">
-                            <!-- Holdings will be dynamically loaded here -->
-                        </ul>
-                    </div>
-
-                    <div class="mb-4">
-                        <label for="group_by" class="block text-sm font-medium text-gray-700 mb-2">Group By</label>
-                        <select id="group_by" name="group_by"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="sector">Sector</option>
-                            <option value="industry">Industry</option>
-                            <option value="country">Country</option>
-                        </select>
-                    </div>
-
+                    {% include "partials/_order_history.html" %}
                 </div>
             </div>
         </div>
 
-        <!-- Portfolio Chart -->
-        <div class="bg-white shadow-lg rounded-lg p-6 mb-6">
-            <h2 class="text-2xl font-bold text-indigo-900 mb-4">Portfolio Performance</h2>
-            <div id="portfolio-chart" style="height: 400px;"></div>
-        </div>
+        <!-- Stats Chart Container -->
+        {% include "partials/_user_charts.html" %}
 
-        <!-- Grouped Performance Chart -->
-        <div class="bg-white shadow-lg rounded-lg p-6 mb-6">
-            <h2 class="text-2xl font-bold text-indigo-900 mb-4">Grouped Performance</h2>
-            <div class="mb-4">
-                <label for="group_by" class="block text-sm font-medium text-gray-700 mb-2">Group By</label>
-                <select id="group_by" name="group_by"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
-                    <option value="sector">Sector</option>
-                    <option value="industry">Industry</option>
-                    <option value="country">Country</option>
-                </select>
-            </div>
-            <canvas id="grouped-performance-chart" style="height: 400px;"></canvas>
-        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                updatePageData();
+            });
 
-    </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            updateOrderHistory();
-            updateHoldings();
-        });
+            function updatePageData() {
+                updateOrderHistory();
+                updateHoldings();
+                updateAllGroupedPerformanceCharts()
+                updatePrice();
+                updateBalance();
+            }
 
-        function updateSimulationManager() {
-            const simulationManagerId = document.getElementById('simulation_manager').value;
+            function handleTransaction(type) {
+                const url = `/api/stock/${type}/`;
+                const payload = {
+                    stock_id: document.getElementById('company').value,
+                    amount: document.getElementById('amount').value,
+                    price: document.getElementById('price').value,
+                    simulation_manager_id: document.getElementById('simulation_manager').value
+                };
+                fetchData(type, url, () => {
+                    alert(`${type.charAt(0).toUpperCase() + type.slice(1)} operation successful!`);
+                    updatePageData();
+                }, {method: 'POST', body: JSON.stringify(payload)});
+            }
 
-            fetch(`/api/simulation_manager/update/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken'),
-                },
-                body: JSON.stringify({simulation_manager_id: simulationManagerId}),
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        updateOrderHistory();
-                        updateHoldings();
-                    } else {
-                        alert(data.message);
-                    }
-                })
-                .catch(error => console.error('Error:', error));
-        }
+            function updatePrice() {
+                const stockId = document.getElementById('company').value;
 
-        function buyStock() {
-            const stockId = document.getElementById('company').value;
-            const amount = document.getElementById('amount').value;
-            const price = document.getElementById('price').value;
-            const simulationManagerId = document.getElementById('simulation_manager').value;
-
-            fetch('/api/stock/buy/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken'),
-                },
-                body: JSON.stringify({
-                    stock_id: stockId,
-                    amount: amount,
-                    price: price,
-                    simulation_manager_id: simulationManagerId
-                }),
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        alert('Stock bought successfully');
-                        updateOrderHistory();
-                        updateHoldings();
-                    } else {
-                        alert(data.message);
-                    }
-                })
-                .catch(error => console.error('Error:', error));
-        }
-
-        function sellStock() {
-            const stockId = document.getElementById('company').value;
-            const amount = document.getElementById('amount').value;
-            const price = document.getElementById('price').value;
-            const simulationManagerId = document.getElementById('simulation_manager').value;
-
-            fetch('/api/stock/sell/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken'),
-                },
-                body: JSON.stringify({
-                    stock_id: stockId,
-                    amount: amount,
-                    price: price,
-                    simulation_manager_id: simulationManagerId
-                }),
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        alert('Stock sold successfully');
-                        updateOrderHistory();
-                        updateHoldings();
-                    } else {
-                        alert(data.message);
-                    }
-                })
-                .catch(error => console.error('Error:', error));
-        }
-
-        function updateInterface() {
-            const stockId = document.getElementById('company').value;
-
-            fetch(`/api/stock/price/${stockId}/`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.price) {
-                        document.getElementById('price').value = parseFloat(data.price).toFixed(2);
-                    } else {
-                        alert('Failed to fetch stock price');
-                    }
-                })
-                .catch(error => console.error('Error fetching stock price:', error));
-        }
-
-        function updateOrderHistory() {
-            const simulationManagerId = document.getElementById('simulation_manager').value;
-
-            fetch('/api/user/orders/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken'),
-                },
-                body: JSON.stringify({simulation_manager_id: simulationManagerId}),
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        const orderHistory = document.querySelector('.order-history');
-                        orderHistory.innerHTML = ''; // Clear current orders
-
-                        data.orders.forEach(order => {
-                            const orderItem = `
-                <li class="py-4">
-                    <div class="flex justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-900">${order.transaction_type} ${order.quantity} shares of ${order.ticker}</p>
-                            <p class="text-sm text-gray-500">${order.timestamp}</p>
-                        </div>
-                        <div class="text-sm text-gray-900">
-                            $${order.price.toFixed(2)}
-                        </div>
-                    </div>
-                </li>
-            `;
-                            orderHistory.innerHTML += orderItem;
-                        });
-                    } else {
-                        alert(data.message);
-                    }
-                })
-                .catch(error => console.error('Error fetching order history:', error));
-        }
-
-        function updateHoldings() {
-            const simulationManagerId = document.getElementById('simulation_manager').value;
-
-            fetch('/api/user/stock-holdings/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken'),
-                },
-                body: JSON.stringify({simulation_manager_id: simulationManagerId}),
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        const holdingList = document.querySelector('.holding');
-                        holdingList.innerHTML = ''; // Clear current holdings
-
-                        // Check if 'holdings' is present and is an array
-                        if (Array.isArray(data.holdings)) {
-                            data.holdings.forEach(holding => {
-                                const holdingItem = `
-                                    <li class="py-4">
-                                        <div class="flex justify-between items-center">
-                                            <div class="w-1/2">
-                                                <p class="text-sm font-medium text-gray-900">${holding.stock} - ${holding.company}</p>
-                                                <p class="text-sm text-gray-500">Quantity: ${holding.quantity}</p>
-                                            </div>
-                                            <div class="w-1/2 flex flex-col text-sm text-gray-900 text-right space-y-1">
-                                                <div>
-                                                    <span class="font-semibold">Latest Price:</span> $${holding.latest_price ? holding.latest_price.toFixed(2) : 'N/A'}
-                                                </div>
-                                                <div>
-                                                    <span class="font-semibold">Price Difference:</span> $${holding.price_difference ? holding.price_difference.toFixed(2) : 'N/A'}
-                                                </div>
-                                                <div>
-                                                    <span class="font-semibold">Percentage Change:</span> ${holding.percentage_change ? holding.percentage_change.toFixed(2) : 'N/A'}%
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                `;
-                                holdingList.innerHTML += holdingItem;
-                            });
+                fetch(`/api/stock/price/${stockId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.price) {
+                            document.getElementById('price').value = parseFloat(data.price).toFixed(2);
                         } else {
-                            console.error('Holdings data is missing or not in the expected format.');
+                            alert('Failed to fetch stock price');
                         }
-                    } else {
-                        alert(data.message);
-                    }
-                })
-                .catch(error => console.error('Error fetching stock holdings:', error));
-        }
+                    })
+                    .catch(error => console.error('Error fetching stock price:', error));
+            }
 
-        function updateGroupedPerformance() {
-            const simulationManagerId = document.getElementById('simulation_manager').value;
-            const groupBy = document.getElementById('group_by').value;
-
-            fetch('/api/user/grouped-performance/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken'),
-                },
-                body: JSON.stringify({simulation_manager_id: simulationManagerId, group_by: groupBy}),
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        const ctx = document.getElementById('grouped-performance-chart').getContext('2d');
-
-                        // Clear existing chart instance if it exists
-                        if (window.groupedChart) {
-                            window.groupedChart.destroy();
-                        }
-
-                        // Create a new chart
-                        window.groupedChart = new Chart(ctx, {
-                            type: 'pie',
-                            data: {
-                                labels: data.group_labels,
-                                datasets: [{
-                                    label: `${groupBy.charAt(0).toUpperCase() + groupBy.slice(1)} Distribution`,
-                                    data: data.group_values,
-                                    backgroundColor: [
-                                        '#4CAF50', '#FF6384', '#36A2EB', '#FFCE56', '#8E44AD', '#E74C3C'
-                                    ],
-                                    borderColor: '#ffffff',
-                                    borderWidth: 1
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                plugins: {
-                                    legend: {
-                                        position: 'top',
-                                    },
-                                    title: {
-                                        display: true,
-                                        text: `${groupBy.charAt(0).toUpperCase() + groupBy.slice(1)} Performance Breakdown`
-                                    }
-                                }
-                            }
-                        });
-                    } else {
-                        alert(data.message);
-                    }
-                })
-                .catch(error => console.error('Error fetching grouped performance data:', error));
-        }
-
-        // Trigger updateGroupedPerformance when the dropdown changes
-        document.getElementById('group_by').addEventListener('change', updateGroupedPerformance);
-
-        // Initial chart load
-        document.addEventListener('DOMContentLoaded', function () {
-            updateGroupedPerformance();
-        });
-
-    </script>
+        </script>
 {% endblock %}

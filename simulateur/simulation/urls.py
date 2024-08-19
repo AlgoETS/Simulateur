@@ -19,7 +19,8 @@ from simulation.api.portfolio import (
     BuyStock,
     StockPrice,
     StockHoldings,
-    GroupedPerformanceView
+    GroupedPerformanceView,
+    PortfolioBalanceView
 )
 from simulation.api.teams import GenerateJoinLink, JoinTeam, RemoveTeamMember, UpdateTeamName
 from simulation.views.auth import (
@@ -165,6 +166,7 @@ api_patterns = [
     path('stock/<int:stock_id>/price-history/', StockPriceHistoryView.as_view(), name='stock-price-history'),
 
     path('user/grouped-performance/', GroupedPerformanceView.as_view(), name='grouped_performance'),
+    path('user/balance/', PortfolioBalanceView.as_view(), name='portfolio-balance'),
 ]
 
 urlpatterns = [
