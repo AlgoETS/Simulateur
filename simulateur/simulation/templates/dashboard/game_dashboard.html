@@ -70,6 +70,10 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            let socket;
+            let reconnectInterval = 5000; // 5 seconds interval for reconnection attempts
+            let maxAttempts = 10;
+            let attempt = 0;
             const stocks = {{ stocks|safe }};
             let charts = {};
             let updateBuffer = {}; // Buffer to store incoming updates
@@ -126,27 +130,7 @@
                 });
             };
 
-            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const socket = new WebSocket(protocol + '//' + window.location.host + '/ws/simulation/stock/');
-
-            socket.onopen = () => {
-                console.log("WebSocket connection established");
-                initCharts(); // Initialize charts after WebSocket connection
-            };
-
-            socket.onmessage = (e) => {
-                const messageData = JSON.parse(e.data);
-                if (messageData.ticker && messageData.timestamp) {
-                    bufferUpdate(messageData);
-                } else if (messageData.type === 'transaction') {
-                    updateTransactions(messageData.transactions);
-                } else if (messageData.type === 'news') {
-                    updateNews(messageData.news_items);
-                } else {
-                    console.warn("Received malformed message:", messageData);
-                }
-            };
-
+            // Retrieve the simulation_manager_id from the query parameter
             const bufferUpdate = (message) => {
                 const {ticker} = message;
                 if (!updateBuffer[ticker]) {
@@ -155,6 +139,61 @@
                 updateBuffer[ticker].push(message);
                 processBuffer(ticker);
             };
+
+            function initializeWebSocket() {
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const urlParams = new URLSearchParams(window.location.search);
+                const simulationManagerId = urlParams.get('simulation_manager_id') || 1;
+                socket = new WebSocket(`${protocol}//${window.location.host}/ws/simulation/${simulationManagerId}/`);
+
+                socket.onopen = () => {
+                    attempt = 0; // Reset attempt counter on successful connection
+                    initCharts(); // Initialize charts after WebSocket connection
+                    console.log("WebSocket connection established");
+                };
+
+                socket.onmessage = (e) => {
+                    console.log(e.data)
+                    const messageData = JSON.parse(e.data);
+                    if (messageData.ticker && messageData.timestamp) {
+                        bufferUpdate(messageData);
+                    } else if (messageData.type === 'transaction') {
+                        updateTransactions(messageData.transactions);
+                    } else if (messageData.type === 'news') {
+                        updateNews(messageData.news_items);
+                    } else {
+                        console.warn("Received malformed message:", messageData);
+                    }
+                };
+
+                socket.onerror = (error) => {
+                    console.error("WebSocket error:", error);
+                };
+
+                socket.onclose = (event) => {
+                    if (event.wasClean) {
+                        console.log(`WebSocket closed cleanly, code=${event.code} reason=${event.reason}`);
+                    } else {
+                        console.error("WebSocket connection closed unexpectedly. Details:", {
+                            reason: event.reason,
+                            code: event.code
+                        });
+                        console.log("WebSocket disconnected. Attempting to reconnect...", "yellow");
+
+                        if (attempt < maxAttempts) {
+                            setTimeout(() => {
+                                attempt++;
+                                console.log(`Reconnection attempt ${attempt}/${maxAttempts}`);
+                                initializeWebSocket(); // Try to reconnect
+                            }, reconnectInterval);
+                        } else {
+                            console.log("Failed to reconnect after multiple attempts. Please refresh the page.", "red");
+                        }
+                    }
+                };
+            }
+
+            initializeWebSocket();
 
             const processBuffer = (ticker) => {
                 if (!charts[ticker] || !charts[ticker].series) {
@@ -270,6 +309,7 @@
                             width: `${Math.round(event.rect.width)}px`,
                             height: `${Math.round(event.rect.height)}px`
                         });
+
 
                         // Resize chart inside the card
                         const chartElement = event.target.querySelector('.chart');

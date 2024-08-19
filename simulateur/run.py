@@ -7,12 +7,39 @@ import threading
 
 def install_requirements():
     try:
-        subprocess.check_call([sys.executable, '-m', 'pip', 'install', '--upgrade', 'pip', 'setuptools', 'wheel'])
-        subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-r', 'requirements.txt', '--no-cache-dir'])
+        # Check if requirements.txt exists
+        if os.path.exists('requirements.txt'):
+            subprocess.check_call([sys.executable, '-m', 'pip', 'install', '--upgrade', 'pip'])
+            subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-r', 'requirements.txt', '--no-cache-dir'])
+        else:
+            print("requirements.txt file not found.")
+            sys.exit(1)
+
+        # Generate or update requirements.txt with the current package versions
+        with open('requirements-freeze.txt', 'w') as req_file:
+            subprocess.check_call([sys.executable, '-m', 'pip', 'freeze'], stdout=req_file)
+
     except subprocess.CalledProcessError as e:
         print(f"Failed to install requirements: {e}")
         sys.exit(1)
 
+def upgrade_all_packages():
+    try:
+        # List outdated packages
+        result = subprocess.run([sys.executable, '-m', 'pip', 'list', '--outdated'], capture_output=True, text=True)
+        if result.returncode != 0:
+            print(f"Failed to list outdated packages: {result.stderr}")
+            sys.exit(1)
+
+        # Parse outdated packages and upgrade them
+        lines = result.stdout.splitlines()[2:]  # Skip header lines
+        for line in lines:
+            parts = line.split()
+            package_name = parts[0]
+            subprocess.check_call([sys.executable, '-m', 'pip', 'install', '--upgrade', package_name])
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to upgrade packages: {e}")
+        sys.exit(1)
 
 def apply_migrations():
     try:
@@ -149,7 +176,10 @@ if __name__ == '__main__':
     parser.add_argument('--quick', action='store_true', help='Skip installing requirements and applying migrations')
     parser.add_argument('--install', action='store_true', help='Only install requirements')
     parser.add_argument('--install-cms', action='store_true', help='Install and set up CMS requirements')
-    parser.add_argument('--start-simulation', nargs='+', type=int, help='Start one or more simulations with the given IDs')
+    parser.add_argument('--upgrade', action='store_true',
+                        help='Upgrade all packages listed in requirements.txt to their latest versions')
+    parser.add_argument('--start-simulation', nargs='+', type=int,
+                        help='Start one or more simulations with the given IDs')
     parser.add_argument('--create-superuser', nargs=2, metavar=('USERNAME', 'PASSWORD'),
                         help='Create a superuser with the given username and password')
     parser.add_argument('--cms', action='store_true', help='Start the Wagtail CMS server')
@@ -157,6 +187,11 @@ if __name__ == '__main__':
     parser.add_argument('-b', '--bind', default='0.0.0.0', help='Bind address')
     parser.add_argument('-p', '--port', default='8000', help='Port number')
     args = parser.parse_args()
+
+    if args.upgrade:
+        # Upgrade all packages
+        upgrade_all_packages()
+        sys.exit(0)
 
     if args.install:
         # Install requirements

@@ -17,7 +17,7 @@ from simulation.models import SimulationManager as SM, StockPriceHistory
 
 logger = logging.getLogger(__name__)
 
-CACHE_TTL = getattr(settings, "CACHE_TTL", 15)  # 15 minutes default
+CACHE_TTL = getattr(settings, "CACHE_TTL", 0)
 
 
 class SimulationManager:
@@ -132,10 +132,10 @@ class SimulationManager:
                         self.update_prices(current_time)
                     else:
                         self.broker.process_queues()
-                    logger.info(
-                        f"Simulation time: {current_time}, elapsed time: {elapsed_time}"
+                    logger.debug(
+                        f"Simulation time ({self.simulation_manager.id}): Elapsed time: {elapsed_time}"
                     )
-                logger.info(f"Sleeping for {self.time_step} seconds")
+                logger.debug(f"Sleeping for {self.time_step} seconds")
                 time.sleep(self.time_step)
         except KeyboardInterrupt:
             logger.info("Simulation stopped by user")
@@ -183,8 +183,6 @@ class SimulationManager:
         )
         self.time_index += 1
 
-        logger.info(f"Updated stock {stock.ticker} with new price: {change['Close']} at {current_time}")
-
         return {
             "ticker": stock.ticker,
             "open": change["Open"],
@@ -202,6 +200,7 @@ class SimulationManager:
             return
 
         update = {
+            "simulation_manager": self.simulation_manager.id,
             "id": stock.id,
             "ticker": stock.ticker,
             "name": stock.company.name,
@@ -214,9 +213,13 @@ class SimulationManager:
             "timestamp": current_time.isoformat(),
         }
 
-        logger.info(f"Broadcasting update: {update}")
+        logger.debug(f"Preparing to broadcast update: {update}")
 
-        send_ohlc_update(self.channel_layer, update, "stock")
+        try:
+            send_ohlc_update(self.channel_layer, update, f'{self.simulation_manager.id}')
+            logger.debug(f"Broadcast update sent successfully.")
+        except Exception as e:
+            logger.error(f"Error sending broadcast update: {e}")
 
 
 class SimulationManagerSingleton:
