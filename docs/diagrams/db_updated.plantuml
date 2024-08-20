@@ -1,0 +1,139 @@
+@startuml
+class Company {
+    +CharField name
+    +TextField backstory
+    +CharField sector
+    +CharField country
+    +CharField industry
+    +DateTimeField timestamp
+}
+
+class Event {
+    +CharField name
+    +TextField description
+    +CharField type
+    +DateTimeField date
+    +DateTimeField timestamp
+}
+
+class News {
+    +CharField title
+    +TextField content
+    +DateTimeField published_date
+}
+
+class Portfolio {
+    +OneToOneField owner
+    +DecimalField balance
+}
+
+class StockPortfolio {
+    +ForeignKey stock
+    +ForeignKey portfolio
+    +IntegerField quantity
+}
+
+class Scenario {
+    +CharField name
+    +TextField description
+    +TextField backstory
+    +IntegerField duration
+}
+
+class SimulationManager {
+    +ForeignKey scenario
+    +CharField state
+    +DateTimeField timestamp
+    +DateTimeField published_date
+}
+
+class SimulationSettings {
+    +IntegerField timer_step
+    +CharField timer_step_unit
+    +IntegerField interval
+    +CharField interval_unit
+    +IntegerField max_interval
+    +FloatField fluctuation_rate
+    +BooleanField close_stock_market_at_night
+    +CharField noise_function
+    +CharField stock_trading_logic
+}
+
+class Stock {
+    +ForeignKey company
+    +CharField ticker
+    +DateTimeField timestamp
+    +FloatField volatility
+    +FloatField liquidity
+}
+
+class StockPriceHistory {
+    +ForeignKey stock
+    +FloatField open_price
+    +FloatField high_price
+    +FloatField low_price
+    +FloatField close_price
+    +DateTimeField timestamp
+    +FloatField volatility
+    +FloatField liquidity
+}
+
+class Team {
+    +CharField name
+}
+
+class JoinLink {
+    +ForeignKey team
+    +CharField key
+    +DateTimeField created_at
+    +DateTimeField expires_at
+}
+
+class TransactionHistory {
+    +ForeignKey simulation_manager
+}
+
+class Order {
+    +ForeignKey user
+    +ForeignKey stock
+    +IntegerField quantity
+    +FloatField price
+    +CharField transaction_type
+    +DateTimeField timestamp
+}
+
+class Trigger {
+    +CharField name
+    +TextField description
+    +CharField type
+    +FloatField value
+    +DateTimeField timestamp
+}
+
+class UserProfile {
+    +OneToOneField user
+    +ForeignKey team
+    +DateTimeField timestamp
+    +ImageField avatar
+    +CharField role
+}
+
+' Relationships
+Company "1" --> "0..*" Stock : "has many"
+Stock "1" --> "0..*" StockPriceHistory : "has many"
+SimulationManager "1" --> "1" Scenario : "manages"
+SimulationManager "1" --> "1" SimulationSettings : "configures"
+SimulationManager "1" --> "0..*" Stock : "manages"
+SimulationManager "1" --> "0..*" Team : "manages"
+SimulationManager "1" --> "0..*" Event : "triggers"
+SimulationManager "1" --> "0..*" Trigger : "activates"
+SimulationManager "1" --> "0..*" News : "broadcasts"
+Team "1" --> "0..*" JoinLink : "has many"
+Portfolio "1" --> "0..*" StockPortfolio : "contains"
+UserProfile "1" --> "0..*" Order : "places"
+TransactionHistory "1" --> "0..*" Order : "records"
+Trigger "1" --> "0..*" Event : "triggers"
+UserProfile "1" --> "1" Portfolio : "holds"
+UserProfile "1" <-- "0..*" Team : "member of"
+SimulationManager "1" --> "0..*" TransactionHistory : "records"
+@enduml

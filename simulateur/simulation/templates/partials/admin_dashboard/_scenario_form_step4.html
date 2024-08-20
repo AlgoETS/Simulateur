@@ -1,0 +1,91 @@
+<div class="step hidden" id="step4Content">
+    <div class="flex justify-between mb-4">
+        <h4 class="text-lg font-medium text-gray-900">Stock and Event Details</h4>
+        <button type="button" onclick="generateEventAndNews()"
+                class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
+            Generate Events and News with AI
+        </button>
+    </div>
+    <div id="eventsContainer"></div>
+    <button type="button" onclick="addEvent()"
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">Add Event
+    </button>
+    <div id="newsContainer"></div>
+    <button type="button" onclick="addNews()"
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">Add News
+    </button>
+    <div id="triggersContainer"></div>
+    <button type="button" onclick="addTrigger()"
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">Add Trigger
+    </button>
+    <button type="button" onclick="submitStep4()"
+            class="bg-blue-500 text-white font-bold py-2 px-4 rounded">Next
+    </button>
+</div>
+
+<script>
+    function submitStep4() {
+        const events = [];
+        const eventElements = document.querySelectorAll("#eventsContainer .event");
+        const news = [];
+        const newsElements = document.querySelectorAll("#newsContainer .news");
+        const triggers = [];
+        const triggerElements = document.querySelectorAll("#triggersContainer .trigger");
+
+        eventElements.forEach(event => {
+            const eventData = {
+                name: event.querySelector(".eventName").value,
+                date: event.querySelector(".eventDate").value,
+                description: event.querySelector(".eventDescription").value,
+            };
+            events.push(eventData);
+        });
+
+        newsElements.forEach(newsItem => {
+            const newsData = {
+                title: newsItem.querySelector(".newsTitle").value,
+                content: newsItem.querySelector(".newsContent").value,
+            };
+            news.push(newsData);
+        });
+
+        triggerElements.forEach(trigger => {
+            const triggerData = {
+                name: trigger.querySelector(".triggerName").value,
+                condition: trigger.querySelector(".triggerCondition").value,
+                action: trigger.querySelector(".triggerAction").value,
+            };
+            triggers.push(triggerData);
+        });
+
+        const data = {
+            scenario_id: scenarioId,
+            events: events,
+            news: news,
+            triggers: triggers,
+        };
+
+        toggleLoading(true);
+        fetch(`/api/scenario-manager/${scenarioId}/events/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken"),
+            },
+            body: JSON.stringify(data),
+        })
+        .then(response => response.json())
+        .then(data => {
+            toggleLoading(false);
+            if (data.status === 'success') {
+                nextStep();
+            } else {
+                alert("Failed to add events, news, and triggers: " + data.message);
+            }
+        })
+        .catch(error => {
+            toggleLoading(false);
+            alert("Failed to add events, news, and triggers: " + error.message);
+        });
+    }
+</script>

@@ -1,10 +1,11 @@
 import json
-from channels.generic.websocket import AsyncWebsocketConsumer
 import logging
+from channels.generic.websocket import AsyncWebsocketConsumer
 
 logger = logging.getLogger(__name__)
 
 class SimulationConsumer(AsyncWebsocketConsumer):
+
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = f'simulation_{self.room_name}'
@@ -18,36 +19,50 @@ class SimulationConsumer(AsyncWebsocketConsumer):
         logger.debug(f"WebSocket connection established for room {self.room_group_name}")
 
     async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(
-            self.room_group_name,
-            self.channel_name
-        )
-        logger.debug(f"WebSocket connection closed: {close_code}")
+        try:
+            await self.channel_layer.group_discard(
+                self.room_group_name,
+                self.channel_name
+            )
+            logger.info(f"WebSocket connection closed with code {close_code}")
+
+        except Exception as e:
+            logger.error(f"Error during WebSocket disconnection: {e}")
 
     async def receive(self, text_data):
         try:
             text_data_json = json.loads(text_data)
             message_type = text_data_json.get('type')
 
-            if message_type == 'news':
-                await self.handle_news(text_data_json)
-            elif message_type == 'trigger':
-                await self.handle_trigger(text_data_json)
-            elif message_type == 'event':
-                await self.handle_event(text_data_json)
-            elif message_type == 'transaction':
-                await self.handle_transaction(text_data_json)
+            logger.info(f"Received message: {text_data_json}")
+
+            message_handlers = {
+                'stock': self.stock_update,
+                'news': self.handle_news,
+                'trigger': self.handle_trigger,
+                'event': self.handle_event,
+                'transaction': self.handle_transaction
+            }
+
+            handler = message_handlers.get(message_type)
+            if handler:
+                await handler(text_data_json)
             else:
                 logger.warning(f"Unknown message type received: {message_type}")
 
-            logger.debug(f"Message received in room {self.room_group_name}: {text_data_json}")
         except json.JSONDecodeError as e:
             logger.error(f"JSON decode error: {e}")
         except Exception as e:
             logger.error(f"Error handling message: {e}")
 
+    # Add this method to handle "stock" messages
+    async def stock_update(self, event):
+        data = event['message']
+        await self.send(text_data=json.dumps(data))
+        logger.debug(f"Sent stock update in room {self.room_group_name}: {data}")
+
     async def handle_news(self, data):
-        news_message = data.get('message', 'No news message')
+        news_message = data.get('message', 'No news message provided')
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -57,7 +72,7 @@ class SimulationConsumer(AsyncWebsocketConsumer):
         )
 
     async def handle_trigger(self, data):
-        trigger_message = data.get('message', 'No trigger message')
+        trigger_message = data.get('message', 'No trigger message provided')
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -67,7 +82,7 @@ class SimulationConsumer(AsyncWebsocketConsumer):
         )
 
     async def handle_event(self, data):
-        event_message = data.get('message', 'No event message')
+        event_message = data.get('message', 'No event message provided')
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -77,7 +92,7 @@ class SimulationConsumer(AsyncWebsocketConsumer):
         )
 
     async def handle_transaction(self, data):
-        transaction_message = data.get('message', 'No transaction message')
+        transaction_message = data.get('message', 'No transaction message provided')
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -117,8 +132,3 @@ class SimulationConsumer(AsyncWebsocketConsumer):
             'message': transaction_message
         }))
         logger.debug(f"Sent transaction update in room {self.room_group_name}: {transaction_message}")
-
-    async def simulation_update(self, event):
-        data = event['message']
-        await self.send(text_data=json.dumps(data))
-        logger.debug(f"Sent simulation update in room {self.room_group_name}: {data}")

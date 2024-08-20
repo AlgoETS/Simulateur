@@ -1,2 +1,4 @@
-name,balance,borrowed_money,members
-TeamA,100000,0.0,johndoe;janedoe
+name,balance,members
+TeamA,100000,johndoe;janedoe
+TeamB,75000,alice;bob
+TeamC,50000,charlie;david

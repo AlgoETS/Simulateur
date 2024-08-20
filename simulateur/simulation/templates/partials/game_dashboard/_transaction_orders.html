@@ -1,0 +1,46 @@
+<div id="sidebar" class="flex md:flex-shrink-0 w-1/4 bg-white p-4 border-r border-gray-200 overflow-auto resizable">
+    <div class="w-full">
+        <h2 class="text-xl font-semibold mb-4">Transaction Orders</h2>
+        <!-- Transaction Orders List -->
+        <ul class="divide-y divide-gray-200" id="transaction-orders">
+            {% for transaction in transactions %}
+                {% for order in transaction.orders.all %}
+                    <li class="p-2">
+                        <div class="flex flex-col">
+                            <span class="font-semibold">{{ order.user.user.username }}: {{ order.stock.company.name }} ({{ order.stock.ticker }})</span>
+                            <span class="text-sm text-gray-500">{{ order.get_order_type_display }} - {{ order.quantity }} shares at ${{ order.price }}</span>
+                        </div>
+                    </li>
+                {% endfor %}
+            {% empty %}
+                <li class="p-2 text-gray-500">No orders available.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<script>
+    function updateTransactions(transactions) {
+        const ordersList = document.getElementById('transaction-orders');
+        ordersList.innerHTML = '';
+        transactions.forEach(transaction => {
+            if (transaction.orders.length === 0) {
+                const noOrderItem = document.createElement('li');
+                noOrderItem.className = 'p-2 text-gray-500';
+                noOrderItem.textContent = 'No orders available.';
+                ordersList.appendChild(noOrderItem);
+            }
+            transaction.orders.forEach(order => {
+                const orderItem = document.createElement('li');
+                orderItem.className = 'p-2';
+                orderItem.innerHTML = `
+                    <div class="flex flex-col">
+                        <span class="font-semibold">${order.user.username}: ${order.stock.company.name} (${order.stock.ticker})</span>
+                        <span class="text-sm text-gray-500">${order.get_order_type_display} - ${order.quantity} shares at $${order.price}</span>
+                    </div>
+                `;
+                ordersList.appendChild(orderItem);
+            });
+        });
+    }
+</script>

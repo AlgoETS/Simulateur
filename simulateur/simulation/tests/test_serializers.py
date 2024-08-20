@@ -2,16 +2,6 @@ from django.test import TestCase
 from simulation.models import (
     Company,
     Stock,
-    StockPriceHistory,
-    UserProfile,
-    Event,
-    SimulationSettings,
-    Scenario,
-    Team,
-    Portfolio,
-    TransactionHistory,
-    Trigger,
-    News,
 )
 from simulation.serializers import (
     CompanySerializer,
@@ -19,11 +9,10 @@ from simulation.serializers import (
     EventSerializer,
     SimulationSettingsSerializer,
     TeamSerializer,
-    PortfolioSerializer,
-    TransactionHistorySerializer,
     TriggerSerializer,
     NewsSerializer,
     ScenarioSerializer,
+    StockPriceHistorySerializer,
 )
 
 
@@ -38,11 +27,15 @@ class SerializerTests(TestCase):
         }
         self.stock_data = {
             "ticker": "TEST",
-            "price": 100.0,
+            "volatility": 0.5,
+            "liquidity": 1.0,
+        }
+        self.stock_price_history_data = {
             "open_price": 90.0,
             "high_price": 110.0,
             "low_price": 85.0,
             "close_price": 95.0,
+            "stock": self.stock_data
         }
         self.event_data = {
             "name": "Test Event",
@@ -50,8 +43,6 @@ class SerializerTests(TestCase):
             "description": "This is a test event",
         }
         self.simulation_settings_data = {
-            "max_users": 100,
-            "max_companies": 50,
             "timer_step": 10,
             "timer_step_unit": "minute",
             "interval": 20,
@@ -86,6 +77,16 @@ class SerializerTests(TestCase):
         self.assertTrue(serializer.is_valid())
         self.assertEqual(serializer.validated_data["ticker"], self.stock_data["ticker"])
 
+    def test_stock_price_history_serializer(self):
+        company = Company.objects.create(**self.company_data)
+        stock = Stock.objects.create(**self.stock_data)
+        stock.company_id = company.id
+        self.stock_data["company"] = company.id
+        self.stock_price_history_data["stock"] = stock.id
+        serializer = StockPriceHistorySerializer(data=self.stock_price_history_data)
+        self.assertTrue(serializer.is_valid())
+        self.assertEqual(serializer.validated_data["open_price"], self.stock_price_history_data["open_price"])
+
     def test_event_serializer(self):
         serializer = EventSerializer(data=self.event_data)
         self.assertTrue(serializer.is_valid())
@@ -94,10 +95,6 @@ class SerializerTests(TestCase):
     def test_simulation_settings_serializer(self):
         serializer = SimulationSettingsSerializer(data=self.simulation_settings_data)
         self.assertTrue(serializer.is_valid())
-        self.assertEqual(
-            serializer.validated_data["max_users"],
-            self.simulation_settings_data["max_users"],
-        )
 
     def test_team_serializer(self):
         serializer = TeamSerializer(data=self.team_data)
@@ -115,29 +112,11 @@ class SerializerTests(TestCase):
         self.assertEqual(serializer.validated_data["name"], self.trigger_data["name"])
 
     def test_scenario_serializer(self):
-        company = Company.objects.create(**self.company_data)
-        stock = Stock.objects.create(company=company, **self.stock_data)
-        event = Event.objects.create(**self.event_data)
-        simulation_settings = SimulationSettings.objects.create(
-            **self.simulation_settings_data
-        )
-        team = Team.objects.create(**self.team_data)
-        news = News.objects.create(**self.news_data)
-        trigger = Trigger.objects.create(**self.trigger_data)
-
         scenario_data = {
             "name": "Test Scenario",
             "description": "This is a test scenario",
             "backstory": "This is a test backstory",
-            "duration": 60,
-            "stocks": [StockSerializer(stock).data],
-            "teams": [TeamSerializer(team).data],
-            "news": [NewsSerializer(news).data],
-            "events": [EventSerializer(event).data],
-            "triggers": [TriggerSerializer(trigger).data],
-            "simulation_settings": SimulationSettingsSerializer(
-                simulation_settings
-            ).data,
+            "duration": 60
         }
 
         serializer = ScenarioSerializer(data=scenario_data)

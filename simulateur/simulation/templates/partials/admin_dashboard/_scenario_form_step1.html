@@ -1,0 +1,116 @@
+<div class="step" id="step1Content">
+    <div class="mb-4">
+        <label for="scenarioName" class="block text-sm font-medium text-gray-700">Name</label>
+        <input type="text" id="scenarioName" name="scenarioName"
+               class="block w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+               required/>
+    </div>
+    <div class="mb-4">
+        <label for="scenarioDescription" class="block text-sm font-medium text-gray-700">Description</label>
+        <textarea id="scenarioDescription" name="scenarioDescription"
+                  class="block w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                  required></textarea>
+    </div>
+    <!-- Simulation Settings -->
+    <h4 class="text-lg font-medium text-gray-900 mb-2">Simulation Settings</h4>
+    <div class="mb-4">
+        <label for="timerStep" class="block text-sm font-medium text-gray-700">Timer Step</label>
+        <input type="number" id="timerStep" name="timerStep"
+               class="block w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+               required/>
+    </div>
+    <div class="mb-4">
+        <label for="timerStepUnit" class="block text-sm font-medium text-gray-700">Timer Step Unit</label>
+        <select id="timerStepUnit" name="timerStepUnit"
+                class="block w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                required>
+            <option value="millisecond">Millisecond</option>
+            <option value="centisecond">Centisecond</option>
+            <option value="decisecond">Decisecond</option>
+            <option value="second">Second</option>
+            <option value="minute">Minute</option>
+            <option value="hour">Hour</option>
+            <option value="day">Day</option>
+            <option value="month">Month</option>
+            <option value="year">Year</option>
+        </select>
+    </div>
+    <div class="mb-4">
+        <label for="interval" class="block text-sm font-medium text-gray-700">Interval</label>
+        <input type="number" id="interval" name="interval"
+               class="block w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+               required/>
+    </div>
+    <div class="mb-4">
+        <label for="intervalUnit" class="block text-sm font-medium text-gray-700">Interval Unit</label>
+        <select id="intervalUnit" name="intervalUnit"
+                class="block w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                required>
+            <option value="millisecond">Millisecond</option>
+            <option value="centisecond">Centisecond</option>
+            <option value="decisecond">Decisecond</option>
+            <option value="second">Second</option>
+            <option value="minute">Minute</option>
+            <option value="hour">Hour</option>
+            <option value="day">Day</option>
+            <option value="month">Month</option>
+            <option value="year">Year</option>
+        </select>
+    </div>
+    <div class="mb-4">
+        <label for="noiseFunction" class="block text-sm font-medium text-gray-700">Noise Function</label>
+        <select id="noiseFunction" name="noiseFunction"
+                class="block w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                required>
+            <option value="brownian">Brownian Motion</option>
+            <option value="monte_carlo">Monte Carlo</option>
+            <option value="perlin">Perlin Noise</option>
+            <option value="random_walk">Random Walk</option>
+            <option value="fbm">Fractional Brownian Motion</option>
+            <option value="other">Other</option>
+        </select>
+    </div>
+    <button type="button" onclick="submitStep1()"
+            class="bg-blue-500 text-white font-bold py-2 px-4 rounded">Next
+    </button>
+</div>
+
+<script>
+    let scenarioId = null;
+
+    function submitStep1() {
+        const data = {
+            name: document.getElementById("scenarioName").value,
+            description: document.getElementById("scenarioDescription").value,
+            timer_step: document.getElementById("timerStep").value,
+            timer_step_unit: document.getElementById("timerStepUnit").value,
+            interval: document.getElementById("interval").value,
+            interval_unit: document.getElementById("intervalUnit").value,
+            noise_function: document.getElementById("noiseFunction").value,
+        };
+
+        toggleLoading(true);
+        fetch("/api/scenario/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken"),
+            },
+            body: JSON.stringify(data),
+        })
+        .then(response => response.json())
+        .then(data => {
+            toggleLoading(false);
+            if (data.status === 'success') {
+                scenarioId = data.data.scenario_id;
+                nextStep();
+            } else {
+                alert("Failed to create scenario: " + data.message);
+            }
+        })
+        .catch(error => {
+            toggleLoading(false);
+            alert("Failed to create scenario: " + error.message);
+        });
+    }
+</script>

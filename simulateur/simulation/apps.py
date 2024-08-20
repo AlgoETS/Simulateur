@@ -6,4 +6,4 @@ class SimulationConfig(AppConfig):
     name = "simulation"
 
     def ready(self):
-        import simulation.signals
+        pass

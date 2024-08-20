@@ -21,7 +21,7 @@ skinparam sequence {
 
 actor Admin
 participant "AdminPanel" as AP
-participant "ScenarioManager" as SM
+participant "SimulationManager" as SM
 participant "SimulationSettings" as SS
 participant "Scenario" as S
 participant "Event" as E

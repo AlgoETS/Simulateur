@@ -1,0 +1,9 @@
+<div class="w-full bg-gray-800 text-white p-4 fixed bottom-0 overflow-hidden">
+    <div class="overflow-hidden relative">
+        <div class="scrolling-news whitespace-nowrap animate-scroll" id="news-ticker">
+            {% for news_item in news_items %}
+                <span class="mx-4">{{ news_item.content }}</span>
+            {% endfor %}
+        </div>
+    </div>
+</div>

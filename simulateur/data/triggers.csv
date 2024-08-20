@@ -1,2 +1,5 @@
 name,description,type,value,events
-TriggerA,Description for Trigger A,TypeA,1.5,EventA;
+TriggerA,Description for Trigger A,TypeA,1.5,EventA
+TriggerB,Description for Trigger B,TypeB,2.0,EventB;EventC
+TriggerC,Description for Trigger C,TypeC,0.8,EventD
+TriggerD,Description for Trigger D,TypeD,3.2,EventE;EventF

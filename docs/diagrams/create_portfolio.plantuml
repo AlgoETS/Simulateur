@@ -1,0 +1,34 @@
+@startuml
+actor User
+participant "ScenarioService" as ScenarioService
+participant "TeamService" as TeamService
+participant "UserService" as UserService
+participant "PortfolioService" as PortfolioService
+participant "StockService" as StockService
+
+User -> ScenarioService: Create Scenario
+activate ScenarioService
+ScenarioService -> TeamService: Create Team for Scenario
+activate TeamService
+TeamService -> ScenarioService: Return Team ID
+deactivate TeamService
+deactivate ScenarioService
+
+User -> TeamService: Join Team (link to Scenario)
+activate TeamService
+TeamService -> UserService: Add User to Team
+activate UserService
+deactivate TeamService
+
+UserService -> PortfolioService: Create Portfolio for User linked to Scenario
+activate PortfolioService
+PortfolioService -> StockService: Get Stocks from Scenario
+activate StockService
+StockService -> PortfolioService: Return list of Stocks
+deactivate StockService
+
+PortfolioService -> PortfolioService: Initialize StockPortfolio for each Stock
+PortfolioService -> UserService: Return Portfolio Details
+deactivate PortfolioService
+deactivate UserService
+@enduml

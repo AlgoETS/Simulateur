@@ -1,0 +1,92 @@
+<div class="bg-white shadow-lg rounded-lg p-6 mt-8">
+    <h3 class="text-2xl font-bold text-indigo-900 mb-4">Manage Existing Simulations</h3>
+    <div id="simulationsContainer" class="space-y-4">
+        <!-- Simulation items will be dynamically injected here -->
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchSimulations();
+    });
+
+    function fetchSimulations() {
+        fetch('/api/scenario-manager/')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    displaySimulations(data.data);
+                } else {
+                    alert('Failed to fetch simulations');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching simulations:', error);
+                alert('An error occurred while fetching simulations.');
+            });
+    }
+
+    function displaySimulations(simulations) {
+        const container = document.getElementById('simulationsContainer');
+        container.innerHTML = ''; // Clear the container
+
+        simulations.forEach(simulation => {
+            const simulationHtml = `
+                <div class="border p-4 rounded-lg shadow-md">
+                    <h4 class="text-lg font-bold">${simulation.scenario}</h4>
+                    <p class="text-sm text-gray-600 mb-2">Current State: <strong>${simulation.state}</strong></p>
+                    <div class="flex space-x-2">
+                        ${generateStateButtons(simulation)}
+                    </div>
+                    <a href="/market/overview/?simulation_manager_id=${simulation.id}" class="text-blue-500 hover:underline mt-2 block">
+                        View Details
+                    </a>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', simulationHtml);
+        });
+    }
+
+    function generateStateButtons(simulation) {
+        const states = {
+            'initialized': ['created'],
+            'created': ['published'],
+            'published': ['ongoing'],
+            'ongoing': ['stopped'],
+            'stopped': ['finished', 'ongoing'], // Allowing a return to 'ongoing'
+        };
+
+        return states[simulation.state]?.map(newState => `
+            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-4 rounded transition"
+                    onclick="changeSimulationState(${simulation.id}, '${newState}')">
+                Move to ${newState}
+            </button>
+        `).join('') || '';
+    }
+
+    window.changeSimulationState = (simulationId, newState) => {
+        if (!confirm(`Are you sure you want to change the state to "${newState}"?`)) return;
+
+        fetch(`/api/scenario-manager/${simulationId}/change-state/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify({new_state: newState}),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert('State changed successfully');
+                fetchSimulations(); // Refresh the simulations list
+            } else {
+                alert(`Failed to change state: ${data.message}`);
+            }
+        })
+        .catch(error => {
+            console.error('Error changing state:', error);
+            alert('An error occurred while changing the state.');
+        });
+    };
+</script>

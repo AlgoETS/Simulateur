@@ -5,85 +5,102 @@
 {% block title %}Register for Stock Market Simulation - Join the Simulated Stock Trading Environment{% endblock %}
 
 {% block content %}
-<div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
-    <div class="sm:mx-auto sm:w-full sm:max-w-md">
-        <img class="mx-auto h-16 w-auto" src="https://s39373.pcdn.co/wp-content/uploads/2021/11/cropped-cropped-IMG_0577-150x150.png" alt="AlgoETS">
-        <h2 class="mt-10 text-center text-4xl font-extrabold leading-9 tracking-tight text-gray-900">Register your account</h2>
-        <h2 class="text-center text-2xl font-semibold leading-8 tracking-tight text-gray-800 mt-4">Join the Stock Market Simulation</h2>
-    </div>
-    <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-md">
-        <form class="space-y-6" id="signupForm">
-            {% csrf_token %}
-            <div>
-                <label for="username" class="block text-sm font-medium leading-6 text-gray-900">Username</label>
-                <div class="mt-2">
-                    <input id="username" name="username" type="text" autocomplete="username" required class="block w-full rounded-md border-0 py-2 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
-                </div>
-            </div>
-            <div>
-                <label for="email" class="block text-sm font-medium leading-6 text-gray-900">Email address</label>
-                <div class="mt-2">
-                    <input id="email" name="email" type="email" autocomplete="email" required class="block w-full rounded-md border-0 py-2 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
-                </div>
-            </div>
-            <div>
-                <label for="password" class="block text-sm font-medium leading-6 text-gray-900">Password</label>
-                <div class="mt-2">
-                    <input id="password" name="password" type="password" autocomplete="new-password" required class="block w-full rounded-md border-0 py-2 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
-                </div>
-            </div>
-            <div>
-                <button type="button" onclick="handleSignup()" class="flex w-full justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Register</button>
-            </div>
-        </form>
-        <div class="mt-6">
-            <div class="flex justify-center mb-4">
-                <span class="text-gray-500">or sign up with</span>
-            </div>
-            <div class="flex justify-center space-x-4">
-                <a href="{% provider_login_url 'google' %}" class="flex justify-center rounded-md bg-red-600 px-4 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">
-                    Google
-                </a>
-                <a href="{% provider_login_url 'github' %}" class="flex justify-center rounded-md bg-gray-600 px-4 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600">
-                    GitHub
-                </a>
-                <a href="{% provider_login_url 'microsoft' %}" class="flex justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-                    Microsoft
-                </a>
-            </div>
+    <div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
+        <div class="sm:mx-auto sm:w-full sm:max-w-md">
+            <img class="mx-auto h-16 w-auto"
+                 src="https://s39373.pcdn.co/wp-content/uploads/2021/11/cropped-cropped-IMG_0577-150x150.png"
+                 alt="AlgoETS">
+            <h2 class="mt-10 text-center text-4xl font-extrabold leading-9 tracking-tight text-gray-900">Register your
+                account</h2>
+            <h2 class="text-center text-2xl font-semibold leading-8 tracking-tight text-gray-800 mt-4">Join the Stock
+                Market Simulation</h2>
         </div>
-        <p class="mt-10 text-center text-sm text-gray-500">
-            Already a member?
-            <a href="{% url 'account_login' %}" class="font-semibold leading-6 text-indigo-600 hover:text-indigo-800">Sign in</a>
-        </p>
-        <p class="mt-6 text-sm text-gray-500 text-center">
-            By signing up, you agree to our <a href="/terms" class="font-semibold text-indigo-600 hover:text-indigo-800">Terms of Service</a> and <a href="/privacy" class="font-semibold text-indigo-600 hover:text-indigo-800">Privacy Policy</a>.
-        </p>
+        <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-md">
+            <form class="space-y-6" id="signupForm">
+                {% csrf_token %}
+                <div>
+                    <label for="username" class="block text-sm font-medium leading-6 text-gray-900">Username</label>
+                    <div class="mt-2">
+                        <input id="username" name="username" type="text" autocomplete="username" required
+                               class="block w-full rounded-md border-0 py-2 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                    </div>
+                </div>
+                <div>
+                    <label for="email" class="block text-sm font-medium leading-6 text-gray-900">Email address</label>
+                    <div class="mt-2">
+                        <input id="email" name="email" type="email" autocomplete="email" required
+                               class="block w-full rounded-md border-0 py-2 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                    </div>
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium leading-6 text-gray-900">Password</label>
+                    <div class="mt-2">
+                        <input id="password" name="password" type="password" autocomplete="new-password" required
+                               class="block w-full rounded-md border-0 py-2 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                    </div>
+                </div>
+                <div>
+                    <button type="button" onclick="handleSignup()"
+                            class="flex w-full justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                        Register
+                    </button>
+                </div>
+            </form>
+            <div class="mt-6">
+                <div class="flex justify-center mb-4">
+                    <span class="text-gray-500">or sign up with</span>
+                </div>
+                <div class="flex justify-center space-x-4">
+                    <a href="{% provider_login_url 'google' %}"
+                       class="flex justify-center rounded-md bg-red-600 px-4 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">
+                        Google
+                    </a>
+                    <a href="{% provider_login_url 'github' %}"
+                       class="flex justify-center rounded-md bg-gray-600 px-4 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600">
+                        GitHub
+                    </a>
+                    <a href="{% provider_login_url 'microsoft' %}"
+                       class="flex justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                        Microsoft
+                    </a>
+                </div>
+            </div>
+            <p class="mt-10 text-center text-sm text-gray-500">
+                Already a member?
+                <a href="{% url 'account_login' %}"
+                   class="font-semibold leading-6 text-indigo-600 hover:text-indigo-800">Sign in</a>
+            </p>
+            <p class="mt-6 text-sm text-gray-500 text-center">
+                By signing up, you agree to our <a href="/terms"
+                                                   class="font-semibold text-indigo-600 hover:text-indigo-800">Terms of
+                Service</a> and <a href="/privacy" class="font-semibold text-indigo-600 hover:text-indigo-800">Privacy
+                Policy</a>.
+            </p>
+        </div>
     </div>
-</div>
-<script>
+    <script>
 
-    function handleSignup() {
-        const username = document.getElementById('username').value;
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const csrfToken = getCookie('csrftoken');
+        function handleSignup() {
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const csrfToken = getCookie('csrftoken');
 
-        axios.post('/api/signup/', { username, email, password }, {
-            headers: {
-                'X-CSRFToken': csrfToken
-            }
-        })
-        .then(response => {
-            if (response.data.status === 'success') {
-                window.location.href = '{% url "account_login" %}';
-            } else {
-                alert(response.data.message);
-            }
-        })
-        .catch(error => {
-            alert('Failed to register. Please try again.');
-        });
-    }
-</script>
+            axios.post('/api/signup/', {username, email, password}, {
+                headers: {
+                    'X-CSRFToken': csrfToken
+                }
+            })
+                .then(response => {
+                    if (response.data.status === 'success') {
+                        window.location.href = '{% url "login" %}';
+                    } else {
+                        alert(response.data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Failed to register. Please try again.');
+                });
+        }
+    </script>
 {% endblock %}

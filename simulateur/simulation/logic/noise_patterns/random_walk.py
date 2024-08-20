@@ -1,5 +1,6 @@
-from simulation.logic.noise_patterns.noise_strategy import NoiseStrategy
 import numpy as np
+from simulation.logic.noise_patterns.noise_strategy import NoiseStrategy
+
 
 class RandomWalk(NoiseStrategy):
 

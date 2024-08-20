@@ -1,14 +1,45 @@
-import sys
+import argparse
 import os
 import subprocess
-import argparse
+import sys
 import threading
+
 
 def install_requirements():
     try:
-        subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-r', 'requirements.txt'])
+        # Check if requirements.txt exists
+        if os.path.exists('requirements.txt'):
+            subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'uv'])
+            subprocess.check_call([sys.executable, '-m', 'pip', 'install', '--upgrade', 'pip'])
+            subprocess.check_call([sys.executable, '-m', 'uv', 'pip', 'install', '-r', 'requirements.txt', '--no-cache-dir', '--prerelease=allow'])
+        else:
+            print("requirements.txt file not found.")
+            sys.exit(1)
+
+        # Generate or update requirements.txt with the current package versions
+        with open('requirements-freeze.txt', 'w') as req_file:
+            subprocess.check_call([sys.executable, '-m', 'uv', 'pip', 'freeze'], stdout=req_file)
+
     except subprocess.CalledProcessError as e:
         print(f"Failed to install requirements: {e}")
+        sys.exit(1)
+
+def upgrade_all_packages():
+    try:
+        # List outdated packages
+        result = subprocess.run([sys.executable, '-m', 'uv', 'pip', 'list', '--outdated'], capture_output=True, text=True)
+        if result.returncode != 0:
+            print(f"Failed to list outdated packages: {result.stderr}")
+            sys.exit(1)
+
+        # Parse outdated packages and upgrade them
+        lines = result.stdout.splitlines()[2:]  # Skip header lines
+        for line in lines:
+            parts = line.split()
+            package_name = parts[0]
+            subprocess.check_call([sys.executable, '-m', 'uv', 'pip', 'install', '--upgrade', package_name])
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to upgrade packages: {e}")
         sys.exit(1)
 
 def apply_migrations():
@@ -19,12 +50,14 @@ def apply_migrations():
         print(f"Failed to apply migrations: {e}")
         sys.exit(1)
 
-def start_simulation(simulation_id):
+
+def start_simulation(simulation_ids):
     try:
-        subprocess.check_call([sys.executable, 'manage.py', 'start_simulation', str(simulation_id)])
+        subprocess.check_call([sys.executable, 'manage.py', 'start_simulation', *map(str, simulation_ids)])
     except subprocess.CalledProcessError as e:
         print(f"Failed to start simulation: {e}")
         sys.exit(1)
+
 
 def seed_database():
     try:
@@ -32,6 +65,7 @@ def seed_database():
     except subprocess.CalledProcessError as e:
         print(f"Failed to seed database: {e}")
         sys.exit(1)
+
 
 def create_superuser(username, password):
     try:
@@ -45,10 +79,11 @@ def create_superuser(username, password):
         print(f"Failed to create superuser: {e}")
         sys.exit(1)
 
+
 def install_requirements_cms():
     try:
         # Change directory to cms
-        os.chdir('cms')
+        os.chdir('../cms')
         subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-r', 'requirements.txt'])
     except subprocess.CalledProcessError as e:
         print(f"Failed to install requirements: {e}")
@@ -57,14 +92,15 @@ def install_requirements_cms():
         # Change back to the original directory
         os.chdir('..')
 
+
 def start_wagtail():
     try:
         # Set the correct PYTHONPATH
         pythonpath = os.path.abspath('..')
         os.environ['PYTHONPATH'] = pythonpath
-        
+
         # Change directory to cms
-        os.chdir('cms')
+        os.chdir('../cms')
         subprocess.check_call([sys.executable, 'manage.py', 'runserver', '8001'])
     except subprocess.CalledProcessError as e:
         print(f"Failed to start Wagtail CMS: {e}")
@@ -73,14 +109,15 @@ def start_wagtail():
         # Change back to the original directory
         os.chdir('..')
 
+
 def apply_migrations_cms():
     try:
         # Set the correct PYTHONPATH
         pythonpath = os.path.abspath('..')
         os.environ['PYTHONPATH'] = pythonpath
-        
+
         # Change directory to cms
-        os.chdir('cms')
+        os.chdir('../cms')
         subprocess.check_call([sys.executable, 'manage.py', 'migrate'])
     except subprocess.CalledProcessError as e:
         print(f"Failed to apply CMS migrations: {e}")
@@ -89,14 +126,15 @@ def apply_migrations_cms():
         # Change back to the original directory
         os.chdir('..')
 
+
 def create_superuser_cms(username, password):
     try:
         # Set the correct PYTHONPATH
         pythonpath = os.path.abspath('..')
         os.environ['PYTHONPATH'] = pythonpath
-        
+
         # Change directory to cms
-        os.chdir('cms')
+        os.chdir('../cms')
         subprocess.check_call([
             sys.executable, 'manage.py', 'createsuperuser',
             '--noinput',
@@ -116,6 +154,7 @@ def create_superuser_cms(username, password):
         # Change back to the original directory
         os.chdir('..')
 
+
 def daphne_server(bind, port):
     import django
     # Set the Django settings module environment variable
@@ -131,19 +170,29 @@ def daphne_server(bind, port):
     from daphne.cli import CommandLineInterface
     CommandLineInterface.entrypoint()
 
+
 if __name__ == '__main__':
     # Parse command line arguments
     parser = argparse.ArgumentParser(description='Run the Daphne server with optional steps.')
     parser.add_argument('--quick', action='store_true', help='Skip installing requirements and applying migrations')
     parser.add_argument('--install', action='store_true', help='Only install requirements')
     parser.add_argument('--install-cms', action='store_true', help='Install and set up CMS requirements')
-    parser.add_argument('--start-simulation', type=int, help='Start a simulation with the given ID')
-    parser.add_argument('--create-superuser', nargs=2, metavar=('USERNAME', 'PASSWORD'), help='Create a superuser with the given username and password')
+    parser.add_argument('--upgrade', action='store_true',
+                        help='Upgrade all packages listed in requirements.txt to their latest versions')
+    parser.add_argument('--start-simulation', nargs='+', type=int,
+                        help='Start one or more simulations with the given IDs')
+    parser.add_argument('--create-superuser', nargs=2, metavar=('USERNAME', 'PASSWORD'),
+                        help='Create a superuser with the given username and password')
     parser.add_argument('--cms', action='store_true', help='Start the Wagtail CMS server')
     parser.add_argument('--seed-database', action='store_true', help='Seed the database with initial data')
     parser.add_argument('-b', '--bind', default='0.0.0.0', help='Bind address')
     parser.add_argument('-p', '--port', default='8000', help='Port number')
     args = parser.parse_args()
+
+    if args.upgrade:
+        # Upgrade all packages
+        upgrade_all_packages()
+        sys.exit(0)
 
     if args.install:
         # Install requirements

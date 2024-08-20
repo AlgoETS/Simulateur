@@ -10,21 +10,28 @@
         <form id="teamNameForm" class="mb-4">
             <label for="teamName" class="block text-gray-700 font-medium mb-2">Change Team Name:</label>
             <div class="flex">
-                <input type="text" id="teamName" name="teamName" value="{{ team.name }}" class="flex-grow p-2 border border-gray-300 rounded-l-lg focus:ring-indigo-500 focus:border-indigo-500">
-                <button type="button" onclick="changeTeamName()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-r-lg">Change</button>
+                <input type="text" id="teamName" name="teamName" value="{{ team.name }}"
+                       class="flex-grow p-2 border border-gray-300 rounded-l-lg focus:ring-indigo-500 focus:border-indigo-500">
+                <button type="button" onclick="changeTeamName()"
+                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-r-lg">Change
+                </button>
             </div>
         </form>
         <p class="text-gray-700 mb-2">Team Balance: <span class="font-semibold text-green-600">${{ team_balance }}</span></p>
         <p class="text-gray-700 mb-2">Team Leader: <span class="font-semibold">{{ team_leader }}</span></p>
         <p class="text-gray-700 mb-2">Team Members: <span class="font-semibold">{{ team.members.count }}</span></p>
-        <p class="text-gray-700 mb-2">Team Created: {{ team.timestamp|date:"F j, Y" }}</p>
-        <p class="text-gray-700 mb-2">Join Link:
+        <p class="text-gray-700 mb-2">Team Created: {{ team.time_created|date:"F j, Y" }}</p>
+        <p class="text-gray-700 mb-2">
             <span id="joinLinkContainer" class="hidden">
                 <input type="text" id="joinLinkInput" class="flex-grow p-2 border border-gray-300 rounded-l-lg" readonly>
-                <button type="button" onclick="copyJoinLink()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-r-lg">Copy Link</button>
+                <button type="button" onclick="copyJoinLink()"
+                        class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-r-lg">Copy Link</button>
             </span>
         </p>
-        <button type="button" onclick="generateJoinLink()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Generate New Join Link</button>
+        <button type="button" onclick="generateJoinLink()"
+                class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Generate New Join
+            Link
+        </button>
     </div>
 
     <div class="bg-indigo-100 shadow rounded-lg p-6 mb-6">
@@ -45,123 +52,170 @@
                     {% csrf_token %}
                     <label for="role" class="block text-gray-700 font-medium mb-2">Change Role:</label>
                     <div class="flex">
-                        <select name="role" id="role" class="flex-grow p-2 border border-gray-300 rounded-l-lg focus:ring-indigo-500 focus:border-indigo-500">
+                        <select name="role" id="role"
+                                class="flex-grow p-2 border border-gray-300 rounded-l-lg focus:ring-indigo-500 focus:border-indigo-500">
                             <option value="member" {% if member.role == 'member' %}selected{% endif %}>Member</option>
                             <option value="team_leader" {% if member.role == 'team_leader' %}selected{% endif %}>Team Leader</option>
                             <option value="admin" {% if member.role == 'admin' %}selected{% endif %}>Admin</option>
                             <option value="super_admin" {% if member.role == 'super_admin' %}selected{% endif %}>Super Admin</option>
                             <option value="moderator" {% if member.role == 'moderator' %}selected{% endif %}>Moderator</option>
                         </select>
-                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-r-lg">Change</button>
+                        <button type="submit"
+                                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-r-lg">
+                            Change
+                        </button>
                     </div>
                 </form>
 
                 <!-- Remove Member Form -->
                 <form action="{% url 'remove_team_member' team.id member.user.id %}" method="post" class="mt-4">
                     {% csrf_token %}
-                    <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Remove Member</button>
+                    <button type="submit"
+                            class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">
+                        Remove Member
+                    </button>
                 </form>
                 {% endif %}
             </div>
             {% endfor %}
         </div>
     </div>
+
+    <!-- Leaderboards Section -->
+    <div class="bg-indigo-100 shadow rounded-lg p-6 mb-6">
+        <h2 class="text-2xl font-bold text-indigo-900 mb-4">Leaderboards</h2>
+        <div id="leaderboards" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <h3 class="text-xl font-bold text-indigo-800 mb-4">Top Profiles</h3>
+                <div id="top-profiles-container" class="space-y-4">
+                    <!-- Top profiles will be loaded here dynamically -->
+                </div>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold text-indigo-800 mb-4">Top Teams</h3>
+                <div id="top-teams-container" class="space-y-4">
+                    <!-- Top teams will be loaded here dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-function showToast(message, type='success') {
-    Toastify({
-        text: message,
-        duration: 3000,
-        close: true,
-        gravity: "top",
-        position: "right",
-        backgroundColor: type === 'success' ? "#4CAF50" : "#FF0000",
-        stopOnFocus: true,
-    }).showToast();
-}
+    document.addEventListener('DOMContentLoaded', function() {
+        // Replace with your simulation manager ID or fetch it dynamically if needed
+        const simulationManagerId = 1;
 
-function changeTeamName() {
-    const teamName = document.getElementById('teamName').value;
-    fetch("{% url 'change_team_name' team.id %}", {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
-        },
-        body: JSON.stringify({ 'name': teamName })
-    }).then(response => response.json()).then(data => {
-        if (data.status === 'success') {
-            showToast('Team name changed successfully');
-            location.reload();
-        } else {
-            showToast('Error changing team name: ' + data.message, 'error');
-        }
+        // Fetch and display top profiles and teams when the page loads
+        fetchTopScoringProfiles(simulationManagerId);
     });
-}
 
-function generateJoinLink() {
-    fetch("{% url 'generate_join_link' team.id %}", {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
-        },
-    }).then(response => response.json()).then(data => {
-        if (data.status === 'success') {
-            let joinLinkContainer = document.getElementById('joinLinkContainer');
-            let joinLinkInput = document.getElementById('joinLinkInput');
-            joinLinkInput.value = window.location.origin + data.join_link;
-            joinLinkContainer.classList.remove('hidden');
-            showToast('New join link generated successfully');
-        } else {
-            showToast('Error generating join link: ' + data.message, 'error');
-        }
-    });
-}
+    // Helper function for showing toast notifications
+    function showToast(message, type = 'success') {
+        Toastify({
+            text: message,
+            duration: 3000,
+            close: true,
+            gravity: "top",
+            position: "right",
+            backgroundColor: type === 'success' ? "#4CAF50" : "#FF0000",
+            stopOnFocus: true,
+        }).showToast();
+    }
 
-function copyJoinLink() {
-    let joinLinkInput = document.getElementById('joinLinkInput');
-    joinLinkInput.select();
-    joinLinkInput.setSelectionRange(0, 99999); // For mobile devices
+    // Function to change the team name
+    function changeTeamName() {
+        const teamName = document.getElementById('teamName').value;
+        fetch("{% url 'update_team_name' team.id %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({'name': teamName})
+        }).then(response => response.json()).then(data => {
+            if (data.status === 'success') {
+                showToast('Team name changed successfully');
+                location.reload();
+            } else {
+                showToast('Error changing team name: ' + data.message, 'error');
+            }
+        }).catch(error => {
+            showToast('An unexpected error occurred: ' + error.message, 'error');
+        });
+    }
 
-    navigator.clipboard.writeText(joinLinkInput.value).then(() => {
-        showToast('Join link copied to clipboard');
-    }).catch(err => {
-        showToast('Error copying join link: ' + err, 'error');
-    });
-}
+    // Function to generate a join link
+    function generateJoinLink() {
+        fetch("{% url 'generate_join_link' team.id %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+        }).then(response => response.json()).then(data => {
+            if (data.status === 'success') {
+                let joinLinkContainer = document.getElementById('joinLinkContainer');
+                let joinLinkInput = document.getElementById('joinLinkInput');
+                joinLinkInput.value = window.location.origin + data.join_link;
+                joinLinkContainer.classList.remove('hidden');
+                showToast('New join link generated successfully');
+            } else {
+                showToast('Error generating join link: ' + data.message, 'error');
+            }
+        }).catch(error => {
+            showToast('An unexpected error occurred: ' + error.message, 'error');
+        });
+    }
 
-function checkJoinLink(url) {
-    fetch(window.location.origin + url, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    }).then(response => response.json()).then(data => {
-        if (data.status === 'success' && data.link_valid) {
-            joinTeam(url);
-        } else {
-            showToast('Error joining team: ' + data.message, 'error');
-        }
-    });
-}
+    // Function to copy the join link
+    function copyJoinLink() {
+        let joinLinkInput = document.getElementById('joinLinkInput');
+        joinLinkInput.select();
+        joinLinkInput.setSelectionRange(0, 99999); // For mobile devices
 
-function joinTeam(url) {
-    fetch(window.location.origin + url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
-        },
-    }).then(response => response.json()).then(data => {
-        if (data.status === 'success') {
-            showToast('You have joined the team successfully');
-            location.reload();
-        } else {
-            showToast('Error joining team: ' + data.message, 'error');
-        }
-    });
-}
+        navigator.clipboard.writeText(joinLinkInput.value).then(() => {
+            showToast('Join link copied to clipboard');
+        }).catch(err => {
+            showToast('Error copying join link: ' + err.message, 'error');
+        });
+    }
+
+    // Fetch and display the top profiles for the leaderboard
+    function fetchTopScoringProfiles(simulationManagerId) {
+        fetch('/api/leaderboard/top-profiles/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ simulation_manager_id: simulationManagerId })
+        }).then(response => response.json()).then(data => {
+            if (data.status === 'success') {
+                displayTopProfiles(data.top_profiles);
+            } else {
+                showToast('Error fetching top profiles: ' + data.message, 'error');
+            }
+        }).catch(error => {
+            showToast('An unexpected error occurred: ' + error.message, 'error');
+        });
+    }
+
+    function displayTopProfiles(profiles) {
+        const profilesContainer = document.getElementById('top-profiles-container');
+        profilesContainer.innerHTML = ''; // Clear any existing content
+
+        profiles.forEach(profile => {
+            const profileElement = document.createElement('div');
+            profileElement.classList.add('profile-item', 'p-4', 'bg-gray-100', 'rounded-lg', 'shadow-md');
+
+            profileElement.innerHTML = `
+                <p><strong>Username:</strong> ${profile.username}</p>
+                <p><strong>Balance:</strong> $${profile.balance}</p>
+            `;
+
+            profilesContainer.appendChild(profileElement);
+        });
+    }
 </script>
 {% endblock %}

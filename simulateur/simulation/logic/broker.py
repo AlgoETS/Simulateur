@@ -1,9 +1,7 @@
 from simulation.logic import BuySellQueue
 from simulation.models import Stock
 
-
 class Broker:
-
     def __init__(self, name):
         self.name = name
         self.k = 0.5  # Market maker's risk tolerance and desired profit margin.

@@ -1,0 +1,4 @@
+scenario,stocks,teams,events,triggers,news,simulation_settings,state,timestamp,published_date
+ScenarioA,"AMI;BCL;CCFC","TeamA;TeamB","EventA;EventB","TriggerA;TriggerB","NewsA;NewsB",1,initialized,2024-08-01 09:00:00,2024-08-01 10:00:00
+ScenarioB,"COAK;CRYPTO;HEX","TeamC;TeamD","EventC;EventD","TriggerC;TriggerD","NewsC;NewsD",2,ongoing,2024-08-02 11:00:00,2024-08-02 12:00:00
+ScenarioC,"HRP;MINET;SMITH","TeamE;TeamF","EventE;EventF","TriggerE;TriggerF","NewsE;NewsF",3,published,2024-08-03 13:00:00,2024-08-03 14:00:00

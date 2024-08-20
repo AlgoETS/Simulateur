@@ -1,32 +1,29 @@
-from base64 import urlsafe_b64decode
 import json
+from base64 import urlsafe_b64decode
+from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
-from django.views import View
-from django.db import transaction
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
-from django.core.mail import send_mail
 from django.template.loader import render_to_string
+from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.contrib.auth.tokens import default_token_generator
-from simulation.models.team import JoinLink, Team
-from simulation.models.user_profile import UserProfile
-from django.contrib.auth.decorators import login_required
-from django.core.mail import send_mail
+from django.views import View
 from django.views.decorators.cache import cache_page
-from django.utils.decorators import method_decorator
-from django.conf import settings
-
+from django.views.decorators.csrf import csrf_exempt
 from simulation.models import UserProfile, Portfolio
+from simulation.models.team import JoinLink, Team
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', 30)
 
-@method_decorator(csrf_exempt, name='dispatch')
+
 class SignupView(View):
+    @method_decorator(csrf_exempt, name='dispatch')
     @method_decorator(cache_page(CACHE_TTL), name='dispatch')
     def get(self, request):
         return render(request, "registration/signup.html")
@@ -49,14 +46,16 @@ class SignupView(View):
 
             with transaction.atomic():
                 user = User.objects.create_user(username=username, email=email, password=password)
+                user_profile = UserProfile.objects.create(user=user)
             return JsonResponse({"status": "success"})
         except json.JSONDecodeError:
             return JsonResponse({"status": "error", "message": "Invalid JSON data"}, status=400)
         except Exception as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=400)
 
-@method_decorator(csrf_exempt, name='dispatch')
+
 class LoginView(View):
+    @method_decorator(csrf_exempt, name='dispatch')
     @method_decorator(cache_page(CACHE_TTL), name='dispatch')
     def get(self, request):
         return render(request, "registration/login.html")
@@ -75,6 +74,7 @@ class LoginView(View):
         except json.JSONDecodeError:
             return JsonResponse({"status": "error", "message": "Invalid JSON data"}, status=400)
 
+
 class LogoutView(View):
     def get(self, request):
         logout(request)
@@ -84,8 +84,8 @@ class LogoutView(View):
         logout(request)
         return JsonResponse({"status": "success"})
 
+
 class PublicProfileView(View):
-    @method_decorator(cache_page(CACHE_TTL))
     def get(self, request, user_id):
         user_profile = get_object_or_404(UserProfile, user__id=user_id)
         portfolio = get_object_or_404(Portfolio, owner=user_profile)
@@ -95,22 +95,12 @@ class PublicProfileView(View):
         }
         return render(request, "profile/profile.html", context)
 
+
 class SettingsView(View):
     @method_decorator(login_required)
-    @method_decorator(cache_page(CACHE_TTL))
-    def get(self, request):
-        user_profile = get_object_or_404(UserProfile, user=request.user)
-        portfolio = get_object_or_404(Portfolio, owner=user_profile)
-        context = {
-            "user_profile": user_profile,
-            "portfolio": portfolio,
-        }
-        return render(request, "registration/settings.html", context)
-
-    @method_decorator(login_required)
     def post(self, request):
-        user_profile = get_object_or_404(UserProfile, user=request.user)
-        portfolio = get_object_or_404(Portfolio, owner=user_profile)
+        user_profile = self.get_user_profile(request)
+        portfolio = self.get_user_portfolio(user_profile)
         if 'avatar' in request.FILES:
             user_profile.avatar = request.FILES['avatar']
         if 'email' in request.POST:
@@ -119,19 +109,33 @@ class SettingsView(View):
         if 'balance' in request.POST:
             portfolio.balance = request.POST['balance']
             portfolio.save()
-        return redirect('settings')
+        return redirect('private_profile')
+
+    def get_user_profile(self, request):
+        return get_object_or_404(UserProfile, user=request.user)
+
+    def get_user_portfolio(self, user_profile):
+        return get_object_or_404(Portfolio, owner=user_profile)
+
 
 class PrivateProfileView(View):
     @method_decorator(login_required)
     @method_decorator(cache_page(CACHE_TTL))
     def get(self, request):
-        user_profile = get_object_or_404(UserProfile, user=request.user)
-        portfolio = get_object_or_404(Portfolio, owner=user_profile)
+        user_profile = self.get_user_profile(request)
+        portfolio = self.get_user_portfolio(user_profile)
         context = {
             "user_profile": user_profile,
             "portfolio": portfolio,
         }
         return render(request, "profile/profile.html", context)
+
+    def get_user_profile(self, request):
+        return get_object_or_404(UserProfile, user=request.user)
+
+    def get_user_portfolio(self, user_profile):
+        return get_object_or_404(Portfolio, owner=user_profile)
+
 
 class ForgotPasswordView(View):
     def get(self, request):
@@ -156,14 +160,10 @@ class ForgotPasswordView(View):
         except User.DoesNotExist:
             return JsonResponse({"status": "error", "message": "Email not registered"}, status=400)
 
+
 class PasswordResetConfirmView(View):
     def get(self, request, uidb64, token):
-        try:
-            uid = urlsafe_b64decode(uidb64).decode()
-            user = User.objects.get(pk=uid)
-        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-            user = None
-
+        user = self.get_user_from_uid(uidb64)
         if user is not None and default_token_generator.check_token(user, token):
             context = {
                 'uidb64': uidb64,
@@ -177,9 +177,7 @@ class PasswordResetConfirmView(View):
         try:
             data = json.loads(request.body)
             password = data.get("password")
-            uid = urlsafe_base64_decode(uidb64).decode()
-            user = User.objects.get(pk=uid)
-
+            user = self.get_user_from_uid(uidb64)
             if user is not None and default_token_generator.check_token(user, token):
                 user.set_password(password)
                 user.save()
@@ -189,51 +187,64 @@ class PasswordResetConfirmView(View):
         except json.JSONDecodeError:
             return JsonResponse({"status": "error", "message": "Invalid JSON data"}, status=400)
 
-@method_decorator(csrf_exempt, name='dispatch')
+    def get_user_from_uid(self, uidb64):
+        try:
+            uid = urlsafe_b64decode(uidb64).decode()
+            return User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return None
+
+
 class JoinTeamView(View):
-    @method_decorator(cache_page(CACHE_TTL), name='dispatch')
-    def get(self, request, *args, **kwargs):
-        teams = Team.objects.all()
-        team_id = request.GET.get('team_id', '')
-        key = request.GET.get('key', '')
+    def get(self, request):
+        teams = Team.objects.prefetch_related('members__portfolios')
         portfolios = Portfolio.objects.all()
 
-        teams_balance = []
-        for team in teams:
-            balance = 0
-            for member in team.members.all():
-                try:
-                    balance += portfolios.get(owner=member).balance
-                except Portfolio.DoesNotExist:
-                    balance += 0  # Assuming balance is 0 if Portfolio does not exist
-            teams_balance.append({
+        teams_balance = [
+            {
                 'team': team,
-                'balance': balance,
-            })
+                'balance': sum(
+                    portfolio.balance
+                    for member in team.members.all()
+                    for portfolio in member.portfolios.all()
+                )
+            }
+            for team in teams
+        ]
 
         context = {
             'teams': teams,
-            'team_id': team_id,
-            'key': key,
+            'team_id': request.GET.get('team_id', ''),
+            'key': request.GET.get('key', ''),
             'teams_balance': teams_balance,
         }
         return render(request, "registration/join_team.html", context)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         team_id = request.POST.get('team_id')
         key = request.POST.get('key')
         team = get_object_or_404(Team, id=team_id)
         join_link = get_object_or_404(JoinLink, team=team, key=key)
 
         if join_link.is_expired():
-            return JsonResponse({'status': 'error', 'message': 'Link has expired'}, status=400)
+            messages.error(request, "This join link has expired.")
+            return redirect("join_team")
 
-        user = request.user
-        user_profile = get_object_or_404(UserProfile, user=user)
-        if user_profile.team:
-            return JsonResponse({'status': 'error', 'message': 'You are already in a team'}, status=400)
+        user_profile = self.get_user_profile(request)
+        if user_profile.teams.filter(id=team_id).exists():
+            messages.info(request, "You are already a member of this team.")
+            return redirect("team_dashboard")
 
-        user_profile.team = team
-        user_profile.save()
-        team.members.add(user_profile)
-        return JsonResponse({'status': 'success', 'message': f'Joined team {team.name}'})
+        try:
+            with transaction.atomic():
+                user_profile.teams.add(team)
+                user_profile.save()
+                team.members.add(user_profile)
+            messages.success(request, "You have successfully joined the team.")
+            return redirect("team_dashboard")
+        except Exception as e:
+            messages.error(request, "An error occurred while joining the team.")
+            return redirect("join_team")
+
+    def get_user_profile(self, request):
+        return get_object_or_404(UserProfile, user=request.user)

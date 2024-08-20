@@ -1,0 +1,126 @@
+<div id="main-content"
+     class="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-auto p-4">
+    {% for stock in stocks %}
+        <div class="bg-white p-4 rounded-lg shadow-lg flex flex-col card relative" style="height: 300px;">
+            <h3 class="text-base font-semibold mb-2 truncate">{{ stock.name }} ({{ stock.ticker }})</h3>
+            <div id="loader-{{ stock.id }}" class="loader absolute inset-0 flex items-center justify-center">
+                <div class="spinner"></div>
+            </div>
+            <div id="chart-{{ stock.id }}" class="w-full flex-1 chart"></div>
+        </div>
+    {% endfor %}
+</div>
+
+<script>
+    let charts = {};
+    let updateBuffer = {}; // Buffer to store incoming updates
+
+    function initCharts() {
+        const stocks = {{ stocks|safe }};
+        stocks.forEach(stock => {
+            const chartElement = document.getElementById(`chart-${stock.id}`);
+            const loaderElement = document.getElementById(`loader-${stock.id}`);
+            const chart = LightweightCharts.createChart(chartElement, {
+                width: chartElement.clientWidth - 30,
+                height: chartElement.clientHeight - 30, // Adjust for padding
+                layout: {
+                    backgroundColor: '#ffffff',
+                    textColor: '#000000',
+                },
+                grid: {
+                    vertLines: {
+                        color: '#e0e0e0',
+                    },
+                    horzLines: {
+                        color: '#e0e0e0',
+                    },
+                },
+                priceScale: {
+                    borderColor: '#cccccc',
+                },
+                timeScale: {
+                    borderColor: '#cccccc',
+                    timeVisible: true,
+                    secondsVisible: false,
+                },
+            });
+
+            const candlestickSeries = chart.addCandlestickSeries();
+            const data = stock.stock_prices.map(price => ({
+                time: Math.floor(new Date(price.timestamp).getTime() / 1000), // Ensure time is in seconds
+                open: price.open_price,
+                high: price.high_price,
+                low: price.low_price,
+                close: price.close_price,
+            }));
+
+            candlestickSeries.setData(data);
+
+            charts[stock.ticker] = {
+                chart: chart,
+                series: candlestickSeries,
+                lastUpdateTime: data.length > 0 ? data[data.length - 1].time : null // Store last update time
+            };
+
+            // Hide the loader after initial data is set
+            loaderElement.style.display = 'none';
+        });
+    }
+
+    function bufferUpdate(message) {
+        const { ticker } = message;
+        if (!updateBuffer[ticker]) {
+            updateBuffer[ticker] = [];
+        }
+        updateBuffer[ticker].push(message);
+        processBuffer(ticker);
+    }
+
+    function processBuffer(ticker) {
+        if (!charts[ticker] || !charts[ticker].series) {
+            console.warn(`Chart for ${ticker} not found.`);
+            return;
+        }
+
+        const chartInfo = charts[ticker];
+        const buffer = updateBuffer[ticker];
+
+        buffer.forEach((message) => {
+            const { timestamp, open, high, low, close } = message;
+            const ohlcData = {
+                time: Math.floor(new Date(timestamp).getTime() / 1000), // Ensure time is in seconds
+                open: open,
+                high: high,
+                low: low,
+                close: close
+            };
+
+            if (chartInfo.lastUpdateTime && ohlcData.time <= chartInfo.lastUpdateTime) {
+                ohlcData.time = chartInfo.lastUpdateTime + 1;
+            }
+
+            chartInfo.series.update(ohlcData);
+            chartInfo.lastUpdateTime = ohlcData.time;
+        });
+
+        updateBuffer[ticker] = []; // Clear the buffer after processing
+    }
+
+    // Handle window resize using ResizeObserver
+    Object.values(charts).forEach(({ chart }) => {
+        const chartElement = chart.container;
+
+        const resizeObserver = new ResizeObserver(() => {
+            chart.resize(chartElement.clientWidth, chartElement.clientHeight);
+        });
+
+        resizeObserver.observe(chartElement);
+    });
+
+    // Fallback for older browsers or if ResizeObserver isn't supported
+    window.addEventListener('resize', () => {
+        Object.values(charts).forEach(({ chart }) => {
+            chart.resize(chart.paneSize().width - 30, chart.paneSize().height - 30);
+        });
+    });
+</script>

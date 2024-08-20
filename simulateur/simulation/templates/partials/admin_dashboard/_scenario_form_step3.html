@@ -1,0 +1,55 @@
+<div class="step hidden" id="step3Content">
+    <div class="flex justify-between mb-4">
+        <h4 class="text-lg font-medium text-gray-900">Teams and Members</h4>
+    </div>
+    <div id="teamsContainer"></div>
+    <button type="button" onclick="addTeam()"
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">Add Team
+    </button>
+    <button type="button" onclick="submitStep3()"
+            class="bg-blue-500 text-white font-bold py-2 px-4 rounded">Next
+    </button>
+</div>
+
+<script>
+    function submitStep3() {
+        const teams = [];
+        const teamElements = document.querySelectorAll("#teamsContainer .team");
+
+        teamElements.forEach(team => {
+            const teamData = {
+                name: team.querySelector(".teamName").value,
+                members: team.querySelector(".teamMembers").value,
+            };
+            teams.push(teamData);
+        });
+
+        const data = {
+            scenario_id: scenarioId,
+            teams: teams,
+        };
+
+        toggleLoading(true);
+        fetch(`/api/scenario-manager/${scenarioId}/teams/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken"),
+            },
+            body: JSON.stringify(data),
+        })
+        .then(response => response.json())
+        .then(data => {
+            toggleLoading(false);
+            if (data.status === 'success') {
+                nextStep();
+            } else {
+                alert("Failed to add teams: " + data.message);
+            }
+        })
+        .catch(error => {
+            toggleLoading(false);
+            alert("Failed to add teams: " + error.message);
+        });
+    }
+</script>

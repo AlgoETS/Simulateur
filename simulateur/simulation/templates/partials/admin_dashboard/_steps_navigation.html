@@ -1,0 +1,33 @@
+<div class="w-full mb-4">
+    <div class="flex">
+        <div class="flex-1 p-2 text-center border-b-4" id="step1" onclick="goToStep(1)">Step 1</div>
+        <div class="flex-1 p-2 text-center border-b" id="step2" onclick="goToStep(2)">Step 2</div>
+        <div class="flex-1 p-2 text-center border-b" id="step3" onclick="goToStep(3)">Step 3</div>
+        <div class="flex-1 p-2 text-center border-b" id="step4" onclick="goToStep(4)">Step 4</div>
+        <div class="flex-1 p-2 text-center border-b" id="step5" onclick="goToStep(5)">Step 5</div>
+    </div>
+</div>
+<script>
+    let currentStep = 1;
+
+    function nextStep() {
+        if (currentStep < 5) {
+            document.getElementById(`step${currentStep}Content`).classList.add("hidden");
+            document.getElementById(`step${currentStep}`).classList.remove("border-b-4");
+            currentStep++;
+            document.getElementById(`step${currentStep}Content`).classList.remove("hidden");
+            document.getElementById(`step${currentStep}`).classList.add("border-b-4");
+        }
+    }
+
+    function goToStep(step) {
+        document.getElementById(`step${currentStep}Content`).classList.add("hidden");
+        document.getElementById(`step${currentStep}`).classList.remove("border-b-4");
+        currentStep = step;
+        document.getElementById(`step${currentStep}Content`).classList.remove("hidden");
+        document.getElementById(`step${currentStep}`).classList.add("border-b-4");
+        if (currentStep === 5) {
+            reviewDetails();
+        }
+    }
+</script>
