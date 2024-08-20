@@ -300,10 +300,12 @@ class GroupedPerformanceView(View):
 
 class PortfolioBalanceView(View):
     @method_decorator(login_required)
-    def get(self, request):
+    def post(self, request):
         try:
             user_profile = request.user.userprofile
-            portfolio = Portfolio.objects.get(owner=user_profile)
+            data = json.loads(request.body)
+            simulation_manager_id = data.get('simulation_manager_id')
+            portfolio = Portfolio.objects.get(owner=user_profile, simulation_manager=simulation_manager_id)
 
             return JsonResponse({'status': 'success', 'balance': str(portfolio.balance)}, status=200)
         except Portfolio.DoesNotExist:

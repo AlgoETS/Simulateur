@@ -86,7 +86,6 @@ class LogoutView(View):
 
 
 class PublicProfileView(View):
-    @method_decorator(cache_page(CACHE_TTL))
     def get(self, request, user_id):
         user_profile = get_object_or_404(UserProfile, user__id=user_id)
         portfolio = get_object_or_404(Portfolio, owner=user_profile)

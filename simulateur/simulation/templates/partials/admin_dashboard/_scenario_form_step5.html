@@ -1,0 +1,50 @@
+<div class="step hidden" id="step5Content">
+    <h4 class="text-xl font-bold text-gray-900 mb-4">Review Details</h4>
+    <div id="reviewContainer"></div>
+    <button type="button" onclick="submitScenario()"
+            class="bg-green-500 text-white font-bold py-2 px-4 rounded">Submit
+    </button>
+</div>
+
+<script>
+    function reviewDetails() {
+        // Prepare a summary of all the input data for review in Step 5
+        const reviewContainer = document.getElementById("reviewContainer");
+        reviewContainer.innerHTML = `
+            <div class="mb-4">
+                <h5 class="text-lg font-medium text-gray-900">Scenario Details</h5>
+                <p><strong>Name:</strong> ${document.getElementById("scenarioName").value}</p>
+                <p><strong>Description:</strong> ${document.getElementById("scenarioDescription").value}</p>
+                <p><strong>Timer Step:</strong> ${document.getElementById("timerStep").value} ${document.getElementById("timerStepUnit").value}</p>
+                <p><strong>Interval:</strong> ${document.getElementById("interval").value} ${document.getElementById("intervalUnit").value}</p>
+                <p><strong>Noise Function:</strong> ${document.getElementById("noiseFunction").value}</p>
+            </div>
+        `;
+    }
+
+    function submitScenario() {
+        toggleLoading(true);
+        fetch(`/api/scenario-manager/${scenarioId}/`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken"),
+            },
+            body: JSON.stringify({state: 'published'}),
+        })
+        .then(response => response.json())
+        .then(data => {
+            toggleLoading(false);
+            if (data.status === "success") {
+                alert("Scenario created successfully");
+                location.reload(); // Reload the page to update the list of scenarios
+            } else {
+                alert("Failed to submit scenario: " + data.message);
+            }
+        })
+        .catch(error => {
+            toggleLoading(false);
+            alert("Failed to submit scenario: " + error.message);
+        });
+    }
+</script>

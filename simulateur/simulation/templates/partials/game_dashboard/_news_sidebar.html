@@ -1,0 +1,33 @@
+<div id="news-sidebar" class="flex md:flex-shrink-0 w-1/4 bg-white p-4 border-l border-gray-200 overflow-auto">
+    <div class="w-full">
+        <h2 class="text-xl font-semibold mb-4">News</h2>
+        <!-- News List -->
+        <ul class="divide-y divide-gray-200" id="news-list">
+            {% for news_item in news_items %}
+                <li class="p-2">
+                    <span class="font-semibold">{{ news_item.content }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<script>
+    function updateNews(newsItems) {
+        const newsList = document.getElementById('news-list');
+        const newsTicker = document.getElementById('news-ticker');
+        newsList.innerHTML = '';
+        newsTicker.innerHTML = '';
+        newsItems.forEach(newsItem => {
+            const newsListItem = document.createElement('li');
+            newsListItem.className = 'p-2';
+            newsListItem.innerHTML = `<span class="font-semibold">${newsItem.content}</span>`;
+            newsList.appendChild(newsListItem);
+
+            const newsTickerItem = document.createElement('span');
+            newsTickerItem.className = 'mx-4';
+            newsTickerItem.textContent = newsItem.content;
+            newsTicker.appendChild(newsTickerItem);
+        });
+    }
+</script>

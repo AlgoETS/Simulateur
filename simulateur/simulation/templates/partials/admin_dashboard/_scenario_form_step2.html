@@ -1,0 +1,71 @@
+<div class="step hidden" id="step2Content">
+    <div class="flex justify-between mb-4">
+        <h4 class="text-lg font-medium text-gray-900">Company and Stock Details</h4>
+        <button type="button" onclick="generateCompanyAndStock()"
+                class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
+            Generate with AI
+        </button>
+    </div>
+    <div id="companiesContainer"></div>
+    <button type="button" onclick="addCompanyAndStock()"
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">Add Company
+    </button>
+    <button type="button" onclick="submitStep2()"
+            class="bg-blue-500 text-white font-bold py-2 px-4 rounded">Next
+    </button>
+</div>
+
+<script>
+    function submitStep2() {
+        const companies = [];
+        const companyElements = document.querySelectorAll("#companiesContainer .company");
+        const stockElements = document.querySelectorAll("#companiesContainer .stock");
+
+        companyElements.forEach(company => {
+            const companyData = {
+                name: company.querySelector(".companyName").value,
+                backstory: company.querySelector(".companyBackstory").value,
+                sector: company.querySelector(".companySector").value,
+                country: company.querySelector(".companyCountry").value,
+                industry: company.querySelector(".companyIndustry").value,
+                stock: {
+                    ticker: stockElements.querySelector(".stockTicker").value,
+                    price: stockElements.querySelector(".stockPrice").value,
+                    open_price: stockElements.querySelector(".stockOpenPrice").value,
+                    high_price: stockElements.querySelector(".stockHighPrice").value,
+                    low_price: stockElements.querySelector(".stockLowPrice").value,
+                    close_price: stockElements.querySelector(".stockClosePrice").value,
+                }
+            };
+            companies.push(companyData);
+        });
+
+        const data = {
+            scenario_id: scenarioId,
+            companies: companies,
+        };
+
+        toggleLoading(true);
+        fetch("/api/scenario-manager/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken"),
+            },
+            body: JSON.stringify(data),
+        })
+        .then(response => response.json())
+        .then(data => {
+            toggleLoading(false);
+            if (data.status === 'success') {
+                nextStep();
+            } else {
+                alert("Failed to add companies: " + data.message);
+            }
+        })
+        .catch(error => {
+            toggleLoading(false);
+            alert("Failed to add companies: " + error.message);
+        });
+    }
+</script>

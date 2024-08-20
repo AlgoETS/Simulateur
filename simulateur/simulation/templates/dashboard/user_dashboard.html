@@ -13,8 +13,8 @@
                     <h2 class="text-2xl font-bold text-indigo-900 mb-4">Stocks List</h2>
                     <form id="stockForm">
                         {% csrf_token %}
-                        {% include "partials/_simulation_manager_selector.html" %}
-                        {% include "partials/_stock_selector.html" %}
+                        {% include "partials/user_dashboard/_simulation_manager_selector.html" %}
+                        {% include "partials/user_dashboard/_stock_selector.html" %}
                         <input type="hidden" id="transaction_type" name="transaction_type" value="buy">
                         <div class="mb-4">
                             <input type="number" id="amount" name="amount"
@@ -44,17 +44,17 @@
 
             <!-- Order History  -->
             <!-- Holdings -->
-            {% include "partials/_user_holdings.html" %}
+            {% include "partials/user_dashboard/_user_holdings.html" %}
 
             <div class="col-span-1 md:col-span-2">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {% include "partials/_order_history.html" %}
+                    {% include "partials/user_dashboard/_order_history.html" %}
                 </div>
             </div>
         </div>
 
         <!-- Stats Chart Container -->
-        {% include "partials/_user_charts.html" %}
+        {% include "partials/user_dashboard/_user_charts.html" %}
 
         <script>
             document.addEventListener('DOMContentLoaded', () => {
