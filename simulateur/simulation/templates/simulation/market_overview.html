@@ -1,5 +1,9 @@
 {% extends 'includes/base_generic.html' %}
 
+{% load custom_filters %}
+
+{% block title %}Market Overview{% endblock %}
+
 {% block content %}
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-8">
         <h1 class="text-4xl font-extrabold text-gray-900 mb-8">{{ title }}</h1>
@@ -87,7 +91,13 @@
                                 {% for member in team.members.all %}
                                     <li class="ml-4">
                                         <p class="text-sm text-gray-700">{{ member.user.username }}</p>
-                                        <p class="text-sm text-gray-500">Balance: ${{ member.portfolio.balance }}</p>
+                                        {% with portfolio=portfolios|get_member_portfolio:member %}
+                                            {% if portfolio %}
+                                                <p class="text-sm text-gray-500">Balance: ${{ portfolio.balance }}</p>
+                                            {% else %}
+                                                <p class="text-sm text-gray-500">No portfolio available</p>
+                                            {% endif %}
+                                        {% endwith %}
                                     </li>
                                 {% endfor %}
                             </ul>

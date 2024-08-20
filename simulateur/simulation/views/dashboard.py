@@ -315,6 +315,8 @@ class MarketOverviewView(View):
             if (latest_price := StockPriceHistory.objects.filter(stock=stock).order_by('-timestamp').first())
         }
 
+        portfolio = Portfolio.objects.filter(simulation_manager=simulation_manager).all()
+
         context = {
             "title": "Market Overview",
             "stocks": stocks,
@@ -326,6 +328,7 @@ class MarketOverviewView(View):
             "transactions": TransactionHistory.objects.filter(simulation_manager=simulation_manager),
             "teams": simulation_manager.teams.all(),
             "triggers": simulation_manager.triggers.all(),
+            "portfolios": portfolio
         }
         return render(request, "simulation/market_overview.html", context)
 
