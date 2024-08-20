@@ -183,3 +183,13 @@ zope-interface==7.0.1
 twisted[tls,http2]
 pandas
 pandas_ta
+minio
+django-storages
+boto3
+celery
+redis
+django-celery-beat
+django-celery-results
+python-decouple
+flower
+django_redis

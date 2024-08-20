@@ -1,0 +1,13 @@
+<h2>Create a New Strategy</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Create Strategy</button>
+</form>
+
+<h2>Your Strategies</h2>
+<ul>
+    {% for strategy in strategies %}
+        <li>{{ strategy.name }} - {{ strategy.description }}</li>
+    {% endfor %}
+</ul>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strategy Output Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            width: 80%;
+            margin: auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label, select {
+            margin: 10px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Search for Strategy Outputs</h2>
+    <form method="GET" action="{% url 'search_chart' %}">
+        <label for="strategy">Strategy:</label>
+        <select name="strategy" id="strategy">
+            <option value="">Select a strategy</option>
+            {% for strategy in strategies %}
+            <option value="{{ strategy.id }}" {% if strategy.id|stringformat:"s" == request.GET.strategy %}selected{% endif %}>{{ strategy.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="ticker">Ticker:</label>
+        <input type="text" id="ticker" name="ticker" value="{{ request.GET.ticker }}">
+
+        <button type="submit">Search</button>
+    </form>
+
+    {% if strategy_outputs %}
+    <h3>Results</h3>
+    <table>
+        <thead>
+        <tr>
+            <th>Strategy</th>
+            <th>Ticker</th>
+            <th>Output Type</th>
+            <th>Link</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for output in strategy_outputs %}
+        <tr>
+            <td>{{ output.strategy.name }}</td>
+            <td>{{ output.ticker }}</td>
+            <td>{{ output.get_output_type_display }}</td>
+            <td><a href="{{ output.file_path }}" target="_blank">View Output</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No results found</p>
+    {% endif %}
+</div>
+</body>
+</html>

@@ -6,24 +6,12 @@ services:
     depends_on:
       - redis
       - minio
-      - influxdb
       - db
       - ollama
     ports:
       - "8000:8000"
-    environment:
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - DATABASE_ENGINE=postgresql
-      - POSTGRES_DB=${POSTGRES_DB:-postgres}
-      - POSTGRES_USER=${POSTGRES_USER:-postgres}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
-      - POSTGRES_HOST=${POSTGRES_HOST:-db}
-      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
-      - OLLAMA_API_URL=http://ollama:11434
-      - MINIO_URL=http://minio:9000
-      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
-      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
+    env_file:
+      - .env
     networks:
       - app-network
     profiles:
@@ -37,7 +25,7 @@ services:
       start_period: 40s
 
   redis:
-    image: redis:6
+    image: redis:7
     ports:
       - "6379:6379"
     networks:
@@ -93,6 +81,26 @@ services:
       timeout: 10s
       retries: 5
 
+  celery:
+    build: .
+    command: celery -A simulateur worker -l info
+    volumes:
+      - .:/workspace
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    networks:
+      - app-network
+    profiles:
+      - all
+      - celery
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A simulateur status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   ollama:
     image: ollama/ollama:latest
     ports:
@@ -107,7 +115,7 @@ services:
     pull_policy: always
     tty: true
     restart: always
-    entrypoint: [ "/usr/bin/bash", "/entrypoint.sh" ]  # Use the custom entrypoint script
+    entrypoint: [ "/usr/bin/bash", "/entrypoint.sh" ]
 
 volumes:
   minio_data:
@@ -115,3 +123,4 @@ volumes:
 
 networks:
   app-network:
+    driver: bridge
