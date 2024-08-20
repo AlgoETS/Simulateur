@@ -181,3 +181,5 @@ whitenoise==6.7.0
 wsproto==1.2.0
 zope-interface==7.0.1
 twisted[tls,http2]
+pandas
+pandas_ta
