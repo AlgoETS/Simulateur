@@ -60,6 +60,8 @@ from simulation.api.trigger import TriggerManagement
 
 from simulation.api.stock import StockManagement, StockPriceHistoryView
 
+from simulation.api.portfolio import TopScoringProfilesView, TopScoringTeamsView
+
 # Initialize the DefaultRouter
 router = DefaultRouter()
 
@@ -167,6 +169,9 @@ api_patterns = [
 
     path('user/grouped-performance/', GroupedPerformanceView.as_view(), name='grouped_performance'),
     path('user/balance/', PortfolioBalanceView.as_view(), name='portfolio-balance'),
+
+    path('leaderboard/top-profiles/', TopScoringProfilesView.as_view(), name='top_scoring_profiles'),
+    path('leaderboard/top-teams/', TopScoringTeamsView.as_view(), name='top_scoring_teams'),
 ]
 
 urlpatterns = [

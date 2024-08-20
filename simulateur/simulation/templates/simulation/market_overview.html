@@ -1,6 +1,4 @@
 {% extends 'includes/base_generic.html' %}
-{% load custom_filters %}
-
 
 {% block content %}
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-8">
@@ -16,19 +14,9 @@
                                 <p class="text-gray-700 font-semibold cursor-pointer"
                                    onclick="toggleBackstory('{{ stock.id }}')">{{ stock.company.name }}
                                     ({{ stock.ticker }})</p>
-                                <p class="text-sm text-gray-500">Sector: {{ stock.company.sector }} -
-                                    Industry: {{ stock.company.industry }}</p>
-                                {% if latest_prices|length > 0 %}
-                                    <p class="text-sm text-gray-500">Current Price:
-                                        ${{ latest_prices[stock.id].price }}</p>
-                                    <p class="text-sm text-green-600">Open:
-                                        ${{ latest_prices[stock.id].open_price }}</p>
-                                    <p class="text-sm text-red-600">Low: ${{ latest_prices[stock.id].low_price }}</p>
-                                    <p class="text-sm text-green-600">High:
-                                        ${{ latest_prices[stock.id].high_price }}</p>
-                                {% else %}
-                                    <p class="text-sm text-gray-500">Price data not available</p>
-                                {% endif %}
+                                <p class="text-sm text-gray-500">Sector: {{ stock.company.sector }}</p>
+                                <p class="text-sm text-gray-500">Industry: {{ stock.company.industry }}</p>
+                                <p class="text-sm text-gray-500" id="price-{{ stock.id }}">Loading price data...</p>
                             </div>
                             <div id="backstory-{{ stock.id }}"
                                  class="hidden absolute top-0 right-0 bg-white p-4 shadow-lg rounded-lg w-64 z-10 text-sm text-gray-500">
@@ -125,14 +113,68 @@
     </div>
 
     <script>
-        function toggleDetails(teamId) {
-            const details = document.getElementById(`details-${teamId}`);
-            details.classList.toggle('hidden');
+        // Function to get the value of a query parameter by name
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
         }
+
+        function updateStockPrices() {
+            // Get the simulation_manager_id from the URL query parameter
+            const simulationManagerId = getQueryParam('simulation_manager_id') || {{ simulation_manager_id }};
+
+            // Select all elements that have IDs starting with "price-"
+            const stockElements = document.querySelectorAll('[id^="price-"]');
+
+            // Loop through each stock element and fetch the price data
+            stockElements.forEach(stockElement => {
+                const stockId = stockElement.id.split('-')[1]; // Extract stock ID from the element's ID
+
+                // Fetch stock price data from the API
+                fetch(`/api/stock/price/${stockId}/?simulation_manager_id=${simulationManagerId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success' && data.data) {
+                            const prices = data.data;
+                            stockElement.innerHTML = `
+                        <p class="text-sm text-gray-500">Current Price: $${prices.close_price.toFixed(2)}</p>
+                        <p class="text-sm text-green-600">Open: $${prices.open_price.toFixed(2)}</p>
+                        <p class="text-sm text-red-600">Low: $${prices.low_price.toFixed(2)}</p>
+                        <p class="text-sm text-green-600">High: $${prices.high_price.toFixed(2)}</p>
+                    `;
+                        } else {
+                            stockElement.innerHTML = "<p class='text-sm text-gray-500'>Price data not available</p>";
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching stock prices:', error);
+                        stockElement.innerHTML = "<p class='text-sm text-gray-500'>Error fetching data</p>";
+                    });
+            });
+        }
+
+        // Call the function when the document is fully loaded
+        document.addEventListener('DOMContentLoaded', function () {
+            updateStockPrices();
+        });
+
 
         function toggleBackstory(stockId) {
             const backstory = document.getElementById(`backstory-${stockId}`);
-            backstory.classList.toggle('hidden');
+            if (backstory.classList.contains('hidden')) {
+                backstory.classList.remove('hidden');
+            } else {
+                backstory.classList.add('hidden');
+            }
+        }
+
+        function toggleDetails(teamId) {
+            const details = document.getElementById(`details-${teamId}`);
+            if (details.classList.contains('hidden')) {
+                details.classList.remove('hidden');
+            } else {
+                details.classList.add('hidden');
+            }
         }
     </script>
 {% endblock %}

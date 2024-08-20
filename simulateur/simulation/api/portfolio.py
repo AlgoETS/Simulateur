@@ -5,6 +5,7 @@ from decimal import Decimal
 
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from django.db.models import Sum, Q
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views import View
@@ -12,6 +13,7 @@ from simulation.logic.BuySellQueue import buy_sell_queue
 from simulation.models import Portfolio, Stock, Order, TransactionHistory, SimulationManager, StockPriceHistory, \
     StockPortfolio
 from simulation.serializers import PortfolioSerializer
+from simulation.models import UserProfile, Team
 
 
 class PortfolioView(View):
@@ -164,13 +166,34 @@ class SellStock(View):
 class StockPrice(View):
     def get(self, request, stock_id):
         try:
-            stock = Stock.objects.get(id=stock_id)
+            simulation_manager_id = request.GET.get('simulation_manager_id')
+            # Fetch the stock based on ID
+            stock = SimulationManager.objects.get(id=simulation_manager_id).stocks.get(id=stock_id)
+
+            # Get the latest price history for the stock
             latest_price_history = StockPriceHistory.objects.filter(stock=stock).order_by('-timestamp').first()
             if not latest_price_history:
-                return JsonResponse({'status': 'error', 'message': 'No price history available for this stock'},
-                                    status=404)
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'No price history available for this stock'
+                }, status=404)
 
-            return JsonResponse({'price': latest_price_history.close_price})
+            # Return detailed price information
+            return JsonResponse({
+                'status': 'success',
+                'data': {
+                    'stock_id': stock.id,
+                    'company': stock.company.name,
+                    'ticker': stock.ticker,
+                    'timestamp': latest_price_history.timestamp,
+                    'open_price': latest_price_history.open_price,
+                    'high_price': latest_price_history.high_price,
+                    'low_price': latest_price_history.low_price,
+                    'close_price': latest_price_history.close_price,
+                    'volatility': stock.volatility,
+                    'liquidity': stock.liquidity
+                }
+            })
 
         except Stock.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'Stock not found'}, status=404)
@@ -310,5 +333,72 @@ class PortfolioBalanceView(View):
             return JsonResponse({'status': 'success', 'balance': str(portfolio.balance)}, status=200)
         except Portfolio.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'Portfolio not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+class TopScoringProfilesView(View):
+    @method_decorator(login_required)
+    def post(self, request):
+        try:
+            user_profile = request.user.userprofile
+            data = json.loads(request.body)
+            simulation_manager_id = data.get('simulation_manager_id')
+            top = data.get('top', 5)
+
+            top_profiles = Portfolio.objects.filter(simulation_manager=simulation_manager_id).order_by('-balance')[:top]
+
+            top_profiles_data = []
+
+            for profile in top_profiles:
+                top_profiles_data.append({
+                    'username': profile.owner.user.username,
+                    'balance': str(profile.balance)
+                })
+
+            return JsonResponse({'status': 'success', 'top_profiles': top_profiles_data}, status=200)
+
+        except UserProfile.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'User Profile not found'}, status=404)
+        except Portfolio.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Portfolio not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+class TopScoringTeamsView(View):
+    @method_decorator(login_required)
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            simulation_manager_id = data.get('simulation_manager_id')
+
+            # Filter and aggregate team balances by summing member portfolios within each team
+            top_teams = Team.objects.annotate(
+                total_balance=Sum('members__portfolio__balance', filter=Q(members__portfolio__simulation_manager_id=simulation_manager_id))
+            ).order_by('-total_balance')[:5]
+
+            teams_data = []
+            for team in top_teams:
+                members = team.members.filter(
+                    portfolio__simulation_manager_id=simulation_manager_id
+                ).order_by('-portfolio__balance')
+
+                members_data = []
+                for member in members:
+                    portfolio = member.portfolio_set.filter(simulation_manager_id=simulation_manager_id).first()
+                    if portfolio:
+                        members_data.append({
+                            'username': member.user.username,
+                            'balance': str(portfolio.balance)
+                        })
+
+                teams_data.append({
+                    'team_name': team.name,
+                    'total_balance': str(team.total_balance),
+                    'leaderboard': members_data  # Sorted list of members within the team by balance
+                })
+
+            return JsonResponse({'status': 'success', 'top_teams': teams_data}, status=200)
+
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)

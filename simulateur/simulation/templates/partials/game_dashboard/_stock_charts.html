@@ -120,7 +120,7 @@
     // Fallback for older browsers or if ResizeObserver isn't supported
     window.addEventListener('resize', () => {
         Object.values(charts).forEach(({ chart }) => {
-            chart.resize(chart.container.clientWidth, chart.container.clientHeight);
+            chart.resize(chart.paneSize().width - 30, chart.paneSize().height - 30);
         });
     });
 </script>

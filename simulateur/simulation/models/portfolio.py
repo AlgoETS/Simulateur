@@ -3,12 +3,12 @@ from simulation.models import StockPriceHistory
 
 
 class Portfolio(models.Model):
-    owner = models.OneToOneField(
+    owner = models.ForeignKey(
         "UserProfile",
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        related_name="portfolio",
+        related_name="portfolios",
     )
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     simulation_manager = models.ForeignKey("SimulationManager", on_delete=models.CASCADE, related_name='portfolios')
@@ -18,6 +18,7 @@ class Portfolio(models.Model):
 
     class Meta:
         verbose_name_plural = "Portfolios"
+        unique_together = ("owner", "simulation_manager")
 
 
 class StockPortfolio(models.Model):

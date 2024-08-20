@@ -175,6 +175,7 @@ class AdminDashboardView(AdminOnlyMixin, View):
         return render(request, "dashboard/admin_dashboard.html", context)
 
 
+
 class TeamDashboardView(View):
     def get(self, request):
         user_profile = get_user_profile(request)
@@ -188,16 +189,26 @@ class TeamDashboardView(View):
 
         portfolios = Portfolio.objects.filter(owner__teams=team)
         members = team.members.all()
+        team_leader = members.filter(role="team_leader").first()
 
         context = {
             "title": "Team Dashboard",
             "team": team,
             "portfolios": portfolios,
             "members": members,
+            "team_leader": team_leader.user.username if team_leader else "N/A",
             "team_balance": sum(portfolio.balance for portfolio in portfolios),
         }
         return render(request, "dashboard/team_dashboard.html", context)
 
+    def get_user_profile(request):
+        try:
+            return request.user.userprofile
+        except Exception:
+            return None
+
+    def get_user_team(user_profile):
+        return user_profile.teams.first()
 
 class GameDashboardView(View):
     @method_decorator(cache_page(CACHE_TTL))
@@ -282,45 +293,39 @@ class GameDashboardView(View):
 
 
 class MarketOverviewView(View):
-    @method_decorator(cache_page(CACHE_TTL))
     def get(self, request):
-        # Get the simulation_manager_id from the query parameters
         simulation_manager_id = request.GET.get('simulation_manager_id', 1)
 
-        # Filter data based on the selected simulation manager if provided
-        if simulation_manager_id:
-            simulation_manager = SimulationManager.objects.filter(id=simulation_manager_id).first()
-            if simulation_manager:
-                stocks = simulation_manager.stocks.select_related('company').all()
-
-                # Get the latest price for each stock
-                latest_prices = {}
-                for stock in stocks:
-                    latest_price = StockPriceHistory.objects.filter(stock=stock).order_by('-timestamp').first()
-                    if latest_price:
-                        latest_prices[stock.id] = latest_price
-
-                events = simulation_manager.events.all()
-                companies = simulation_manager.stocks.values_list('company', flat=True).distinct()
-                news_items = simulation_manager.news.order_by('-published_date')[:5]
-                transactions = TransactionHistory.objects.filter(simulation_manager=simulation_manager)
-                teams = simulation_manager.teams.all()
-            else:
-                messages.error(request, "Selected simulation manager does not exist.")
-                return redirect(reverse("home"))
-        else:
-            messages.error(request, "No simulation manager selected.")
+        simulation_manager = SimulationManager.objects.filter(id=simulation_manager_id).first()
+        if not simulation_manager:
+            messages.error(request, "Selected simulation manager does not exist.")
             return redirect(reverse("home"))
+
+        stocks = simulation_manager.stocks.select_related('company').all()
+
+        # Prepare the latest prices for each stock in a dictionary
+        latest_prices = {
+            str(stock.id): {
+                "close_price": latest_price.close_price,
+                "open_price": latest_price.open_price,
+                "low_price": latest_price.low_price,
+                "high_price": latest_price.high_price,
+            }
+            for stock in stocks
+            if (latest_price := StockPriceHistory.objects.filter(stock=stock).order_by('-timestamp').first())
+        }
 
         context = {
             "title": "Market Overview",
             "stocks": stocks,
+            "simulation_manager_id": simulation_manager_id,
             "latest_prices": latest_prices,
-            "events": events,
-            "companies": companies,
-            "news_items": news_items,
-            "transactions": transactions,
-            "teams": teams,
+            "events": simulation_manager.events.all(),
+            "companies": simulation_manager.stocks.values_list('company', flat=True).distinct(),
+            "news_items": simulation_manager.news.order_by('-published_date')[:5],
+            "transactions": TransactionHistory.objects.filter(simulation_manager=simulation_manager),
+            "teams": simulation_manager.teams.all(),
+            "triggers": simulation_manager.triggers.all(),
         }
         return render(request, "simulation/market_overview.html", context)
 
