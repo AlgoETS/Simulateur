@@ -1,12 +1,12 @@
 <div id="main-content"
-     class="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-auto h-full p-4">
+     class="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-auto p-4">
     {% for stock in stocks %}
-        <div class="bg-white p-4 rounded-lg shadow-lg flex flex-col h-full card relative">
-            <h3 class="text-lg font-semibold mb-4">{{ stock.name }} ({{ stock.ticker }})</h3>
+        <div class="bg-white p-4 rounded-lg shadow-lg flex flex-col card relative" style="height: 300px;">
+            <h3 class="text-base font-semibold mb-2 truncate">{{ stock.name }} ({{ stock.ticker }})</h3>
             <div id="loader-{{ stock.id }}" class="loader absolute inset-0 flex items-center justify-center">
                 <div class="spinner"></div>
             </div>
-            <div id="chart-{{ stock.id }}" class="w-full h-full flex-1 chart"></div>
+            <div id="chart-{{ stock.id }}" class="w-full flex-1 chart"></div>
         </div>
     {% endfor %}
 </div>
@@ -21,8 +21,8 @@
             const chartElement = document.getElementById(`chart-${stock.id}`);
             const loaderElement = document.getElementById(`loader-${stock.id}`);
             const chart = LightweightCharts.createChart(chartElement, {
-                width: chartElement.clientWidth,
-                height: chartElement.clientHeight,
+                width: chartElement.clientWidth - 30,
+                height: chartElement.clientHeight - 30, // Adjust for padding
                 layout: {
                     backgroundColor: '#ffffff',
                     textColor: '#000000',
@@ -106,11 +106,21 @@
         updateBuffer[ticker] = []; // Clear the buffer after processing
     }
 
-    // Handle window resize
+    // Handle window resize using ResizeObserver
+    Object.values(charts).forEach(({ chart }) => {
+        const chartElement = chart.container;
+
+        const resizeObserver = new ResizeObserver(() => {
+            chart.resize(chartElement.clientWidth, chartElement.clientHeight);
+        });
+
+        resizeObserver.observe(chartElement);
+    });
+
+    // Fallback for older browsers or if ResizeObserver isn't supported
     window.addEventListener('resize', () => {
         Object.values(charts).forEach(({ chart }) => {
-            const chartElement = chart.container;
-            chart.resize(chartElement.clientWidth, chartElement.clientHeight);
+            chart.resize(chart.container.clientWidth, chart.container.clientHeight);
         });
     });
 </script>
