@@ -89,7 +89,7 @@
                 fetch(`/api/stock/price/${stockId}/`)
                     .then(response => response.json())
                     .then(data => {
-                        if (data.data.close_price) {
+                        if (data.status === "success" && data.data && data.data.close_price) {
                             document.getElementById('price').value = parseFloat(data.data.close_price).toFixed(2);
                         } else {
                             alert('Failed to fetch stock price');
