@@ -205,7 +205,13 @@ CHANNEL_LAYERS = {
     },
 }
 
-# Logging
+# CHANNEL_LAYERS = {
+#     'default': {
+#         'BACKEND': 'channels.layers.InMemoryChannelLayer',
+#     },
+# }
+
+# Logging configuration
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -233,12 +239,23 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['console', 'file'],
-            'level': 'INFO',
+            'level': 'INFO',  # Higher level for Django core logging
             'propagate': True,
         },
         'channels': {
             'handlers': ['console', 'file'],
-            'level': 'DEBUG',
+            'level': 'DEBUG',  # Ensure we capture all debug messages from Channels
+            'propagate': True,
+        },
+        'consumers': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',  # Adjust this to your specific consumer namespace
+            'propagate': False,
+        },
+        # Use the root logger to capture logs from other parts of the application
+        '': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',  # Default logging level for other loggers
             'propagate': True,
         },
     },
@@ -297,6 +314,24 @@ PERF_REC = {
 JET_SIDE_MENU_COMPACT = True
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 JET_MODULE_GOOGLE_ANALYTICS_CLIENT_SECRETS_FILE = os.path.join(PROJECT_DIR, 'client_secrets.json')
+
+# PICTURES settings
+PICTURES = {
+    "BREAKPOINTS": {
+        "xs": 576,
+        "s": 768,
+        "m": 992,
+        "l": 1200,
+        "xl": 1400,
+    },
+    "GRID_COLUMNS": 12,
+    "CONTAINER_WIDTH": 1200,
+    "FILE_TYPES": ["WEBP"],
+    "PIXEL_DENSITIES": [1, 2],
+    "USE_PLACEHOLDERS": True,
+    "QUEUE_NAME": "pictures",
+    "PROCESSOR": "pictures.tasks.process_picture",
+}
 
 # PWA settings
 PWA_APP_NAME = 'Simulateur'

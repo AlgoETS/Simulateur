@@ -48,7 +48,6 @@ def percentage(value):
     """
     return "{:.2f}%".format(value)
 
-
 @register.filter
 def safe_html(value):
     """

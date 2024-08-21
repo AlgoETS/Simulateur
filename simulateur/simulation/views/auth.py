@@ -23,7 +23,6 @@ CACHE_TTL = getattr(settings, 'CACHE_TTL', 30)
 
 
 class SignupView(View):
-    @method_decorator(csrf_exempt, name='dispatch')
     @method_decorator(cache_page(CACHE_TTL), name='dispatch')
     def get(self, request):
         return render(request, "registration/signup.html")
@@ -201,6 +200,21 @@ class JoinTeamView(View):
         simulation_manager_id = request.GET.get('simulation_manager_id', 1)
         portfolios = Portfolio.objects.filter(simulation_manager=simulation_manager_id,
                                               owner__in=teams.values('members'))
+
+        teams_balance = [
+            {
+    def get_user_from_uid(self, uidb64):
+        try:
+            uid = urlsafe_b64decode(uidb64).decode()
+            return User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return None
+
+
+class JoinTeamView(View):
+    def get(self, request):
+        teams = Team.objects.prefetch_related('members__portfolios')
+        portfolios = Portfolio.objects.all()
 
         teams_balance = [
             {
