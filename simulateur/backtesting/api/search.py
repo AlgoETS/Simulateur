@@ -1,10 +1,9 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Chart, Strategy
-from .serializers import ChartSerializer, StrategySerializer
-
-class ChartSearchAPIView(APIView):
+from backtesting.models import Chart
+from backtesting.serializers import ChartSerializer
+class SearchAPIView(APIView):
     def get(self, request):
         query = request.GET.get('q')
         if query:

@@ -193,3 +193,6 @@ django-celery-results
 python-decouple
 flower
 django_redis
+yahoofinancials
+marketwatch
+httpx

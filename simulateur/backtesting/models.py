@@ -1,10 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+
 class Strategy(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
-    file_name = models.CharField(max_length=255, help_text="Name of the strategy file stored in MinIO")
+    file_name = models.FileField(upload_to='strategies/', help_text="Strategy file stored in MinIO")
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -28,11 +29,26 @@ class StrategyOutput(models.Model):
             ('complete', 'Complete Data')
         ]
     )
-    file_path = models.CharField(max_length=255)  # Path to where the output is stored
+    file = models.FileField(upload_to='strategy_outputs/', help_text="Output file stored in MinIO")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.strategy.name} - {self.ticker} ({self.output_type})"
+
+
+class DataSource(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True, null=True)
+    api_url = models.URLField(blank=True, null=True, help_text="URL for the data source API")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Data Source"
+        verbose_name_plural = "Data Sources"
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
 
 
 class StockBacktest(models.Model):
@@ -40,6 +56,7 @@ class StockBacktest(models.Model):
     name = models.CharField(max_length=255)
     sector = models.CharField(max_length=255, null=True, blank=True)
     exchange = models.CharField(max_length=255, null=True, blank=True)
+    data_source = models.ForeignKey(DataSource, on_delete=models.CASCADE, related_name="stocks")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -48,7 +65,8 @@ class StockBacktest(models.Model):
         ordering = ['ticker']
 
     def __str__(self):
-        return f"{self.name} ({self.ticker}) - {self.exchange}"
+        return f"{self.name} ({self.ticker}) - {self.exchange} - Source: {self.data_source.name}"
+
 
 
 class Backtest(models.Model):
@@ -64,10 +82,10 @@ class Backtest(models.Model):
         ],
         default='pending'
     )
-    instrument = models.CharField(max_length=255)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
-    result_file = models.FileField(upload_to='backtest_results/', null=True, blank=True)
+    result_file = models.FileField(upload_to='backtest_results/', null=True, blank=True,
+                                   help_text="Backtest result file stored in MinIO")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -81,7 +99,8 @@ class Backtest(models.Model):
 
 class Chart(models.Model):
     backtest = models.ForeignKey(Backtest, on_delete=models.CASCADE, related_name="charts")
-    chart_file = models.FileField(upload_to='backtest_charts/', null=True, blank=True)
+    chart_file = models.FileField(upload_to='backtest_charts/', null=True, blank=True,
+                                  help_text="Chart image stored in MinIO")
 
     class Meta:
         verbose_name = "Chart"

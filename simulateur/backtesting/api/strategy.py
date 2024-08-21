@@ -1,9 +1,10 @@
 from django.http import JsonResponse
 from rest_framework.views import APIView
 from rest_framework import status
-from .models import Strategy, StockBacktest
-from .tasks import run_strategy
-from django.core.cache import cache  # For rate limiting
+from backtesting.models import StockBacktest
+from backtesting.serializers import StrategySerializer
+from backtesting.tasks import run_strategy
+from django.core.cache import cache
 
 class StrategyAPIView(APIView):
     def post(self, request):

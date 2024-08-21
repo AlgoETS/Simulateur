@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Sandbox Chart</title>
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        #chart {
+            position: relative;
+            width: 100%;
+            height: 500px;
+        }
+
+        #legend {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Arial', sans-serif;
+            font-size: 14px;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #loading-indicator {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Arial', sans-serif;
+            font-size: 18px;
+            font-weight: bold;
+            color: #1f2937;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 p-8">
+    <div class="container mx-auto">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold mb-4 text-gray-800">Interactive Stock Chart</h1>
+            <div class="bg-white shadow-lg rounded-lg p-6">
+                <form id="chartForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {% csrf_token %}
+                    <div>
+                        <label for="ticker" class="block text-sm font-semibold text-gray-700 mb-1">Ticker</label>
+                        <input type="text" id="ticker" name="ticker"
+                               class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200" placeholder="AAPL"
+                               required>
+                    </div>
+                    <div>
+                        <label for="start_date" class="block text-sm font-semibold text-gray-700 mb-1">Start Date</label>
+                        <input type="date" id="start_date" name="start_date"
+                               class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200" required>
+                    </div>
+                    <div>
+                        <label for="end_date" class="block text-sm font-semibold text-gray-700 mb-1">End Date</label>
+                        <input type="date" id="end_date" name="end_date"
+                               class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200" required>
+                    </div>
+                    <div>
+                        <label for="interval" class="block text-sm font-semibold text-gray-700 mb-1">Interval</label>
+                        <select id="interval" name="interval"
+                                class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200">
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">Add Indicators</h2>
+            <div class="bg-white shadow-lg rounded-lg p-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    <!-- EMA Inputs -->
+                    <div>
+                        <label class="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800">EMA Periods</label>
+                        <input type="checkbox" id="toggleEMA" name="overlay" value="ema" class="mr-2">
+                        <div id="emaInputs" class="space-y-2">
+                            <input type="number" name="ema_period"
+                                   class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200"
+                                   placeholder="14">
+                        </div>
+                        <button type="button" class="mt-2 text-blue-500 hover:underline" onclick="addIndicatorInput('ema')">+ Add Another EMA</button>
+                    </div>
+                    <!-- SMA Inputs -->
+                    <div>
+                        <label class="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-green-100 text-green-800">SMA Periods</label>
+                        <input type="checkbox" id="toggleSMA" name="overlay" value="sma" class="mr-2">
+                        <div id="smaInputs" class="space-y-2">
+                            <input type="number" name="sma_period"
+                                   class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200"
+                                   placeholder="14">
+                        </div>
+                        <button type="button" class="mt-2 text-green-500 hover:underline"
+                                onclick="addIndicatorInput('sma')">+ Add Another SMA</button>
+                    </div>
+                    <!-- Bollinger Band Inputs -->
+                    <div>
+                        <label class="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-red-100 text-red-800">Bollinger Bands</label>
+                        <input type="checkbox" id="toggleBollinger" name="overlay" value="bollinger" class="mr-2">
+                        <div id="bollingerInputs" class="space-y-2">
+                            <input type="number" name="bollinger_period"
+                                   class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200"
+                                   placeholder="20">
+                            <input type="number" step="0.1" name="bollinger_stddev"
+                                   class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200"
+                                   placeholder="2.0">
+                        </div>
+                        <button type="button" class="mt-2 text-red-500 hover:underline"
+                                onclick="addIndicatorInput('bollinger')">+ Add Another Bollinger</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" form="chartForm"
+                class="w-full md:w-auto px-8 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition mt-4">
+            Update Chart
+        </button>
+
+        <div id="chart" class="bg-white shadow-md rounded-md p-4 relative mt-8">
+            <div id="loading-indicator">Loading...</div>
+        </div>
+        <div id="legend" class="mt-4"></div>
+    </div>
+
+    <script>
+        const chart = LightweightCharts.createChart(document.getElementById('chart'), {
+            layout: {
+                backgroundColor: '#ffffff',
+                textColor: '#000000',
+            },
+            grid: {
+                vertLines: {
+                    color: '#e1e1e1',
+                },
+                horzLines: {
+                    color: '#e1e1e1',
+                },
+            },
+            priceScale: {
+                borderColor: '#cccccc',
+            },
+            timeScale: {
+                borderColor: '#cccccc',
+            },
+        });
+
+        const candleSeries = chart.addCandlestickSeries();
+        const legend = document.getElementById('legend');
+        const loadingIndicator = document.getElementById('loading-indicator');
+
+        // Function to add multiple indicator inputs dynamically
+        function addIndicatorInput(type) {
+            const container = document.getElementById(`${type}Inputs`);
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.name = `${type}_period`;
+            input.placeholder = 'Enter Period';
+            input.className = 'w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200 mt-2';
+            container.appendChild(input);
+        }
+
+        document.getElementById('chartForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const overlay = [];
+
+            document.querySelectorAll('input[name="overlay"]:checked').forEach(function (checkbox) {
+                overlay.push(checkbox.value);
+            });
+            formData.append('overlay', overlay.join(','));
+            formData.append('ema_periods', JSON.stringify(Array.from(document.getElementsByName('ema_period')).map(input => parseInt(input.value)).filter(value => !isNaN(value))));
+            formData.append('sma_periods', JSON.stringify(Array.from(document.getElementsByName('sma_period')).map(input => parseInt(input.value)).filter(value => !isNaN(value))));
+            formData.append('bollinger_periods', JSON.stringify(Array.from(document.getElementsByName('bollinger_period')).map(input => parseInt(input.value)).filter(value => !isNaN(value))));
+            formData.append('bollinger_stddevs', JSON.stringify(Array.from(document.getElementsByName('bollinger_stddev')).map(input => parseFloat(input.value)).filter(value => !isNaN(value))));
+
+            loadingIndicator.style.display = 'block';
+
+            fetch(window.location.href, {  // Use the same view URL for both GET and POST
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    loadingIndicator.style.display = 'none';
+                    candleSeries.setData(data.chart_data);
+
+                    // Handle EMA indicators
+                    if (data.indicators_data.ema) {
+                        data.indicators_data.ema.forEach((emaSeries, index) => {
+                            const series = chart.addLineSeries({color:  'blue', lineWidth: 1});
+                            series.setData(emaSeries.values);
+                        });
+                    }
+
+                    // Handle SMA indicators
+                    if (data.indicators_data.sma) {
+                        data.indicators_data.sma.forEach((smaSeries, index) => {
+                            const series = chart.addLineSeries({color: 'green', lineWidth: 1});
+                            series.setData(smaSeries.values);
+                        });
+                    }
+
+                    // Handle Bollinger Bands
+                    if (data.indicators_data.bollinger) {
+                        data.indicators_data.bollinger.forEach((bollingerSeries, index) => {
+                            const upperSeries = chart.addLineSeries({color: 'red', lineWidth: 1});
+                            const lowerSeries = chart.addLineSeries({color: 'red', lineWidth: 1});
+                            upperSeries.setData(bollingerSeries.upper);
+                            lowerSeries.setData(bollingerSeries.lower);
+                        });
+                    }
+
+                    updateLegend(null, formData.get('ticker'));
+                })
+                .catch(error => {
+                    loadingIndicator.style.display = 'none';
+                    console.error('Error fetching chart data:', error);
+                });
+        });
+
+        // Add a legend to the chart
+        function updateLegend(param, ticker) {
+            if (!param || !param.time) {
+                legend.innerHTML = '';
+                return;
+            }
+            const data = param.seriesData.get(candleSeries);
+            const price = data ? data.close : '';
+            legend.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800">${ticker ? ticker.toUpperCase() : ''}</span>
+                    <span class="text-gray-700">${new Date(param.time * 1000).toLocaleDateString()}</span>
+                    <span class="font-bold text-gray-800">Close: $${price ? price.toFixed(2) : 'N/A'}</span>
+                </div>`;
+        }
+
+        chart.subscribeCrosshairMove(param => {
+            const ticker = document.getElementById('ticker').value || 'AAPL';
+            updateLegend(param, ticker);
+        });
+
+        // Ensure chart is responsive on window resize
+        window.addEventListener('resize', function () {
+            chart.resize(document.getElementById('chart').clientWidth, 500);
+        });
+    </script>
+</body>
+
+</html>

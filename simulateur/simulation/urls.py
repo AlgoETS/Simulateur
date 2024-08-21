@@ -172,7 +172,7 @@ api_patterns = [
 ]
 
 urlpatterns = [
-    path('api/', include(api_patterns)),
+    path('', include(api_patterns)),
     # Swagger and ReDoc URLs at the top level
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),

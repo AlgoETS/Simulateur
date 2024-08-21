@@ -32,6 +32,7 @@ services:
       - app-network
     profiles:
       - caching
+      - other
       - all
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
@@ -41,24 +42,52 @@ services:
 
   minio:
     image: minio/minio:latest
-    command: server /data
+    command: server /data --console-address ":9001"
     environment:
       - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
       - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
     ports:
-      - "9002:9000"
+      - "9000:9000"  # Main MinIO API
+      - "9001:9001"  # MinIO Console
     volumes:
       - minio_data:/data
     networks:
       - app-network
     profiles:
       - storage
+      - other
       - all
+      - minio
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:9000/minio/health/live || exit 1" ]
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/live || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
+
+  minio-client:
+    image: minio/mc:latest
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until (/usr/bin/mc alias set local http://minio:9000 ${MINIO_ACCESS_KEY:-minioadmin} ${MINIO_SECRET_KEY:-minioadmin}); do sleep 5; done;
+      # Check if the media bucket exists; if not, create it
+      /usr/bin/mc ls local/${MINIO_STORAGE_MEDIA_BUCKET_NAME:-media} || /usr/bin/mc mb local/${MINIO_STORAGE_MEDIA_BUCKET_NAME:-media};
+      # Check if the static bucket exists; if not, create it
+      /usr/bin/mc ls local/${MINIO_STORAGE_STATIC_BUCKET_NAME:-static} || /usr/bin/mc mb local/${MINIO_STORAGE_STATIC_BUCKET_NAME:-static};
+      # Set the policy to public for the media bucket
+      /usr/bin/mc policy set public local/${MINIO_STORAGE_MEDIA_BUCKET_NAME:-media};
+      # Set the policy to public for the static bucket
+      /usr/bin/mc policy set public local/${MINIO_STORAGE_STATIC_BUCKET_NAME:-static};
+      "
+    profiles:
+      - all
+      - other
+      - minio
+      - storage
+    networks:
+      - app-network
+
 
   db:
     image: postgres:13
@@ -74,6 +103,7 @@ services:
       - app-network
     profiles:
       - database
+      - other
       - all
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
@@ -95,6 +125,7 @@ services:
     profiles:
       - all
       - celery
+      - other
     healthcheck:
       test: ["CMD-SHELL", "celery -A simulateur status"]
       interval: 30s

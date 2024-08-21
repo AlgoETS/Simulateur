@@ -198,7 +198,9 @@ class PasswordResetConfirmView(View):
 class JoinTeamView(View):
     def get(self, request):
         teams = Team.objects.prefetch_related('members__portfolios')
-        portfolios = Portfolio.objects.all()
+        simulation_manager_id = request.GET.get('simulation_manager_id', 1)
+        portfolios = Portfolio.objects.filter(simulation_manager=simulation_manager_id,
+                                              owner__in=teams.values('members'))
 
         teams_balance = [
             {
@@ -217,6 +219,7 @@ class JoinTeamView(View):
             'team_id': request.GET.get('team_id', ''),
             'key': request.GET.get('key', ''),
             'teams_balance': teams_balance,
+            'portfolios': portfolios
         }
         return render(request, "registration/join_team.html", context)
 
@@ -227,12 +230,10 @@ class JoinTeamView(View):
         join_link = get_object_or_404(JoinLink, team=team, key=key)
 
         if join_link.is_expired():
-            messages.error(request, "This join link has expired.")
             return redirect("join_team")
 
         user_profile = self.get_user_profile(request)
         if user_profile.teams.filter(id=team_id).exists():
-            messages.info(request, "You are already a member of this team.")
             return redirect("team_dashboard")
 
         try:
@@ -240,10 +241,8 @@ class JoinTeamView(View):
                 user_profile.teams.add(team)
                 user_profile.save()
                 team.members.add(user_profile)
-            messages.success(request, "You have successfully joined the team.")
             return redirect("team_dashboard")
         except Exception as e:
-            messages.error(request, "An error occurred while joining the team.")
             return redirect("join_team")
 
     def get_user_profile(self, request):

@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Strategy, Backtest, StockBacktest, Chart
+from .models import Strategy, Backtest, StockBacktest, Chart, DataSource
+
 
 @admin.register(Strategy)
 class StrategyAdmin(admin.ModelAdmin):
@@ -17,7 +18,7 @@ class StockBacktestAdmin(admin.ModelAdmin):
 
 @admin.register(Backtest)
 class BacktestAdmin(admin.ModelAdmin):
-    list_display = ('strategy', 'stock', 'status', 'instrument', 'start_date', 'end_date', 'created_at')
+    list_display = ('strategy', 'stock', 'status', 'start_date', 'end_date', 'created_at')
     search_fields = ('strategy__name', 'stock__name', 'instrument')
     list_filter = ('status', 'created_at', 'start_date', 'end_date')
     ordering = ('-created_at',)
@@ -27,3 +28,10 @@ class ChartAdmin(admin.ModelAdmin):
     list_display = ('backtest', 'chart_file')
     search_fields = ('backtest__strategy__name', 'backtest__stock__name')
     list_filter = ('backtest__created_at',)
+
+@admin.register(DataSource)
+class DataSourceAdmin(admin.ModelAdmin):
+    list_display = ('name', 'api_url', 'created_at')
+    search_fields = ('name', 'api_url')
+    list_filter = ('created_at',)
+    ordering = ('name',)

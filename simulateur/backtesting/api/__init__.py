@@ -1,3 +1,3 @@
-from .search import ChartSearchAPIView
+from .search import SearchAPIView
 from .strategy import StrategyAPIView
-from .data import FMPDataAPIView
+from .data import FMPDataAPIVIewSync, CoinGeckoDataAPIViewSync, YFinanceDataAPIViewSync
