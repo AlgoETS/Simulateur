@@ -68,7 +68,6 @@ class StockBacktest(models.Model):
         return f"{self.name} ({self.ticker}) - {self.exchange} - Source: {self.data_source.name}"
 
 
-
 class Backtest(models.Model):
     strategy = models.ForeignKey(Strategy, on_delete=models.CASCADE, related_name="backtests")
     stock = models.ForeignKey(StockBacktest, on_delete=models.CASCADE, related_name="backtests")
@@ -108,3 +107,29 @@ class Chart(models.Model):
 
     def __str__(self):
         return f"Chart for {self.backtest.strategy.name} - {self.backtest.stock.ticker}"
+
+
+class SandboxData(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sandbox_data")
+    ticker = models.CharField(max_length=10, help_text="Ticker symbol of the stock")
+    start_date = models.DateField()
+    end_date = models.DateField()
+    interval = models.CharField(max_length=10, choices=[
+        ('daily', 'Daily'),
+        ('weekly', 'Weekly'),
+        ('monthly', 'Monthly'),
+        ('yearly', 'Yearly')
+    ], default='daily')
+    overlay = models.JSONField(blank=True, null=True, help_text="Selected overlays like EMA, SMA, Bollinger Bands")
+    chart_data = models.JSONField(blank=True, null=True, help_text="Stored chart data in JSON format")
+    indicators_data = models.JSONField(blank=True, null=True, help_text="Stored indicator data in JSON format")
+    crossings = models.JSONField(blank=True, null=True, help_text="Stored crossings information in JSON format")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Sandbox Data"
+        verbose_name_plural = "Sandbox Data"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Sandbox Data for {self.ticker} ({self.interval}) by {self.user.username}"

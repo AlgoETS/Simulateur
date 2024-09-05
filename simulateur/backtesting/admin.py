@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Strategy, Backtest, StockBacktest, Chart, DataSource
+from .models import Strategy, Backtest, StockBacktest, Chart, DataSource, SandboxData
 
 
 @admin.register(Strategy)
@@ -33,5 +33,12 @@ class ChartAdmin(admin.ModelAdmin):
 class DataSourceAdmin(admin.ModelAdmin):
     list_display = ('name', 'api_url', 'created_at')
     search_fields = ('name', 'api_url')
+    list_filter = ('created_at',)
+    ordering = ('name',)
+
+@admin.register(SandboxData)
+class SandboxDataAdmin(admin.ModelAdmin):
+    list_display = ('name', 'created_at')
+    search_fields = ('name',)
     list_filter = ('created_at',)
     ordering = ('name',)

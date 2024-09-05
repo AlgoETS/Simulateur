@@ -1,6 +1,7 @@
 from datetime import datetime
 import json
 
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
 from django.views import View
 from django.http import HttpResponseRedirect, HttpResponseBadRequest, JsonResponse
@@ -8,7 +9,7 @@ from yahoofinancials import YahooFinancials
 import pandas as pd
 
 from .forms import StrategyForm
-from .models import Strategy, StrategyOutput
+from .models import Strategy, StrategyOutput, DataSource, StockBacktest, SandboxData
 
 
 class StrategyManagementView(View):
@@ -69,9 +70,11 @@ class SearchChartView(View):
 
 
 class SandboxView(View):
+    @login_required
     def get(self, request):
         return render(request, 'sandbox_chart.html')
 
+    @login_required
     def post(self, request):
         ticker = request.POST.get('ticker', 'AAPL')
         start_date = request.POST.get('start_date', '2018-01-01')
@@ -91,7 +94,26 @@ class SandboxView(View):
         bollinger_periods = [int(period) for period in bollinger_periods if isinstance(period, (str, int))]
         bollinger_stddevs = [float(stddev) for stddev in bollinger_stddevs if isinstance(stddev, (str, float))]
 
+        # Check if the data already exists in the database
+        existing_data = SandboxData.objects.filter(
+            user=request.user,
+            ticker=ticker,
+            start_date=start_date,
+            end_date=end_date,
+            interval=interval,
+            overlay=overlay
+        ).first()
+
+        if existing_data:
+            # Return the existing data if found
+            return JsonResponse({
+                'chart_data': existing_data.chart_data,
+                'indicators_data': existing_data.indicators_data,
+                'crossings': existing_data.crossings
+            })
+
         try:
+            # Fetch new data if not already stored
             stock_data = self.get_stock_data(ticker, start_date, end_date, interval)
             if stock_data is None or stock_data.empty:
                 return HttpResponseBadRequest("No data found for the provided ticker and date range.")
@@ -101,6 +123,19 @@ class SandboxView(View):
                 overlay, stock_data, ema_periods, sma_periods, bollinger_periods, bollinger_stddevs
             )
             crossings = self.calculate_crossings(indicators_data)
+
+            # Save the new data to the database
+            SandboxData.objects.create(
+                user=request.user,
+                ticker=ticker,
+                start_date=start_date,
+                end_date=end_date,
+                interval=interval,
+                overlay=overlay,
+                chart_data=chart_data,
+                indicators_data=indicators_data,
+                crossings=crossings
+            )
 
             return JsonResponse({
                 'chart_data': chart_data,
@@ -203,32 +238,66 @@ class SandboxView(View):
         ema_series = indicators_data.get('ema', [])
         sma_series = indicators_data.get('sma', [])
 
+        if len(ema_series) > 1:
+            crossings.extend(self._detect_crossings_between_series(ema_series, "EMA"))
+
+        if len(sma_series) > 1:
+            crossings.extend(self._detect_crossings_between_series(sma_series, "SMA"))
+
         if ema_series and sma_series:
             ema_values = ema_series[0]['values']
             sma_values = sma_series[0]['values']
-
-            for i in range(1, len(ema_values)):
-                previous_ema = ema_values[i - 1]['value']
-                current_ema = ema_values[i]['value']
-                previous_sma = sma_values[i - 1]['value']
-                current_sma = sma_values[i]['value']
-
-                if previous_ema < previous_sma and current_ema > current_sma:
-                    crossings.append({
-                        'time': ema_values[i]['time'],
-                        'type': 'cross_above'
-                    })
-                elif previous_ema > previous_sma and current_ema < current_sma:
-                    crossings.append({
-                        'time': ema_values[i]['time'],
-                        'type': 'cross_below'
-                    })
+            crossings.extend(self._detect_ema_sma_crossings(ema_values, sma_values))
 
         return crossings
 
-    def is_float(self, value):
-        try:
-            float(value)
-            return True
-        except ValueError:
-            return False
+    def _detect_crossings_between_series(self, series_list, label):
+        crossings = []
+        # Compare each series against every other series in the list
+        for i in range(len(series_list)):
+            for j in range(i + 1, len(series_list)):
+                series_a = series_list[i]['values']
+                series_b = series_list[j]['values']
+                crossings.extend(self._detect_crossings_between_two_series(series_a, series_b,
+                                                                           f"{label}_{series_list[i]['period']}_vs_{series_list[j]['period']}"))
+        return crossings
+
+    def _detect_crossings_between_two_series(self, series_a, series_b, label):
+        crossings = []
+        for i in range(1, len(series_a)):
+            previous_a = series_a[i - 1]['value']
+            current_a = series_a[i]['value']
+            previous_b = series_b[i - 1]['value']
+            current_b = series_b[i]['value']
+
+            if previous_a < previous_b and current_a > current_b:
+                crossings.append({
+                    'time': series_a[i]['time'],
+                    'type': f'cross_above'
+                })
+            elif previous_a > previous_b and current_a < current_b:
+                crossings.append({
+                    'time': series_a[i]['time'],
+                    'type': f'cross_below'
+                })
+        return crossings
+
+    def _detect_ema_sma_crossings(self, ema_values, sma_values):
+        crossings = []
+        for i in range(1, len(ema_values)):
+            previous_ema = ema_values[i - 1]['value']
+            current_ema = ema_values[i]['value']
+            previous_sma = sma_values[i - 1]['value']
+            current_sma = sma_values[i]['value']
+
+            if previous_ema < previous_sma and current_ema > current_sma:
+                crossings.append({
+                    'time': ema_values[i]['time'],
+                    'type': 'ema_cross_above_sma'
+                })
+            elif previous_ema > previous_sma and current_ema < current_sma:
+                crossings.append({
+                    'time': ema_values[i]['time'],
+                    'type': 'ema_cross_below_sma'
+                })
+        return crossings
