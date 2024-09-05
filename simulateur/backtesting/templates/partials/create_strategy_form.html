@@ -1,0 +1,110 @@
+<div class="bg-white shadow-lg rounded-lg p-6 mb-8">
+    <h2 class="text-2xl font-bold mb-4 text-gray-800">Create a New Strategy</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-4">
+            {{ form.name.label_tag }}<br>
+            {{ form.name }}
+        </div>
+        <div class="mb-4">
+            {{ form.description.label_tag }}<br>
+            {{ form.description }}
+        </div>
+
+        <!-- Option to upload a file or write code -->
+        <div class="mb-4">
+            <label class="block font-medium text-gray-700">Choose Strategy Input Method:</label>
+            <div class="flex items-center mb-2">
+                <input type="radio" id="upload_file_option" name="input_method" value="upload" class="mr-2" checked>
+                <label for="upload_file_option" class="mr-4">Upload File</label>
+
+                <input type="radio" id="code_editor_option" name="input_method" value="editor" class="mr-2">
+                <label for="code_editor_option">Use Code Editor</label>
+            </div>
+        </div>
+
+        <!-- File Upload Section -->
+        <div id="file_upload_section" class="mb-4">
+            <label for="file_name" class="block font-medium text-gray-700">Upload Strategy File</label>
+            {{ form.file_name }}
+        </div>
+
+        <!-- Code Editor Section -->
+        <div id="code_editor_section" class="mb-4 hidden">
+            <label for="script_content" class="block font-medium text-gray-700">Python Code</label>
+            <textarea id="script_content" name="script_content" rows="10" class="border border-gray-300 rounded-lg w-full p-2" placeholder="# Write your Python strategy here"></textarea>
+        </div>
+
+        <!-- Ticker Selection -->
+        <div class="mb-4">
+            <label for="ticker" class="block font-medium text-gray-700">Select Ticker</label>
+            <select id="ticker" name="ticker" class="border border-gray-300 rounded-lg w-full p-2">
+                <option value="">Select a ticker</option>
+                <option value="AAPL">AAPL</option>
+                <option value="GOOGL">GOOGL</option>
+                <option value="AMZN">AMZN</option>
+            </select>
+        </div>
+
+        <!-- Time Range Selection -->
+        <div class="mb-4">
+            <label for="time_range" class="block font-medium text-gray-700">Select Time Range</label>
+            <select id="time_range" name="time_range" class="border border-gray-300 rounded-lg w-full p-2">
+                <option value="1d">1 Day</option>
+                <option value="1w">1 Week</option>
+                <option value="1m">1 Month</option>
+                <option value="3m">3 Months</option>
+                <option value="1y">1 Year</option>
+            </select>
+        </div>
+
+        <!-- Data Source Selection -->
+        <div class="mb-4">
+            <label for="data_source" class="block font-medium text-gray-700">Select Data Source</label>
+            {{ form.data_source }}
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Create Strategy</button>
+    </form>
+
+    <script>
+        // Toggle between file upload and code editor sections
+        const fileUploadSection = document.getElementById('file_upload_section');
+        const codeEditorSection = document.getElementById('code_editor_section');
+        const uploadFileOption = document.getElementById('upload_file_option');
+        const codeEditorOption = document.getElementById('code_editor_option');
+        const fileInput = document.getElementById('id_file_name');
+        const codeEditorTextarea = document.getElementById('script_content');
+
+        uploadFileOption.addEventListener('change', function () {
+            if (this.checked) {
+                fileUploadSection.classList.remove('hidden');
+                codeEditorSection.classList.add('hidden');
+                fileInput.required = true; // Enable the file input when it is visible
+                codeEditorTextarea.disabled = true; // Disable the code editor when not selected
+            }
+        });
+
+        codeEditorOption.addEventListener('change', function () {
+            if (this.checked) {
+                fileUploadSection.classList.add('hidden');
+                codeEditorSection.classList.remove('hidden');
+                fileInput.required = false; // Disable the file input when it is hidden
+                codeEditorTextarea.disabled = false; // Enable the code editor when selected
+            }
+        });
+
+        // Initialize CodeMirror for the Python editor
+        var editor = CodeMirror.fromTextArea(document.getElementById('script_content'), {
+            lineNumbers: true,
+            mode: 'python',
+            theme: 'material-darker',
+            autoCloseBrackets: true,
+            styleActiveLine: true,
+            indentUnit: 4,
+            matchBrackets: true,
+            viewportMargin: Infinity, // Allow the editor to expand fully without scrollbar
+        });
+    </script>
+</div>

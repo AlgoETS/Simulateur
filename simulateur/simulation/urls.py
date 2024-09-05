@@ -62,9 +62,6 @@ from simulation.api.stock import StockManagement, StockPriceHistoryView
 
 from simulation.api.portfolio import TopScoringProfilesView, TopScoringTeamsView
 
-# Initialize the DefaultRouter
-router = DefaultRouter()
-
 # Swagger Schema View
 schema_view = get_schema_view(
     openapi.Info(
@@ -175,8 +172,7 @@ api_patterns = [
 ]
 
 urlpatterns = [
-    path('api/', include(router.urls)),
-    path('api/', include(api_patterns)),
+    path('', include(api_patterns)),
     # Swagger and ReDoc URLs at the top level
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),

@@ -166,7 +166,7 @@ class SellStock(View):
 class StockPrice(View):
     def get(self, request, stock_id):
         try:
-            simulation_manager_id = request.GET.get('simulation_manager_id')
+            simulation_manager_id = request.GET.get('simulation_manager_id', 1)
             # Fetch the stock based on ID
             stock = SimulationManager.objects.get(id=simulation_manager_id).stocks.get(id=stock_id)
 

@@ -1,0 +1,77 @@
+<header class="bg-gray-200 dark:bg-gray-800 p-4 rounded mb-6">
+    <div class="container mx-auto flex justify-between items-center">
+        <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100">
+            Stock Market Simulation
+        </h1>
+        <nav class="hidden md:flex space-x-4">
+            <a href="{% url 'home' %}"
+               class="text-gray-900 dark:text-gray-100 hover:text-blue-700 dark:hover:text-blue-500">Home</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'user_dashboard' %}"
+                   class="text-gray-900 dark:text-gray-100 hover:text-blue-700 dark:hover:text-blue-500">Dashboard</a>
+                <a href="{% url 'game_dashboard' %}"
+                   class="text-gray-900 dark:text-gray-100 hover:text-blue-700 dark:hover:text-blue-500">Game</a>
+                <a href="{% url 'private_profile' %}"
+                   class="text-gray-900 dark:text-gray-100 hover:text-blue-700 dark:hover:text-blue-500">Profile</a>
+                <a href="{% url 'logout' %}"
+                   class="text-gray-900 dark:text-gray-100 hover:text-blue-700 dark:hover:text-blue-500">Logout</a>
+            {% else %}
+                <a href="{% url 'signup' %}"
+                   class="text-gray-900 dark:text-gray-100 hover:text-blue-700 dark:hover:text-blue-500">Sign Up</a>
+                <a href="{% url 'login' %}"
+                   class="text-gray-900 dark:text-gray-100 hover:text-blue-700 dark:hover:text-blue-500">Login</a>
+            {% endif %}
+
+            <a href="{% url 'admin_dashboard' %}"
+               class="text-gray-900 dark:text-gray-100 hover:text-blue-700 dark:hover:text-blue-500">Admin</a>
+        </nav>
+        <div class="md:hidden flex items-center space-x-4">
+            <button id="nav-toggle" class="text-gray-900 dark:text-gray-100 focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                     xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16">
+                    </path>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <div id="nav-menu" class="hidden md:hidden mt-4">
+        <a href="{% url 'home' %}"
+           class="block text-gray-900 dark:text-gray-100 hover:text-blue-700 dark:hover:text-blue-500 mb-2">Home</a>
+        {% if user.is_authenticated %}
+            <a href="{% url 'user_dashboard' %}"
+               class="block text-gray-900 dark:text-gray-100 hover:text-blue-700 dark:hover:text-blue-500 mb-2">Dashboard</a>
+            <a href="{% url 'game_dashboard' %}"
+               class="block text-gray-900 dark:text-gray-100 hover:text-blue-700 dark:hover:text-blue-500 mb-2">Game</a>
+            <a href="{% url 'market_overview' %}"
+               class="block text-gray-900 dark:text-gray-100 hover:text-blue-700 dark:hover:text-blue-500 mb-2">Market</a>
+            <a href="{% url 'private_profile' %}"
+
+               class="block text-gray-900 dark:text-gray-100 hover:text-blue-700 dark:hover:text-blue-500 mb-2">Profile</a>
+            <a href="{% url 'settings' %}"
+               class="block text-gray-900 dark:text-gray-100 hover:text-blue-700 dark:hover:text-blue-500 mb-2">Settings</a>
+            <a href="{% url 'logout' %}"
+               class="block text-gray-900 dark:text-gray-100 hover:text-blue-700 dark:hover:text-blue-500 mb-2">Logout</a>
+        {% else %}
+            <a href="{% url 'signup' %}"
+               class="block text-gray-900 dark:text-gray-100 hover:text-blue-700 dark:hover:text-blue-500 mb-2">Sign
+                Up</a>
+            <a href="{% url 'login' %}"
+               class="block text-gray-900 dark:text-gray-100 hover:text-blue-700 dark:hover:text-blue-500 mb-2">Login</a>
+        {% endif %}
+
+        <a href="{% url 'admin_dashboard' %}"
+           class="block text-gray-900 dark:text-gray-100 hover:text-blue-700 dark:hover:text-blue-500 mb-2">Admin</a>
+    </div>
+</header>
+
+<script>
+    document.getElementById("nav-toggle").addEventListener("click", function () {
+        var navMenu = document.getElementById("nav-menu");
+        if (navMenu.classList.contains("hidden")) {
+            navMenu.classList.remove("hidden");
+        } else {
+            navMenu.classList.add("hidden");
+        }
+    });
+</script>

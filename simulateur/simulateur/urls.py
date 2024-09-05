@@ -12,6 +12,8 @@ urlpatterns = [
                   path('tinymce/', include('tinymce.urls')),
                   path('admin/', admin.site.urls),
                   path('api/', include(simulation_urls)),
+                  path('api/backtesting/', include('backtesting.urls')),
+                  path('backtesting/', include('backtesting.urls')),
                   path('accounts/', include('allauth.urls')),
                   path("django-check-seo/", include("django_check_seo.urls")),
                   path('', include(simulation_urls)),
