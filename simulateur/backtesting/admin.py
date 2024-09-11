@@ -34,11 +34,3 @@ class DataSourceAdmin(admin.ModelAdmin):
     list_display = ('name', 'api_url', 'created_at')
     search_fields = ('name', 'api_url')
     list_filter = ('created_at',)
-    ordering = ('name',)
-
-@admin.register(SandboxData)
-class SandboxDataAdmin(admin.ModelAdmin):
-    list_display = ('name', 'created_at')
-    search_fields = ('name',)
-    list_filter = ('created_at',)
-    ordering = ('name',)
