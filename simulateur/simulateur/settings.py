@@ -172,7 +172,7 @@ MEDIA_ROOT = config("MEDIA_ROOT", default=os.path.join(BASE_DIR, 'media'))
 
 # File Storage (MinIO)
 DEFAULT_FILE_STORAGE = config("DEFAULT_FILE_STORAGE", default='storages.backends.s3boto3.S3Boto3Storage')
-MINIO_STORAGE_ENDPOINT = config("MINIO_STORAGE_ENDPOINT", default='http://localhost:9000')
+MINIO_STORAGE_ENDPOINT = config("MINIO_STORAGE_ENDPOINT", default='http://minio:9000')
 MINIO_STORAGE_ACCESS_KEY = config("MINIO_STORAGE_ACCESS_KEY", default='minioadmin')
 MINIO_STORAGE_SECRET_KEY = config("MINIO_STORAGE_SECRET_KEY", default='minioadmin')
 MINIO_STORAGE_USE_HTTPS = config("MINIO_STORAGE_USE_HTTPS", cast=bool, default=False)
@@ -183,7 +183,7 @@ MINIO_STORAGE_MEDIA_OBJECT_METADATA = {"Cache-Control": "max-age=1000"}
 AWS_ACCESS_KEY_ID = config('MINIO_ACCESS_KEY', default='minioadmin')
 AWS_SECRET_ACCESS_KEY = config('MINIO_SECRET_KEY', default='minioadmin')
 AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME', default='media')
-AWS_S3_ENDPOINT_URL = config('MINIO_URL', default='http://localhost:9000')
+AWS_S3_ENDPOINT_URL = config('MINIO_URL', default='http://minio:9000')
 AWS_S3_CUSTOM_DOMAIN = config('AWS_S3_CUSTOM_DOMAIN', default=None)
 AWS_S3_FILE_OVERWRITE = config('AWS_S3_FILE_OVERWRITE', cast=bool, default=False)
 AWS_DEFAULT_ACL = config('AWS_DEFAULT_ACL', default=None)
@@ -200,7 +200,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": config("CHANNEL_BACKEND", default="channels_redis.pubsub.RedisPubSubChannelLayer"),
         "CONFIG": {
-            "hosts": [(config("REDIS_HOST", default="localhost"), config("REDIS_PORT", cast=int, default=6379))],
+            "hosts": [(config("REDIS_HOST", default="redis"), config("REDIS_PORT", cast=int, default=6379))],
         },
     },
 }
@@ -381,7 +381,7 @@ PWA_APP_SCREENSHOTS = [
 # RQ configuration
 RQ_QUEUES = {
     'default': {
-        'HOST': 'localhost',
+        'HOST': 'redis',
         'PORT': 6379,
         'DB': 0,
         'DEFAULT_TIMEOUT': 360,
@@ -408,7 +408,7 @@ CACHE_TTL = 30
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://localhost:6379/1",
+        "LOCATION": "redis://redis:6379/1",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
