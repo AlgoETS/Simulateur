@@ -7,7 +7,6 @@ services:
       - redis
       - minio
       - db
-      - ollama
     ports:
       - "8000:8000"
     env_file:
@@ -18,7 +17,7 @@ services:
       - web
       - all
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:8000/health || exit 1" ]
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -35,7 +34,7 @@ services:
       - other
       - all
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -47,8 +46,8 @@ services:
       - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
       - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
     ports:
-      - "9000:9000"  # Main MinIO API
-      - "9001:9001"  # MinIO Console
+      - "9000:9000" # Main MinIO API
+      - "9001:9001" # MinIO Console
     volumes:
       - minio_data:/data
     networks:
@@ -59,7 +58,11 @@ services:
       - all
       - minio
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/live || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -f http://localhost:9000/minio/health/live || exit 1",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -88,7 +91,6 @@ services:
     networks:
       - app-network
 
-
   db:
     image: postgres:13
     volumes:
@@ -106,7 +108,7 @@ services:
       - other
       - all
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -131,22 +133,6 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-
-  ollama:
-    image: ollama/ollama:latest
-    ports:
-      - 11434:11434
-    volumes:
-      - ./ollama/ollama:/root/.ollama
-      - ./entrypoint.sh:/entrypoint.sh
-    container_name: ollama
-    profiles:
-      - all
-      - ollama
-    pull_policy: always
-    tty: true
-    restart: always
-    entrypoint: [ "/usr/bin/bash", "/entrypoint.sh" ]
 
 volumes:
   minio_data:
