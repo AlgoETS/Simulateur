@@ -11,12 +11,13 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 RUN pip install --upgrade pip
+RUN pip install uv --verbose
 
 # Copy the requirements file into the container
 COPY requirements.txt .
 
 # Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir --use-feature=fast-deps -r requirements.txt
+RUN uv pip install --system -r requirements.txt
 
 # Copy the rest of the application code
 COPY . .

@@ -1,0 +1,54 @@
+##General settings
+DJANGO_SECRET_KEY="django-insecure-ypedlkwxvkm2gyl%e=joz==zd*2tnfcmqt)tv9zg)j(%4#qq(u"
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+# Database settings
+DATABASE_ENGINE=postgresql
+POSTGRES_DB=postgres
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_HOST=db
+POSTGRES_PORT=5432
+
+# Redis settings
+CELERY_BROKER_REDIS_URL=redis://localhost:6379/0
+CELERY_RESULT_BACKEND=redis://localhost:6379/1
+
+# MinIO settings
+MINIO_STORAGE_ENDPOINT=minio:9000
+MINIO_STORAGE_ACCESS_KEY=minioadmin
+MINIO_STORAGE_SECRET_KEY=minioadmin
+MINIO_STORAGE_USE_HTTPS=False
+MINIO_STORAGE_MEDIA_BUCKET_NAME=media
+MINIO_STORAGE_STATIC_BUCKET_NAME=static
+MINIO_ACCESS_KEY=minioadmin
+MINIO_SECRET_KEY=minioadmin
+
+# Email settings
+EMAIL_HOST=smtp.example.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=your-email@example.com
+EMAIL_HOST_PASSWORD=your-email-password
+
+# Google OAuth
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_SECRET=your-google-client-secret
+
+# GitHub OAuth
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_SECRET=your-github-client-secret
+
+# Microsoft OAuth
+MICROSOFT_CLIENT_ID=your-microsoft-client-id
+MICROSOFT_SECRET=your-microsoft-client-secret
+
+# Notion OAuth
+NOTION_CLIENT_ID=your-notion-client-id
+
+# Performance recording mode
+PERF_REC_MODE=once
+
+# Jet settings (if applicable)
+JET_MODULE_GOOGLE_ANALYTICS_CLIENT_SECRETS_FILE=/path/to/client_secrets.json
