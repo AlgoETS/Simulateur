@@ -14,7 +14,6 @@ services:
     networks:
       - app-network
     profiles:
-      - web
       - all
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
@@ -24,15 +23,16 @@ services:
       start_period: 40s
 
   redis:
-    image: redis:7
+    image: docker.dragonflydb.io/dragonflydb/dragonfly
     ports:
       - "6379:6379"
     networks:
       - app-network
     profiles:
-      - caching
-      - other
+      - redis
       - all
+    volumes:
+      - dragonfly-data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 30s
@@ -54,7 +54,6 @@ services:
       - app-network
     profiles:
       - storage
-      - other
       - all
       - minio
     healthcheck:
@@ -85,7 +84,6 @@ services:
       "
     profiles:
       - all
-      - other
       - minio
       - storage
     networks:
@@ -105,7 +103,6 @@ services:
       - app-network
     profiles:
       - database
-      - other
       - all
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
@@ -127,7 +124,6 @@ services:
     profiles:
       - all
       - celery
-      - other
     healthcheck:
       test: ["CMD-SHELL", "celery -A simulateur status"]
       interval: 30s
@@ -137,6 +133,7 @@ services:
 volumes:
   minio_data:
   postgres_data:
+  redis-data:
 
 networks:
   app-network:
