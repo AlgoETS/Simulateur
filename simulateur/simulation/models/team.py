@@ -8,7 +8,6 @@ from django.utils.crypto import get_random_string
 
 class Team(models.Model):
     name = models.CharField(max_length=100, default='')
-    members = models.ManyToManyField('UserProfile', related_name='member_of_teams')
     time_created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

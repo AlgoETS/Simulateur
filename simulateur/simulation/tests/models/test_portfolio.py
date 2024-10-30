@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.utils import timezone
-from simulation.models import Portfolio, SimulationManager, UserProfile, Stock, Scenario, SimulationSettings, StockPortfolio, StockPriceHistory, Company
+from simulation.models import Portfolio, Simulation, UserProfile, Stock, Scenario, SimulationSettings, StockPortfolio, StockPriceHistory, Company
 
 
 class PortfolioModelTest(TestCase):
@@ -21,7 +21,7 @@ class PortfolioModelTest(TestCase):
         self.simulation_settings = SimulationSettings.objects.create()
 
         # Create SimulationManager instance
-        self.simulation_manager = SimulationManager.objects.create(
+        self.simulation_manager = Simulation.objects.create(
             scenario=self.scenario,
             simulation_settings=self.simulation_settings,
         )

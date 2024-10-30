@@ -4,7 +4,7 @@ from django.db import models
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    teams = models.ManyToManyField('Team', blank=True, related_name='user_profiles')
+    teams = models.ForeignKey('Team', blank=True, related_name='user_profiles')
     timestamp = models.DateTimeField(auto_now_add=True)
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
     role = models.CharField(

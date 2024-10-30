@@ -13,7 +13,7 @@ from simulation.logic.noise_patterns.random_candle import RandomCandle
 from simulation.logic.noise_patterns.random_walk import RandomWalk
 from simulation.logic.noise_patterns.monte_carlo import MonteCarlo
 from simulation.logic.utils import is_market_open, send_ohlc_update, TIME_UNITS
-from simulation.models import SimulationManager as SM, StockPriceHistory
+from simulation.models import Simulation as SM, StockPriceHistory
 
 logger = logging.getLogger(__name__)
 

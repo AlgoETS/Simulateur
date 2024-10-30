@@ -7,7 +7,7 @@ from django.db import transaction, IntegrityError
 from django.utils.timezone import make_aware
 from simulation.models import (
     Company, Stock, Team, UserProfile, Event, Trigger, SimulationSettings,
-    Scenario, Portfolio, TransactionHistory, Order, SimulationManager,
+    Scenario, Portfolio, TransactionHistory, Order, Simulation,
     StockPortfolio, StockPriceHistory, News, JoinLink
 )
 
@@ -198,7 +198,7 @@ class Command(BaseCommand):
                 for row in reader:
                     try:
                         owner = UserProfile.objects.get(user__username=row['owner'])
-                        simulation_manager = SimulationManager.objects.get(id=row['simulation_manager'])
+                        simulation_manager = Simulation.objects.get(id=row['simulation_manager'])
 
                         Portfolio.objects.get_or_create(
                             owner=owner,
@@ -207,7 +207,7 @@ class Command(BaseCommand):
                         )
                     except UserProfile.DoesNotExist:
                         self.stdout.write(self.style.ERROR(f"UserProfile for owner {row['owner']} does not exist"))
-                    except SimulationManager.DoesNotExist:
+                    except Simulation.DoesNotExist:
                         self.stdout.write(
                             self.style.ERROR(f"SimulationManager with id {row['simulation_manager']} does not exist"))
                     except IntegrityError as e:
@@ -251,7 +251,7 @@ class Command(BaseCommand):
                     try:
                         order_ids = row['orders'].split(';')
                         orders = Order.objects.filter(id__in=order_ids)
-                        simulation_manager = SimulationManager.objects.get(id=row['simulation_manager'])
+                        simulation_manager = Simulation.objects.get(id=row['simulation_manager'])
 
                         if not orders.exists():
                             self.stdout.write(self.style.ERROR(
@@ -276,7 +276,7 @@ class Command(BaseCommand):
                         transaction_history.orders.set(orders)
                         transaction_history.save()
 
-                    except SimulationManager.DoesNotExist:
+                    except Simulation.DoesNotExist:
                         self.stdout.write(self.style.ERROR(f"SimulationManager {row['simulation_manager']} does not exist"))
                     except Stock.DoesNotExist:
                         self.stdout.write(self.style.ERROR(
@@ -304,7 +304,7 @@ class Command(BaseCommand):
                         # Fetch SimulationSettings by id
                         simulation_settings = SimulationSettings.objects.get(id=row['simulation_settings'])
 
-                        simulation_manager, created = SimulationManager.objects.get_or_create(
+                        simulation_manager, created = Simulation.objects.get_or_create(
                             scenario=scenario,
                             simulation_settings=simulation_settings,
                             state=row['state']

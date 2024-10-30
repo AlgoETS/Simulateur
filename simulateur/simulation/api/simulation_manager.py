@@ -5,7 +5,7 @@ from django.utils import timezone
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
-from simulation.models import SimulationManager, Scenario, Stock, Team, Event, Trigger, News, SimulationSettings
+from simulation.models import Simulation, Scenario, Stock, Team, Event, Trigger, News, SimulationSettings
 from simulation.serializers import SimulationSettingsSerializer
 
 
@@ -41,10 +41,10 @@ class SimulationManagerManagement(APIView):
         # Create SimulationSettings if provided
         simulation_settings = SimulationSettings.objects.create(**simulation_settings_data) if simulation_settings_data else None
 
-        simulation_manager = SimulationManager.objects.create(
+        simulation_manager = Simulation.objects.create(
             scenario=scenario,
             simulation_settings=simulation_settings,
-            state=data.get('state', SimulationManager.ScenarioState.INITIALIZED)
+            state=data.get('state', Simulation.ScenarioState.INITIALIZED)
         )
 
         simulation_manager.stocks.set(stocks)
@@ -64,18 +64,18 @@ class SimulationManagerManagement(APIView):
 
     def get(self, request, simulation_manager_id=None, *args, **kwargs):
         if simulation_manager_id:
-            simulation_manager = get_object_or_404(SimulationManager, id=simulation_manager_id)
+            simulation_manager = get_object_or_404(Simulation, id=simulation_manager_id)
             return Response(
                 {'status': 'success', 'data': self.serialize_simulation_manager(simulation_manager)},
                 status=status.HTTP_200_OK
             )
         else:
-            simulation_managers = SimulationManager.objects.all()
+            simulation_managers = Simulation.objects.all()
             data = [self.serialize_simulation_manager(sm) for sm in simulation_managers]
             return Response({'status': 'success', 'data': data}, status=status.HTTP_200_OK)
 
     def put(self, request, simulation_manager_id, *args, **kwargs):
-        simulation_manager = get_object_or_404(SimulationManager, id=simulation_manager_id)
+        simulation_manager = get_object_or_404(Simulation, id=simulation_manager_id)
         data = request.data
 
         # Update linked entities and state if provided
@@ -126,7 +126,7 @@ class SimulationManagerManagement(APIView):
         )
 
     def delete(self, request, simulation_manager_id, *args, **kwargs):
-        simulation_manager = get_object_or_404(SimulationManager, id=simulation_manager_id)
+        simulation_manager = get_object_or_404(Simulation, id=simulation_manager_id)
         simulation_manager.delete()
         return Response(
             {'status': 'success', 'message': 'SimulationManager deleted successfully'},
@@ -150,53 +150,53 @@ class SimulationManagerManagement(APIView):
 
 class SimulationManagerStocks(APIView):
     def get(self, request, simulation_manager_id, *args, **kwargs):
-        simulation_manager = get_object_or_404(SimulationManager, id=simulation_manager_id)
+        simulation_manager = get_object_or_404(Simulation, id=simulation_manager_id)
         stocks = simulation_manager.stocks.all()
         stock_data = [{'id': stock.id, 'ticker': stock.ticker} for stock in stocks]
         return Response({'status': 'success', 'data': stock_data}, status=status.HTTP_200_OK)
 
 class SimulationManagerTeams(APIView):
     def get(self, request, simulation_manager_id, *args, **kwargs):
-        simulation_manager = get_object_or_404(SimulationManager, id=simulation_manager_id)
+        simulation_manager = get_object_or_404(Simulation, id=simulation_manager_id)
         teams = simulation_manager.teams.all()
         team_data = [{'id': team.id, 'name': team.name} for team in teams]
         return Response({'status': 'success', 'data': team_data}, status=status.HTTP_200_OK)
 
 class SimulationManagerEvents(APIView):
     def get(self, request, simulation_manager_id, *args, **kwargs):
-        simulation_manager = get_object_or_404(SimulationManager, id=simulation_manager_id)
+        simulation_manager = get_object_or_404(Simulation, id=simulation_manager_id)
         events = simulation_manager.events.all()
         event_data = [{'id': event.id, 'name': event.name} for event in events]
         return Response({'status': 'success', 'data': event_data}, status=status.HTTP_200_OK)
 
 class SimulationManagerTriggers(APIView):
     def get(self, request, simulation_manager_id, *args, **kwargs):
-        simulation_manager = get_object_or_404(SimulationManager, id=simulation_manager_id)
+        simulation_manager = get_object_or_404(Simulation, id=simulation_manager_id)
         triggers = simulation_manager.triggers.all()
         trigger_data = [{'id': trigger.id, 'name': trigger.name} for trigger in triggers]
         return Response({'status': 'success', 'data': trigger_data}, status=status.HTTP_200_OK)
 
 class SimulationManagerNews(APIView):
     def get(self, request, simulation_manager_id, *args, **kwargs):
-        simulation_manager = get_object_or_404(SimulationManager, id=simulation_manager_id)
+        simulation_manager = get_object_or_404(Simulation, id=simulation_manager_id)
         news = simulation_manager.news.all()
         news_data = [{'id': news_item.id, 'title': news_item.title} for news_item in news]
         return Response({'status': 'success', 'data': news_data}, status=status.HTTP_200_OK)
 
 class ChangeSimulationManagerState(APIView):
     def post(self, request, simulation_manager_id, *args, **kwargs):
-        simulation_manager = get_object_or_404(SimulationManager, id=simulation_manager_id)
+        simulation_manager = get_object_or_404(Simulation, id=simulation_manager_id)
         current_state = simulation_manager.state
         new_state = request.data.get('new_state')
 
         # Define valid transitions, including the rule that allows going back to ONGOING from STOPPED
         valid_transitions = {
-            SimulationManager.ScenarioState.INITIALIZED: [SimulationManager.ScenarioState.CREATED],
-            SimulationManager.ScenarioState.CREATED: [SimulationManager.ScenarioState.PUBLISHED],
-            SimulationManager.ScenarioState.PUBLISHED: [SimulationManager.ScenarioState.ONGOING],
-            SimulationManager.ScenarioState.ONGOING: [SimulationManager.ScenarioState.STOPPED],
-            SimulationManager.ScenarioState.STOPPED: [SimulationManager.ScenarioState.FINISHED,
-                                                    SimulationManager.ScenarioState.ONGOING]
+            Simulation.ScenarioState.INITIALIZED: [Simulation.ScenarioState.CREATED],
+            Simulation.ScenarioState.CREATED: [Simulation.ScenarioState.PUBLISHED],
+            Simulation.ScenarioState.PUBLISHED: [Simulation.ScenarioState.ONGOING],
+            Simulation.ScenarioState.ONGOING: [Simulation.ScenarioState.STOPPED],
+            Simulation.ScenarioState.STOPPED: [Simulation.ScenarioState.FINISHED,
+                                                    Simulation.ScenarioState.ONGOING]
             # Allow transition back to ONGOING
         }
 

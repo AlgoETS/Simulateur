@@ -1,7 +1,7 @@
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-from simulation.models import SimulationManager, Scenario, Stock, Team, Event, Trigger, News, SimulationSettings, Company
+from simulation.models import Simulation, Scenario, Stock, Team, Event, Trigger, News, SimulationSettings, Company
 class SimulationManagerBaseTest(APITestCase):
     def setUp(self):
         # Create a company
@@ -25,10 +25,10 @@ class SimulationManagerBaseTest(APITestCase):
 
         # Create URLs
         self.create_url = reverse('create_simulation_manager')
-        self.simulation_manager = SimulationManager.objects.create(
+        self.simulation_manager = Simulation.objects.create(
             scenario=self.scenario,
             simulation_settings=self.simulation_settings,
-            state=SimulationManager.ScenarioState.INITIALIZED
+            state=Simulation.ScenarioState.INITIALIZED
         )
         self.manage_url = reverse('manage_simulation_manager', kwargs={'simulation_manager_id': self.simulation_manager.id})
         self.change_state_url = reverse('change_state', kwargs={'simulation_manager_id': self.simulation_manager.id})
@@ -54,12 +54,12 @@ class CreateSimulationManagerTests(SimulationManagerBaseTest):
                 "noise_function": "brownian",
                 "stock_trading_logic": "static"
             },
-            'state': SimulationManager.ScenarioState.INITIALIZED
+            'state': Simulation.ScenarioState.INITIALIZED
         }
         response = self.client.post(self.create_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(SimulationManager.objects.count(), 2)
-        self.assertEqual(SimulationManager.objects.get(id=response.data['data']['id']).scenario.name, 'Test Scenario')
+        self.assertEqual(Simulation.objects.count(), 2)
+        self.assertEqual(Simulation.objects.get(id=response.data['data']['id']).scenario.name, 'Test Scenario')
 
 class UpdateSimulationManagerTests(SimulationManagerBaseTest):
     def test_update_simulation_manager(self):
@@ -70,19 +70,19 @@ class UpdateSimulationManagerTests(SimulationManagerBaseTest):
             'events': [self.event.id],
             'triggers': [self.trigger.id],
             'news': [self.news.id],
-            'state': SimulationManager.ScenarioState.CREATED
+            'state': Simulation.ScenarioState.CREATED
         }
         response = self.client.put(self.manage_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.simulation_manager.refresh_from_db()
-        self.assertEqual(self.simulation_manager.state, SimulationManager.ScenarioState.CREATED)
+        self.assertEqual(self.simulation_manager.state, Simulation.ScenarioState.CREATED)
 
 class DeleteSimulationManagerTests(SimulationManagerBaseTest):
     def test_delete_simulation_manager(self):
         """Test deleting a scenario manager via DELETE request."""
         response = self.client.delete(self.manage_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(SimulationManager.objects.count(), 0)
+        self.assertEqual(Simulation.objects.count(), 0)
 
 class RetrieveSimulationManagerTests(SimulationManagerBaseTest):
     def test_get_single_simulation_manager(self):
@@ -101,16 +101,16 @@ class RetrieveSimulationManagerTests(SimulationManagerBaseTest):
 class ChangeSimulationManagerStateTests(SimulationManagerBaseTest):
     def test_valid_state_transition(self):
         """Test a valid state transition from INITIALIZED to CREATED."""
-        data = {'new_state': SimulationManager.ScenarioState.CREATED}
+        data = {'new_state': Simulation.ScenarioState.CREATED}
         response = self.client.post(self.change_state_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.simulation_manager.refresh_from_db()
-        self.assertEqual(self.simulation_manager.state, SimulationManager.ScenarioState.CREATED)
+        self.assertEqual(self.simulation_manager.state, Simulation.ScenarioState.CREATED)
 
     def test_invalid_state_transition(self):
         """Test an invalid state transition from INITIALIZED to PUBLISHED."""
-        data = {'new_state': SimulationManager.ScenarioState.PUBLISHED}
+        data = {'new_state': Simulation.ScenarioState.PUBLISHED}
         response = self.client.post(self.change_state_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.simulation_manager.refresh_from_db()
-        self.assertEqual(self.simulation_manager.state, SimulationManager.ScenarioState.INITIALIZED)
+        self.assertEqual(self.simulation_manager.state, Simulation.ScenarioState.INITIALIZED)

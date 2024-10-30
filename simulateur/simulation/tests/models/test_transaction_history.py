@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
-from simulation.models import TransactionHistory, Order, SimulationManager, Stock, UserProfile, Company, Scenario, \
+from simulation.models import TransactionHistory, Order, Simulation, Stock, UserProfile, Company, Scenario, \
     SimulationSettings
 
 
@@ -95,7 +95,7 @@ class TransactionHistoryModelTest(TestCase):
             duration=10,
         )
 
-        self.simulation_manager = SimulationManager.objects.create(
+        self.simulation_manager = Simulation.objects.create(
             scenario=self.scenario,
             simulation_settings=SimulationSettings.objects.create(),
         )

@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.utils import timezone
-from simulation.models import SimulationManager, Scenario, Stock, Team, Event, Trigger, News, SimulationSettings, Company
+from simulation.models import Simulation, Scenario, Stock, Team, Event, Trigger, News, SimulationSettings, Company
 
 
 class SimulationManagerModelTest(TestCase):
@@ -26,7 +26,7 @@ class SimulationManagerModelTest(TestCase):
         )
 
         # Create SimulationManager instance
-        self.simulation_manager = SimulationManager.objects.create(
+        self.simulation_manager = Simulation.objects.create(
             scenario=self.scenario,
             simulation_settings=self.simulation_settings
         )
@@ -41,15 +41,15 @@ class SimulationManagerModelTest(TestCase):
         # Test if the SimulationManager object was created successfully
         self.assertEqual(self.simulation_manager.scenario, self.scenario)
         self.assertEqual(self.simulation_manager.simulation_settings, self.simulation_settings)
-        self.assertEqual(self.simulation_manager.state, SimulationManager.ScenarioState.INITIALIZED)
+        self.assertEqual(self.simulation_manager.state, Simulation.ScenarioState.INITIALIZED)
         self.assertIsNotNone(self.simulation_manager.timestamp)
         self.assertIsNotNone(self.simulation_manager.published_date)
 
     def test_simulation_manager_state_change(self):
         # Test changing the state of the SimulationManager
-        self.simulation_manager.state = SimulationManager.ScenarioState.ONGOING
+        self.simulation_manager.state = Simulation.ScenarioState.ONGOING
         self.simulation_manager.save()
-        self.assertEqual(self.simulation_manager.state, SimulationManager.ScenarioState.ONGOING)
+        self.assertEqual(self.simulation_manager.state, Simulation.ScenarioState.ONGOING)
 
     def test_simulation_manager_relationships(self):
         # Create necessary related objects

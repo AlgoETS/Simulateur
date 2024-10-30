@@ -11,14 +11,14 @@ class Portfolio(models.Model):
         related_name="portfolios",
     )
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    simulation_manager = models.ForeignKey("SimulationManager", on_delete=models.CASCADE, related_name='portfolios')
+    simulation = models.ForeignKey("Simulation", on_delete=models.CASCADE, related_name='portfolios')
 
     def __str__(self):
         return f"Portfolio for {self.owner}"
 
     class Meta:
         verbose_name_plural = "Portfolios"
-        unique_together = ("owner", "simulation_manager")
+        unique_together = ("owner", "simulation")
 
 
 class StockPortfolio(models.Model):

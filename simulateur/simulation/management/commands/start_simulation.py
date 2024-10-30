@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from simulation.models.simulation_manager import SimulationManager as SM
+from simulateur.simulation.models.simulation import Simulation as SM
 from simulation.logic.simulation_manager import SimulationManagerSingleton
 import signal
 import sys

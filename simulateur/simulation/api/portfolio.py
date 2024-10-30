@@ -10,8 +10,8 @@ from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views import View
 from simulation.logic.BuySellQueue import buy_sell_queue
-from simulation.models import Portfolio, Stock, Order, TransactionHistory, SimulationManager, StockPriceHistory, \
-    StockPortfolio
+from simulation.models import Portfolio, Stock, Order, TransactionHistory, Simulation, StockPriceHistory, \
+    StockPortfolio,Company
 from simulation.serializers import PortfolioSerializer
 from simulation.models import UserProfile, Team
 
@@ -34,7 +34,7 @@ class BuyStock(View):
             data = json.loads(request.body)
             user_profile = request.user.userprofile
             stock = Stock.objects.get(id=data['stock_id'])
-            simulation_manager = SimulationManager.objects.get(id=data['simulation_manager_id'])
+            simulation_manager = Simulation.objects.get(id=data['simulation_manager_id'])
             amount = int(data['amount'])
 
             # Get the latest price from StockPriceHistory
@@ -96,7 +96,7 @@ class BuyStock(View):
             return JsonResponse({'status': 'error', 'message': 'Invalid JSON data'}, status=400)
         except Stock.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'Stock not found'}, status=404)
-        except SimulationManager.DoesNotExist:
+        except Simulation.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'Simulation manager not found'}, status=404)
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
@@ -109,7 +109,7 @@ class SellStock(View):
             data = json.loads(request.body)
             user_profile = request.user.userprofile
             stock = Stock.objects.get(id=data['stock_id'])
-            simulation_manager = SimulationManager.objects.get(id=data['simulation_manager_id'])
+            simulation_manager = Simulation.objects.get(id=data['simulation_manager_id'])
             amount = int(data['amount'])
 
             if amount <= 0:
@@ -159,7 +159,7 @@ class SellStock(View):
             return JsonResponse({'status': 'error', 'message': 'Invalid JSON data'}, status=400)
         except Stock.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'Stock not found'}, status=404)
-        except SimulationManager.DoesNotExist:
+        except Simulation.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'Simulation manager not found'}, status=404)
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
@@ -170,7 +170,7 @@ class StockPrice(View):
         try:
             simulation_manager_id = request.GET.get('simulation_manager_id', 1)
             # Fetch the stock based on ID
-            stock = SimulationManager.objects.get(id=simulation_manager_id).stocks.get(id=stock_id)
+            stock = Simulation.objects.get(id=simulation_manager_id).stocks.get(id=stock_id)
 
             # Get the latest price history for the stock
             latest_price_history = StockPriceHistory.objects.filter(stock=stock).order_by('-timestamp').first()
@@ -212,7 +212,7 @@ class StockHoldings(View):
             simulation_manager_id = data.get('simulation_manager_id')
 
             # Validate simulation manager
-            simulation_manager = SimulationManager.objects.get(id=simulation_manager_id)
+            simulation_manager = Simulation.objects.get(id=simulation_manager_id)
 
             # Find the correct portfolio based on the simulation manager and user profile
             portfolio = Portfolio.objects.filter(owner=user_profile, simulation_manager=simulation_manager).first()
@@ -256,7 +256,7 @@ class StockHoldings(View):
                 })
 
             return JsonResponse({'status': 'success', 'holdings': holdings_data})
-        except SimulationManager.DoesNotExist:
+        except Simulation.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'Simulation manager not found'}, status=404)
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
@@ -271,7 +271,7 @@ class GroupedPerformanceView(View):
             group_by = data.get('group_by', 'sector')  # Default to 'sector' if not provided
 
             # Validate simulation manager
-            simulation_manager = SimulationManager.objects.get(id=simulation_manager_id)
+            simulation_manager = Simulation.objects.get(id=simulation_manager_id)
 
             # Validate grouping criteria
             valid_groupings = ['sector', 'industry', 'country']
@@ -317,7 +317,7 @@ class GroupedPerformanceView(View):
                 "group_values": group_values
             })
 
-        except SimulationManager.DoesNotExist:
+        except Simulation.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'Simulation manager not found'}, status=404)
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)

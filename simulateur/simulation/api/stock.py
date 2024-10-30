@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from simulation.models import Stock, StockPriceHistory, Company, SimulationManager
+from simulation.models import Stock, StockPriceHistory, Company, Simulation
 
 
 class StockManagement(APIView):
@@ -115,7 +115,7 @@ class StockPriceHistoryView(APIView):
         if not simulation_manager_id:
             return Response({'status': 'error', 'message': 'Simulation manager ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        simulation_manager = get_object_or_404(SimulationManager, id=simulation_manager_id)
+        simulation_manager = get_object_or_404(Simulation, id=simulation_manager_id)
         stock = get_object_or_404(Stock, id=stock_id, company__simulation_manager=simulation_manager)
 
         price_histories = StockPriceHistory.objects.filter(stock=stock).order_by('timestamp')

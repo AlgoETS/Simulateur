@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import (
     Company, Stock, UserProfile, Event, SimulationSettings,
-    Scenario, Team, Portfolio, TransactionHistory, Trigger, News, StockPriceHistory, SimulationManager
+    Scenario, Team, Portfolio, TransactionHistory, Trigger, News, StockPriceHistory, Simulation
 )
 
 
@@ -96,7 +96,7 @@ class SimulationManagerSerializer(serializers.ModelSerializer):
     simulation_settings = SimulationSettingsSerializer()
 
     class Meta:
-        model = SimulationManager
+        model = Simulation
         fields = [
             'scenario', 'stocks', 'teams', 'events', 'triggers', 'news',
             'simulation_settings', 'state', 'timestamp', 'published_date'

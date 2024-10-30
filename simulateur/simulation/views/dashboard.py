@@ -12,7 +12,7 @@ from django.views.decorators.cache import cache_page
 from django.views.decorators.csrf import csrf_exempt
 from simulation.models import (
     UserProfile, Stock, Portfolio, TransactionHistory, StockPortfolio, Team,
-    News, Company, Event, SimulationManager, Trigger, StockPriceHistory
+    News, Company, Event, Simulation, Trigger, StockPriceHistory
 )
 
 from simulation.channels.consumers import SimulationConsumer
@@ -53,7 +53,7 @@ def get_current_simulation_manager(simulation_managers, request):
     try:
         current_simulation_manager = simulation_managers.get(id=current_simulation_manager_id)
         return current_simulation_manager_id, current_simulation_manager
-    except SimulationManager.DoesNotExist:
+    except Simulation.DoesNotExist:
         return None, None
 
 
@@ -113,7 +113,7 @@ class UserDashboardView(View):
         if not user_profile:
             return redirect(reverse("home"))
 
-        simulation_managers = SimulationManager.objects.all()
+        simulation_managers = Simulation.objects.all()
         current_simulation_manager_id, current_simulation_manager = get_current_simulation_manager(simulation_managers,
                                                                                                    request)
 
@@ -150,7 +150,7 @@ class AdminDashboardView(AdminOnlyMixin, View):
         if not user_profile:
             return redirect("home")
 
-        simulation_manager = SimulationManager.objects.all().first()
+        simulation_manager = Simulation.objects.all().first()
 
         if not simulation_manager:
             messages.error(request, "You are not associated with any simulation manager.")
@@ -240,12 +240,12 @@ class GameDashboardView(View):
         # If a simulation_manager_id is provided, try to fetch that specific SimulationManager
         if simulation_manager_id:
             try:
-                return SimulationManager.objects.get(id=simulation_manager_id)
-            except SimulationManager.DoesNotExist:
+                return Simulation.objects.get(id=simulation_manager_id)
+            except Simulation.DoesNotExist:
                 pass  # If it doesn't exist, fall back to the default behavior
 
         # Default to fetching the first active simulation manager if none is provided
-        return SimulationManager.objects.all().first()
+        return Simulation.objects.all().first()
 
     def get_dashboard_context(self, team, simulation_manager):
         # Retrieve all team members
@@ -296,7 +296,7 @@ class MarketOverviewView(View):
     def get(self, request):
         simulation_manager_id = request.GET.get('simulation_manager_id', 1)
 
-        simulation_manager = SimulationManager.objects.filter(id=simulation_manager_id).first()
+        simulation_manager = Simulation.objects.filter(id=simulation_manager_id).first()
         if not simulation_manager:
             messages.error(request, "Selected simulation manager does not exist.")
             return redirect(reverse("home"))
