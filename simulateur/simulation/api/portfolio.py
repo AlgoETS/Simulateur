@@ -53,7 +53,8 @@ class BuyStock(View):
                 return JsonResponse({'status': 'error', 'message': 'Amount must be greater than zero'}, status=400)
 
             total_cost = amount * price
-            if user_profile.portfolio.balance < total_cost:
+            user_portfolio = Portfolio.objects.get_or_create(owner=user_profile,simulation_manager=simulation_manager)[0]
+            if user_portfolio.balance < total_cost:
                 return JsonResponse({'status': 'error', 'message': 'Insufficient funds'}, status=400)
 
             with transaction.atomic():
@@ -69,13 +70,14 @@ class BuyStock(View):
                 # Logic to buy stock
                 buy_sell_queue.add_to_buy_queue(user_profile, stock, amount, price, simulation_manager)
 
-                # Deduct the amount from the user's balance
-                user_profile.portfolio.balance -= total_cost
-                user_profile.portfolio.save()
+                # Deduct the amount from the user's 
+               
+                user_portfolio.balance -= total_cost
+                user_portfolio.save()
 
                 # Add the stock to the StockPortfolio or update the existing quantity
                 stock_portfolio, created = StockPortfolio.objects.get_or_create(
-                    portfolio=user_profile.portfolio,
+                    portfolio=user_portfolio,
                     stock=stock,
                     defaults={'quantity': amount, 'latest_price_history': latest_price_history}
                 )
