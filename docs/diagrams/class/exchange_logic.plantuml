@@ -1,0 +1,47 @@
+
+
+
+class Client{
+}
+
+
+class Exchange{
+    +sendOrder(Order)
+    -processOrder(Order)
+}
+
+class OrderMatchingEngine{
+
+}
+
+class PriorityQueue{
+    +addOrder(Order)
+    +removeOrder(Order)
+    +getTopOrder()
+    -processOrders()
+}
+
+
+
+class Stock{
+    +getL1Data() 
+    +getL2Data()
+}
+
+class OrderBook{
+
+}
+
+class Order{
+
+}
+
+
+
+Exchange o-- Stock
+Exchange --left-> OrderMatchingEngine 
+Stock --> OrderBook
+OrderBook o-right- Order
+Client --> Exchange
+Client --> Order
+OrderMatchingEngine <|--  PriorityQueue
